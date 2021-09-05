@@ -8,13 +8,14 @@ export function apply() {
     //alert("POST data:\n" + jQuery.param($("#form-attributico").serializeArray()));
     $(".alert-success, #error_warning.alert-danger").hide();
     $.post($("#form-attributico").attr('action'), $("#form-attributico").serialize(), function (html) {
-        var $success = $(html).find(".alert-success, #error_warning.alert-danger"); // если после редиректа форма выставила success
+        var $success = $(html).find(".alert-success, #error_warning.alert-danger"); // если после редиректа форма выставила success        
         if ($success.length > 0) {
             $(".alert-before").before($success);
         } else {
-            var $href = $(html).find("[selected=\"selected\"]").val(); // если нет, то ищем success по ссылке, котрая в селекте
+            // если нет, то ищем success по ссылке, котрая в селекте или active для unshop
+            var $href = $(html).find("[selected=\"selected\"]").val() || $(html).find(".active").val(); 
             $.post($href, "", function (html) {
-                var $success = $(html).find(".alert-success, #error_warning.alert-danger");
+                var $success = $(html).find(".alert-success, #error_warning.alert-danger");                
                 if ($success.length > 0) {
                     $(".alert-before").before($success);
                 }
