@@ -2,7 +2,7 @@
 <modification>
     <name>Attributico</name>
     <code>attributico</code>
-    <version>3.1.7(oc v2.x)</version>
+    <version>3.1.8(oc v2.x)</version>
     <author>comtronics@mail.ru</author>
     <link>http://www.servenus.com</link>
 
@@ -261,6 +261,7 @@
                             'token': token,
                             'user_token': user_token,
                             'attribute_id': attribute_id,
+                            'attribute_row': attribute_row,
                             'view_mode': localStorage.getItem('display_attribute'),
                             'categories': $('input[id=\'filter-category\']').is(":checked") ? getSelectedCategories() : [],
                             'duty': $('input[id=\'filter-duty\']').is(":checked") ? 'true' : ''
@@ -365,7 +366,7 @@
                 });
 
                 // Event apply value or template and set selected in textarea
-                $('#attribute tbody').on('change', 'select', function() {
+                function setSelectedValue() {
                     var select = $(this);
                     var textarea_val = select.next('textarea').val();
                     textarea_val = (textarea_val == '') ? textarea_val : textarea_val + splitter;                        
@@ -373,7 +374,7 @@
                         if (this.selectedIndex != 0) {
                             select.next('textarea').val(select.val());            
                             if (localStorage.getItem('filter-values') == 'duty') {               
-                                let row = select.next('textarea').attr("name").match(/[0-9]+/)[0];
+                                let row = select.attr("attribute_row") || select.next('textarea').attr("name").match(/[0-9]+/)[0];
                                 let attribute_id = select.attr("attribute_id")
                                 addAttributeDuty(attribute_id, row)
                             }
@@ -385,7 +386,9 @@
                             this.selectedIndex = 0
                         }
                     }
-                });                              
+                }
+                
+                $('#attribute tbody').on('change', 'select', setSelectedValue);                              
 
                 // Event change filter mode for attribute values
                 $('#serv-panel').on('change', 'input[type=\'radio\']', function () {
@@ -415,6 +418,16 @@
                 // Event override method 
                 $('#serv-panel').on('change', '#method-view', () => {
                   method = $('#method-view option:selected').val()                  
+                });
+
+                // Event attach categories attributes 
+                $('#attach-attribute').on('click', () => {
+                    let categories = getSelectedCategories()                    
+                    if (categories) {
+                        for (category_id in categories) {
+                            newCategory(category_id)
+                        }
+                    }                                   
                 });
             ]]>            </add>
         </operation>       
@@ -458,6 +471,14 @@
             ]]>            </add>
         </operation>
         <operation>
+            <search><![CDATA[<td class="text-left"><?php echo $entry_attribute; ?></td>]]></search>
+            <add position="replace"><![CDATA[
+                <td class="text-left"><?php echo $entry_attribute; ?>
+                    <button type='button' id='attach-attribute' class='btn btn-success pull-right'><i class='fa fa-plus'></i> <?php echo $tab_attribute; ?></button>
+                </td>
+            ]]>            </add>
+        </operation>
+        <operation>
             <search><![CDATA[<td class="text-left"><?php echo $entry_text; ?></td>]]></search>
             <add position="replace"><![CDATA[
                 <td class="text-left">
@@ -476,6 +497,12 @@
     </file>
     <file path="admin/controller/catalog/product.php"> 
         <operation error="skip">
+            <search><![CDATA[$data['button_view'] = $this->language->get('button_view');]]></search>
+            <add position="before"><![CDATA[
+		        $data['button_edit'] = $this->language->get('button_edit');                
+            ]]></add>
+        </operation>
+        <operation error="skip">
             <search><![CDATA[$data['footer'] = $this->load->controller('common/footer');]]></search>
             <add position="after"><![CDATA[
 		        $data['extension'] = version_compare(VERSION, '2.3.0', '>=') ? "extension/" : "";                
@@ -491,14 +518,17 @@
             <search><![CDATA[$attribute_info = $this->model_catalog_attribute->getAttribute($product_attribute['attribute_id']);]]></search>
             <add position="replace"><![CDATA[
 		        $attribute_info = $this->model_catalog_attributico->getAttributeInfo($product_attribute['attribute_id'], $this->config->get('config_language_id'));
-            ]]>            </add>
+                ]]>
+            </add>
         </operation>
         <operation error="skip">
             <search><![CDATA['product_attribute_description' => $product_attribute['product_attribute_description']]]></search>
             <add position="after"><![CDATA[
 		        ,'sort_order' => $attribute_info['sort_order'],
 				'group_name'  => $attribute_info['group_name'],
-            ]]>            </add>
+                'product_id' => isset($this->request->get['product_id']) ? $this->request->get['product_id'] : 0,
+                ]]>
+            </add>
         </operation>
         <operation error="skip">
             <search><![CDATA[// Options]]></search>
