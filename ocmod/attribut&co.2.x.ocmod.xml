@@ -157,7 +157,8 @@
                             remove_category_attribute = json.remove_category_attribute
 
                             $('#serv-panel').append(json.serv_panel) 
-
+                            $('#attach-attribute').html("<i class='fa fa-plus'></i> " + json.attach_category_attributes)
+                            
                             method = $('#method-view option:selected').val()  
                         
                             // Set attribute values display mode when start
@@ -422,9 +423,9 @@
 
                 // Event attach categories attributes 
                 $('#attach-attribute').on('click', () => {
-                    let categories = getSelectedCategories()                    
+                    let categories = getSelectedCategories()                                    
                     if (categories) {
-                        for (category_id in categories) {
+                        for (let category_id of categories) {                          
                             newCategory(category_id)
                         }
                     }                                   
@@ -488,6 +489,16 @@
                 </td>
             ]]>            </add>
         </operation>
+        <operation error="skip">
+            <search><![CDATA[<td class="text-left"><button type="button" onclick="$('#attribute-row<?php echo $attribute_row; ?>').remove();" data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>]]></search>
+            <add position="replace"><![CDATA[<td class="text-left"><button type="button" onclick="product_attribute_id = product_attribute_id.filter(item=>item !== $('#attribute-row<?php echo $attribute_row; ?>').find('[name *= attribute_id]').val()); $('#attribute-row<?php echo $attribute_row; ?>').remove(); " data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>
+            ]]></add>
+        </operation> 
+        <operation error="skip">
+            <search><![CDATA[html += '  <td class="text-left"><button type="button" onclick="$(\'#attribute-row' + attribute_row + '\').remove();" data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>';]]></search>
+            <add position="replace"><![CDATA[html += '  <td class="text-left"><button type="button" onclick="product_attribute_id = product_attribute_id.filter(item=>item !== $(\'#attribute-row' + attribute_row + '\').find(\'[name *= attribute_id]\').val()); $(\'#attribute-row' + attribute_row + '\').remove(); " data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>'
+            ]]></add>
+        </operation>       
     </file>
     <file path="admin/view/template/catalog/product_form.tpl">
         <operation error="skip">

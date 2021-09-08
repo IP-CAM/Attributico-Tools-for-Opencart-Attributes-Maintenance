@@ -600,16 +600,16 @@ class ControllerModuleAttributico extends Controller
         $buttons .= "<button type='button' id='values-view' class='btn btn-default'><i class='fa fa-th'></i>" . $this->language->get('entry_values') . "</button>";
         $buttons .= "</div>";
 
-        $select = "<select class='form-control method-view' id='method-view' style='margin-left:3px; font-weight:normal; width:27% overflow:hidden; white-space:nowrap; text-overflow:ellipsis;'>";
+        $select = "<select class='form-control method-view' id='method-view' style='margin-left:3px; font-weight:normal; width:27%'>";
         $option_style = "overflow:hidden; white-space:nowrap; text-overflow:ellipsis;";
-        $method = $this->config->get('attributico_product_text');
+        //$method = $this->config->get('attributico_product_text');
         $method_options = [
             ['key' => 'clean', 'value' => 'clean', 'title' => $this->language->get('text_clear')],
             ['key' => 'unchange', 'value' => 'unchange', 'title' => $this->language->get('text_keep')],
             ['key' => 'overwrite', 'value' => 'overwrite', 'title' => $this->language->get('text_duty')],
             ['key' => 'ifempty', 'value' => 'ifempty', 'title' => $this->language->get('text_duty_only')],
         ];
-        $options = $this->makeOptionList($method_options, $method);  
+        $options = $this->makeOptionList($method_options, $this->config->get('attributico_product_text'), '', $option_style);  
         $select .= $options;
         $select .= "</select>";
 
@@ -771,16 +771,16 @@ class ControllerModuleAttributico extends Controller
         return $options;
     }
 
-    private function makeOptionList($options, $default_value, $title0 = '')
+    private function makeOptionList($options, $default_value, $title0 = '', $style = '')
     {
-        $option_list = $title0 ? "<option key='{0}' value='{0}'>{$title0}</option>" : '';
+        $option_list = $title0 ? "<option key='{0}' value='{0}'>{$title0}</option>" : '';        
         foreach ($options as $option) {
             $selected = $option['value'] === $default_value ? 'selected' : '';
             $key = isset($option['key']) ? $option['key'] : '';
             $value = isset($option['value']) ? $option['value'] : '';
             $title = isset($option['title']) ? $option['title'] : $value;
             if ($title) {
-                $option_list .= "<option key='{$key}' value='{$value}' {$selected}>{$title}</option>";
+                $option_list .= "<option key='{$key}' value='{$value}' {$selected} style='{$style}'>{$title}</option>";
             }
         }
         return $option_list;
