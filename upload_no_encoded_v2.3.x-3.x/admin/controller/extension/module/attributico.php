@@ -881,25 +881,28 @@ class ControllerModuleAttributico extends Controller
             }
 
             $info['thumb'] = $thumb;
-        }
 
-        $language = $this->getLanguage($language_id);
 
-        $unit_options = $this->getUnitOptions($language_id, $language->get('not_selected'));
-        $units = $this->makeOptionList($unit_options, $info['unit_id']);
-        $status_options = [
-            ['key' => '0', 'value' => '0', 'title' => $language->get('status_off')],
-            ['key' => '1', 'value' => '1', 'title' => $language->get('status_on')]
-        ];
-        $statuses = $this->makeOptionList($status_options, $info['status']);
+            $language = $this->getLanguage($language_id);
 
-        $values = $this->fetchValueList($attribute_id, $duty, $categories);
+            $unit_options = $this->getUnitOptions($language_id, $language->get('not_selected'));
+            $units = $this->makeOptionList($unit_options, $info['unit_id']);
+            $status_options = [
+                ['key' => '0', 'value' => '0', 'title' => $language->get('status_off')],
+                ['key' => '1', 'value' => '1', 'title' => $language->get('status_on')]
+            ];
+            $statuses = $this->makeOptionList($status_options, $info['status']);
 
-        $select = $this->makeValuesSelect($values[$language_id], $view_mode, $attribute_id, $language_id, $attribute_row);
+            $values = $this->fetchValueList($attribute_id, $duty, $categories);
+            if (!isset($values[$language_id])) {
+                $values[$language_id][] = array('text' => '');
+            }
+            
+            $select = $this->makeValuesSelect($values[$language_id], $view_mode, $attribute_id, $language_id, $attribute_row);
 
-        if ($form) {
-            $modal =
-                "<div class='modal-dialog' role='document'>
+            if ($form) {
+                $modal =
+                    "<div class='modal-dialog' role='document'>
                 <div class='panel panel-default'>
                     <div class='panel-heading'>
                         <button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
@@ -972,9 +975,9 @@ class ControllerModuleAttributico extends Controller
                 </div>
             </div>";
 
-            $info = ['modal' => $modal];
+                $info = ['modal' => $modal];
+            }
         }
-
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($info, JSON_UNESCAPED_UNICODE));
     }
