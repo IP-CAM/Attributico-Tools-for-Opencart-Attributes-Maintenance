@@ -196,7 +196,7 @@
                                 $.each(json, (key, attribute) => {
                                     if (!in_array(attribute['attribute_id'], product_attribute_id)) {
                                         var row = attribute_row;
-                                        addAttribute(); 
+                                        addAttribute(attribute['attribute_id']); 
                                         $('input[name="product_attribute[' + row + '][name]"]').val(attribute['name']); 
                                         $('input[name="product_attribute[' + row + '][attribute_id]"]').val(attribute['attribute_id']);
                                         $('#group-name' + row).remove()
@@ -498,7 +498,17 @@
             <search><![CDATA[html += '  <td class="text-left"><button type="button" onclick="$(\'#attribute-row' + attribute_row + '\').remove();" data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>';]]></search>
             <add position="replace"><![CDATA[html += '  <td class="text-left"><button type="button" onclick="product_attribute_id = product_attribute_id.filter(item=>item !== $(\'#attribute-row' + attribute_row + '\').find(\'[name *= attribute_id]\').val()); $(\'#attribute-row' + attribute_row + '\').remove(); " data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>'
             ]]></add>
-        </operation>       
+        </operation> 
+        <operation error="skip">
+            <search><![CDATA[function addAttribute() {]]></search> 
+            <add position="replace"><![CDATA[function addAttribute(attribute_id='""') {
+            ]]></add>
+        </operation>     
+        <operation error="skip">
+            <search><![CDATA[<input type="hidden" name="product_attribute[' + attribute_row + '][attribute_id]" value="" /></td>';]]></search> 
+            <add position="replace"><![CDATA[<input type="hidden" name="product_attribute[' + attribute_row + '][attribute_id]" value=' + attribute_id  + ' /></td>';
+            ]]></add>
+        </operation> 
     </file>
     <file path="admin/view/template/catalog/product_form.tpl">
         <operation error="skip">

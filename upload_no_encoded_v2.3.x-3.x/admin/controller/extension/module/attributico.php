@@ -20,10 +20,10 @@ class ControllerModuleAttributico extends Controller
         '4' => array("template", "value"),
         '5' => array("template", "value"),
     );
-    private $dbstructure = array(        
+    private $dbstructure = array(
         'attribute_description' => array(
-            'duty' => "TEXT NOT NULL",            
-        ),        
+            'duty' => "TEXT NOT NULL",
+        ),
     );
 
     /*  private $coworking; */
@@ -488,26 +488,57 @@ class ControllerModuleAttributico extends Controller
 
         $languages = $this->getLanguages();
 
-        $this->load->model('catalog/attributico');
-        $values = $duty ? $this->model_catalog_attributico->getDutyValues($attribute_id) : $this->model_catalog_attributico->getAttributeValues($attribute_id, $categories);
+        $values = $this->fetchValueList($attribute_id, $duty, $categories);
 
-        if ($values && !$language_id) {
+        if (!$language_id) {
             foreach ($languages as $language) {
-                if (isset($values[$language['language_id']])) {
-                    $select = $this->makeValuesSelect($values[$language['language_id']], $view_mode, $attribute_id, $language['language_id'], $attribute_row);
-                    $json[$language['language_id']][] = $select;
+                if (!isset($values[$language['language_id']])) {
+                    $values[$language['language_id']][] = array('text' => '');
                 }
+                $select = $this->makeValuesSelect($values[$language['language_id']], $view_mode, $attribute_id, $language['language_id'], $attribute_row);
+                $json[$language['language_id']][] = $select;
             }
-        } else if ($values) {
-            $value_list = $values[$language_id];
-            $json = array_unique($value_list, SORT_REGULAR);
-            array_multisort($json, SORT_REGULAR);
-        } else if ($language_id) {
-            $json[] = ['text' => 'No data...'];
+        } else {
+            if ($values) {
+                $value_list = $values[$language_id];  // isset&
+                $json = array_unique($value_list, SORT_REGULAR);
+                array_multisort($json, SORT_REGULAR);
+            } else {
+                $json[] = ['text' => 'No data...'];
+            }
         }
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
+    }
+
+    private function fetchValueList($attribute_id, $duty, $categories)
+    {
+        $this->load->model('catalog/attributico');
+
+        $values1 = !$categories ? $this->model_catalog_attributico->getDutyValues($attribute_id) : [];
+        $values2 = !$duty ? $this->model_catalog_attributico->getAttributeValues($attribute_id, $categories) : [];
+        // $values = $duty ? $this->model_catalog_attributico->getDutyValues($attribute_id) : $this->model_catalog_attributico->getAttributeValues($attribute_id, $categories);
+
+        if (!$duty && !$categories) {
+            $values = [];
+            foreach ($values1 as $key => $value) {
+                $values[$key] = $value;
+            }
+            foreach ($values2 as $key => $value) {
+                $values[$key] = array_merge($values[$key], $value);
+            }
+        } else if ($duty) {
+            $values = $values1;
+        } else {
+            $values = $values2;
+        }
+
+        foreach ($values as $key => $value) {
+            $values[$key] = array_unique($value, SORT_REGULAR);
+            array_multisort($values[$key], SORT_REGULAR);
+        }
+        return $values;
     }
 
     private function makeValuesSelect($values, $view_mode, $attribute_id, $language_id, $attribute_row = '')
@@ -609,7 +640,7 @@ class ControllerModuleAttributico extends Controller
             ['key' => 'overwrite', 'value' => 'overwrite', 'title' => $this->language->get('text_duty')],
             ['key' => 'ifempty', 'value' => 'ifempty', 'title' => $this->language->get('text_duty_only')],
         ];
-        $options = $this->makeOptionList($method_options, $this->config->get('attributico_product_text'), '', $option_style);  
+        $options = $this->makeOptionList($method_options, $this->config->get('attributico_product_text'), '', $option_style);
         $select .= $options;
         $select .= "</select>";
 
@@ -773,7 +804,7 @@ class ControllerModuleAttributico extends Controller
 
     private function makeOptionList($options, $default_value, $title0 = '', $style = '')
     {
-        $option_list = $title0 ? "<option key='{0}' value='{0}'>{$title0}</option>" : '';        
+        $option_list = $title0 ? "<option key='{0}' value='{0}'>{$title0}</option>" : '';
         foreach ($options as $option) {
             $selected = $option['value'] === $default_value ? 'selected' : '';
             $key = isset($option['key']) ? $option['key'] : '';
@@ -862,7 +893,7 @@ class ControllerModuleAttributico extends Controller
         ];
         $statuses = $this->makeOptionList($status_options, $info['status']);
 
-        $values = $duty ? $this->model_catalog_attributico->getDutyValues($attribute_id) : $this->model_catalog_attributico->getAttributeValues($attribute_id, $categories);
+        $values = $this->fetchValueList($attribute_id, $duty, $categories);
 
         $select = $this->makeValuesSelect($values[$language_id], $view_mode, $attribute_id, $language_id, $attribute_row);
 
@@ -878,7 +909,7 @@ class ControllerModuleAttributico extends Controller
                         <div class='panel-body'>
                             <div class='form-group'>
                                 <label class='col-sm-2 control-label' for='value-text'>{$language->get('entry_attribute_value')}</label>
-                                <div class='col-sm-10'>   
+                                <div class='col-sm-10'>
                                     " . $select . "
                                     <textarea class='form-control' id='value-text' name='text'>{$text}</textarea>
                                 </div>
@@ -896,7 +927,7 @@ class ControllerModuleAttributico extends Controller
                                 <div class='col-sm-7 col-md-7 col-xs-12'>
                                     <div class='form-group'>
                                         <label class='control-label' for='tooltip'>{$language->get('label_tooltip')}<span data-toggle='tooltip'  title='{$language->get('help_tooltip')}'></span></label>
-                                        <textarea class='form-control' rows='5' name='tooltip' id='tooltip' 
+                                        <textarea class='form-control' rows='5' name='tooltip' id='tooltip'
                                         placeholder='{$language->get('placeholder_tooltip')}'>{$info['tooltip']}</textarea>
                                     </div>
                                 </div>
@@ -1089,7 +1120,7 @@ class ControllerModuleAttributico extends Controller
     }
 
     private function getAttributeValuesNodes($attribute_id, $language_id, $mode = 'template', $duty = "")
-    {        
+    {
         if (!isset($this->avcahe[$attribute_id])) {
             $this->avcahe[$attribute_id] = $this->model_catalog_attributico->getAttributeValues($attribute_id);
         }
@@ -1113,7 +1144,7 @@ class ControllerModuleAttributico extends Controller
                 foreach ($values as $index => $value) {
                     $nodeValues->addSibling(new Node(array("title" => $value, "key" => "value_" . (string) $attribute_id . "_" . $index, "unselectable" => false)));
                 }
-            }            
+            }
         }
         return $nodeValues->render();
     }
