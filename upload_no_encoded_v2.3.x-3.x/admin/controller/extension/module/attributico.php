@@ -380,7 +380,7 @@ class ControllerModuleAttributico extends Controller
         $this->assignData('attributico_multistore', 0);
         $this->assignData('attributico_replace_mode', 'substr');
 
-        $this->data['units'] = $this->getUnitOptions($this->config->get('config_language_id'), $this->language->get('not_selected'));
+        //$this->data['units'] = $this->getUnitOptions($this->config->get('config_language_id'), $this->language->get('not_selected'));
 
         if (version_compare(VERSION, '2.0.1', '>=')) {
             $this->data['header'] = $this->load->controller('common/header');
