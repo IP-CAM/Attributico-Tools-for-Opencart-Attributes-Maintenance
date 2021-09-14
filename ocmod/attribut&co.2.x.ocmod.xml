@@ -320,37 +320,7 @@
                             var attribute_id = $('[name="product_attribute\[' + index + '\]\[attribute_id\]"]').val();
                             makeValuesList(attribute_id, index);
                             product_attribute_id.push(attribute_id);
-                    });                   
-                }
-
-                function getAttributeInfo(attribute_id, row) {
-                    $.ajax({
-                      data: {
-                            'token': token,
-                            'user_token': user_token,
-                            'attribute_id': attribute_id
-                        },
-                        url: 'index.php?route=' + extension + 'module/attributico/getAttributeInfo',
-                        dataType: 'json',
-                        success: function (json) {
-                          let baseSelector = $('input[name="product_attribute[' + row + '][name]"]').parent()
-                          let outputInfo = $('<textarea>', {
-                              class: 'form-control',
-                              id: 'attribute-info' + row,
-                              disabled: 'disabled',
-                              style: 'resize:vertical; overflow:auto;',
-                              wrap:"off",
-                              cols:"30",
-                              rows:"6",
-                          });
-                          $('#attribute-info' + row).remove()
-                          $.each(json, function (language_id) {
-                            outputInfo.val($.trim(outputInfo.val() + '\n' + json[language_id].group_name));
-                            outputInfo.val($.trim(outputInfo.val() + '\n' + json[language_id].name))                            
-                            });
-                            baseSelector.append(outputInfo)
-                        }
-                    });
+                    });                  
                 }
 
                 // Event Category onchange
