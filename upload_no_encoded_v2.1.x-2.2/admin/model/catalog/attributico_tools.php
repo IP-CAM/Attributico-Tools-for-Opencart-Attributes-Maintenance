@@ -25,12 +25,14 @@ class ModelCatalogAttributicoTools extends Model
            // }
         }
 
+        set_time_limit(600);
         $this->db->query("CREATE TABLE " . DB_PREFIX . $basetable . "_relation (`new_id` INTEGER(11) NOT NULL AUTO_INCREMENT, " . $field .
             " INTEGER NOT NULL, PRIMARY KEY (`new_id`))");
-        $this->db->query("INSERT INTO " . DB_PREFIX . $basetable . "_relation (" . $field . ") SELECT " . $field . " FROM " . DB_PREFIX . $basetable);
+        $this->db->query("INSERT INTO " . DB_PREFIX . $basetable . "_relation (" . $field . ") SELECT " . $field . " FROM " . DB_PREFIX . $basetable 
+            . " ORDER BY " . $field ." ASC");
         $count_of_defrag = $this->db->countAffected();
 
-        foreach ($schema as $table) {
+        foreach ($schema as $table) {            
             $this->db->query("UPDATE " . $table['TABLE_NAME'] . " t, " . DB_PREFIX . $basetable . "_relation tr SET t." . $field . " = tr.new_id
                             WHERE t." . $field . " = tr." . $field);
         }
