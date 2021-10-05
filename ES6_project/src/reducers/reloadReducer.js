@@ -75,7 +75,7 @@ export default function reload(state = {}, action) {
                 targetNode: action.node,
                 activeNode: action.node,
                 altActiveNode: action.node.getParent(),
-                selfReload: action.node.getParent().isLazy() // TODO почему то срабатывает на добавлении атрибута
+                selfReload: action.node.isTemplate() || action.node.isValue() // TODO почему то срабатывает на добавлении атрибута
             }
         case COPY_NODE:
             return {

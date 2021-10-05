@@ -850,7 +850,7 @@ class ControllerModuleAttributico extends Controller
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($acceptedTitle));
     }
-
+    // Pro fuction for value form
     public function getAttributeValueInfo()
     {
         $language_id = isset($this->request->get['language_id']) ? $this->request->get['language_id'] : $this->config->get('config_language_id');
