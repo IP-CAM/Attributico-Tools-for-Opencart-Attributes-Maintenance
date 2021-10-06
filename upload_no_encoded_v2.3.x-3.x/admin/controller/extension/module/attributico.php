@@ -5,7 +5,7 @@ require_once(DIR_SYSTEM . 'library/attributico/attributico.php');
 
 class ControllerModuleAttributico extends Controller
 {
-    const MODULE_VERSION =  'v3.1.8';
+    const MODULE_VERSION =  'v3.1.9';
     protected $data = array();
     private $error = array();
     private $debug_mode = false;
