@@ -2,15 +2,25 @@
 <modification>
     <name>Attributico</name>
     <code>attributico</code>
-    <version>3.1.9(oc v2.x)</version>
+    <version>3.1.7(oc v2.x)</version>
     <author>comtronics@mail.ru</author>
     <link>http://www.servenus.com</link>
-    
+
+    <file path="admin/language/*/common/menu.php">
+        <operation error="skip">
+            <search><![CDATA[// Text]]></search>
+            <add position="after"><![CDATA[$_['text_attributico']  = '<span> Attribut<b style="color: #2199C7;">&</b>co</span>';]]></add>
+        </operation>
+    </file>
     <file path="admin/controller/common/menu.php">
         <operation error="skip">
             <search><![CDATA[$data['order_recurring'] = $this->url->link('sale/recurring', 'token=' . $this->session->data['token'], 'SSL');]]></search>
             <add position="after"><![CDATA[$data['attributico'] = $this->url->link('module/attributico', 'token=' . $this->session->data['token'], 'SSL');]]></add>
-        </operation>        
+        </operation>
+        <operation>
+            <search><![CDATA[$data['text_dashboard'] = $this->language->get('text_dashboard');]]></search>
+            <add position="after"><![CDATA[$data['text_attributico'] = $this->language->get('text_attributico');]]></add>
+        </operation>
     </file>
     <file path="admin/controller/common/menu.php">
         <operation error="skip">
@@ -21,19 +31,28 @@
     <file path="admin/view/template/common/menu.tpl">
         <operation error="skip">
             <search><![CDATA[<li><a href="<?php echo $attribute_group; ?>"><?php echo $text_attribute_group; ?></a></li>]]></search>
-            <add position="after"><![CDATA[                
-                <li><a href="<?php echo $attributico; ?>"><i class="parent"></i><?php echo '<span> Attribut<b style="color: #2199C7;">&</b>co</span>'; ?></a></li>
-		    ]]></add>
+            <add position="after"><![CDATA[
+                <?php if(isset($text_attributico)) { ?>
+                    <li><a href="<?php echo $attributico; ?>"><i class="parent"></i> <span><?php echo $text_attributico; ?></span></a></li>
+		<?php } ?>
+            ]]>            </add>
         </operation>
     </file>
-    
+
+    <file path="admin/language/*/common/column_left.php">
+        <operation error="skip">
+            <search><![CDATA[// Text]]></search>
+            <add position="after"><![CDATA[$_['text_attributico']  = '<span> Attribut<b style="color: #2199C7;">&</b>co</span>';]]></add>
+        </operation>
+    </file>
+
     <file path="admin/controller/common/column_left.php">
         <operation error="skip">
             <search><![CDATA[if ($attribute) {]]></search>
             <add position="before"><![CDATA[
                 if ($this->user->hasPermission('access', 'extension/module/attributico')) {
                     $attribute[] = array(
-                        'name'	   => '<span> Attribut<b style="color: #2199C7;">&</b>co</span>',
+                        'name'	   => $this->language->get('text_attributico'),
                         'href'     => $this->url->link('extension/module/attributico', 'token=' . $this->session->data['token'], true),
                         'children' => array()
                     );
@@ -44,12 +63,10 @@
 
     <file path="admin/view/template/catalog/category_form.tpl">
         <operation>
-            <ignoreif><![CDATA[<li><a href="#tab-attribute" data-toggle="tab"><?php echo $tab_attribute; ?></a></li>]]></ignoreif>
             <search><![CDATA[<li><a href="#tab-design" data-toggle="tab"><?php echo $tab_design; ?></a></li>]]></search>
             <add position="after"><![CDATA[<li><a href="#tab-attribute" data-toggle="tab"><?php echo $tab_attribute; ?></a></li>]]></add>
         </operation>
         <operation>
-            <ignoreif><![CDATA[<div class="tab-pane" id="tab-attribute">]]></ignoreif>
             <search><![CDATA[</table>]]></search>
             <add position="after" offset="2"><![CDATA[
             <div class="tab-pane" id="tab-attribute">
@@ -140,8 +157,7 @@
                             remove_category_attribute = json.remove_category_attribute
 
                             $('#serv-panel').append(json.serv_panel) 
-                            $('#attach-attribute').html("<i class='fa fa-plus'></i> " + json.attach_category_attributes)
-                            
+
                             method = $('#method-view option:selected').val()  
                         
                             // Set attribute values display mode when start
@@ -179,7 +195,7 @@
                                 $.each(json, (key, attribute) => {
                                     if (!in_array(attribute['attribute_id'], product_attribute_id)) {
                                         var row = attribute_row;
-                                        addAttribute(attribute['attribute_id']); 
+                                        addAttribute(); 
                                         $('input[name="product_attribute[' + row + '][name]"]').val(attribute['name']); 
                                         $('input[name="product_attribute[' + row + '][attribute_id]"]').val(attribute['attribute_id']);
                                         $('#group-name' + row).remove()
@@ -245,7 +261,6 @@
                             'token': token,
                             'user_token': user_token,
                             'attribute_id': attribute_id,
-                            'attribute_row': attribute_row,
                             'view_mode': localStorage.getItem('display_attribute'),
                             'categories': $('input[id=\'filter-category\']').is(":checked") ? getSelectedCategories() : [],
                             'duty': $('input[id=\'filter-duty\']').is(":checked") ? 'true' : ''
@@ -304,7 +319,37 @@
                             makeValuesList(attribute_id, index);
                             product_attribute_id.push(attribute_id);
                     });                   
-                }                
+                }
+
+                function getAttributeInfo(attribute_id, row) {
+                    $.ajax({
+                      data: {
+                            'token': token,
+                            'user_token': user_token,
+                            'attribute_id': attribute_id
+                        },
+                        url: 'index.php?route=' + extension + 'module/attributico/getAttributeInfo',
+                        dataType: 'json',
+                        success: function (json) {
+                          let baseSelector = $('input[name="product_attribute[' + row + '][name]"]').parent()
+                          let outputInfo = $('<textarea>', {
+                              class: 'form-control',
+                              id: 'attribute-info' + row,
+                              disabled: 'disabled',
+                              style: 'resize:vertical; overflow:auto;',
+                              wrap:"off",
+                              cols:"30",
+                              rows:"6",
+                          });
+                          $('#attribute-info' + row).remove()
+                          $.each(json, function (language_id) {
+                            outputInfo.val($.trim(outputInfo.val() + '\n' + json[language_id].group_name));
+                            outputInfo.val($.trim(outputInfo.val() + '\n' + json[language_id].name))                            
+                            });
+                            baseSelector.append(outputInfo)
+                        }
+                    });
+                }
 
                 // Event Category onchange
                 $('body').on('change', 'input[name=\'product_category[]\'], select[name=\'main_category_id\']', function (e) {  
@@ -320,7 +365,7 @@
                 });
 
                 // Event apply value or template and set selected in textarea
-                function setSelectedValue() {
+                $('#attribute tbody').on('change', 'select', function() {
                     var select = $(this);
                     var textarea_val = select.next('textarea').val();
                     textarea_val = (textarea_val == '') ? textarea_val : textarea_val + splitter;                        
@@ -328,7 +373,7 @@
                         if (this.selectedIndex != 0) {
                             select.next('textarea').val(select.val());            
                             if (localStorage.getItem('filter-values') == 'duty') {               
-                                let row = select.attr("attribute_row") || select.next('textarea').attr("name").match(/[0-9]+/)[0];
+                                let row = select.next('textarea').attr("name").match(/[0-9]+/)[0];
                                 let attribute_id = select.attr("attribute_id")
                                 addAttributeDuty(attribute_id, row)
                             }
@@ -340,9 +385,7 @@
                             this.selectedIndex = 0
                         }
                     }
-                }
-                
-                $('#attribute tbody').on('change', 'select', setSelectedValue);                              
+                });                              
 
                 // Event change filter mode for attribute values
                 $('#serv-panel').on('change', 'input[type=\'radio\']', function () {
@@ -373,16 +416,6 @@
                 $('#serv-panel').on('change', '#method-view', () => {
                   method = $('#method-view option:selected').val()                  
                 });
-
-                // Event attach categories attributes 
-                $('#attach-attribute').on('click', () => {
-                    let categories = getSelectedCategories()                                    
-                    if (categories) {
-                        for (let category_id of categories) {                          
-                            newCategory(category_id)
-                        }
-                    }                                   
-                });
             ]]>            </add>
         </operation>       
         <operation>
@@ -392,14 +425,12 @@
             ]]>            </add>
         </operation>
         <operation>
-            <ignoreif><![CDATA[let old_id = $('input[name=\'product_attribute[' + attribute_row + '][attribute_id]\']').val();]]></ignoreif>
             <search><![CDATA[$('input[name=\'product_attribute[' + attribute_row + '][name]\']').val(item['label']);]]></search>
             <add position="before"><![CDATA[
                 let old_id = $('input[name=\'product_attribute[' + attribute_row + '][attribute_id]\']').val();                
             ]]>            </add>
         </operation>
         <operation>
-            <ignoreif><![CDATA[let index = product_attribute_id.indexOf(old_id)]]></ignoreif>
             <search><![CDATA[$('input[name=\'product_attribute[' + attribute_row + '][attribute_id]\']').val(item['value']);]]></search>
             <add position="after"><![CDATA[
                 let index = product_attribute_id.indexOf(old_id)  
@@ -427,14 +458,6 @@
             ]]>            </add>
         </operation>
         <operation>
-            <search><![CDATA[<td class="text-left"><?php echo $entry_attribute; ?></td>]]></search>
-            <add position="replace"><![CDATA[
-                <td class="text-left"><?php echo $entry_attribute; ?>
-                    <button type='button' id='attach-attribute' class='btn btn-success pull-right'><i class='fa fa-plus'></i> <?php echo $tab_attribute; ?></button>
-                </td>
-            ]]>            </add>
-        </operation>
-        <operation>
             <search><![CDATA[<td class="text-left"><?php echo $entry_text; ?></td>]]></search>
             <add position="replace"><![CDATA[
                 <td class="text-left">
@@ -444,26 +467,6 @@
                 </td>
             ]]>            </add>
         </operation>
-        <operation error="skip">
-            <search><![CDATA[<td class="text-left"><button type="button" onclick="$('#attribute-row<?php echo $attribute_row; ?>').remove();" data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>]]></search>
-            <add position="replace"><![CDATA[<td class="text-left"><button type="button" onclick="product_attribute_id = product_attribute_id.filter(item=>item !== $('#attribute-row<?php echo $attribute_row; ?>').find('[name *= attribute_id]').val()); $('#attribute-row<?php echo $attribute_row; ?>').remove(); " data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>
-            ]]></add>
-        </operation> 
-        <operation error="skip">
-            <search><![CDATA[html += '  <td class="text-left"><button type="button" onclick="$(\'#attribute-row' + attribute_row + '\').remove();" data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>';]]></search>
-            <add position="replace"><![CDATA[html += '  <td class="text-left"><button type="button" onclick="product_attribute_id = product_attribute_id.filter(item=>item !== $(\'#attribute-row' + attribute_row + '\').find(\'[name *= attribute_id]\').val()); $(\'#attribute-row' + attribute_row + '\').remove(); " data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>'
-            ]]></add>
-        </operation> 
-        <operation error="skip">
-            <search><![CDATA[function addAttribute() {]]></search> 
-            <add position="replace"><![CDATA[function addAttribute(attribute_id='""') {
-            ]]></add>
-        </operation>     
-        <operation error="skip">
-            <search><![CDATA[<input type="hidden" name="product_attribute[' + attribute_row + '][attribute_id]" value="" /></td>';]]></search> 
-            <add position="replace"><![CDATA[<input type="hidden" name="product_attribute[' + attribute_row + '][attribute_id]" value=' + attribute_id  + ' /></td>';
-            ]]></add>
-        </operation> 
     </file>
     <file path="admin/view/template/catalog/product_form.tpl">
         <operation error="skip">
@@ -472,13 +475,6 @@
         </operation>
     </file>
     <file path="admin/controller/catalog/product.php"> 
-        <operation error="skip">
-            <ignoreif><![CDATA[$$data['button_edit'] = $this->language->get('button_edit');]]></ignoreif>
-            <search><![CDATA[$data['button_save'] = $this->language->get('button_save');]]></search>
-            <add position="before"><![CDATA[
-		        $data['button_edit'] = $this->language->get('button_edit');                
-            ]]></add>
-        </operation>
         <operation error="skip">
             <search><![CDATA[$data['footer'] = $this->load->controller('common/footer');]]></search>
             <add position="after"><![CDATA[
@@ -492,28 +488,19 @@
             ]]></add>
         </operation>      
         <operation error="skip">
-            <ignoreif><![CDATA[
-		        $attribute_info = $this->model_catalog_attributipro->getAttributeInfo($product_attribute['attribute_id'], $this->config->get('config_language_id'));
-                ]]>
-            </ignoreif>
             <search><![CDATA[$attribute_info = $this->model_catalog_attribute->getAttribute($product_attribute['attribute_id']);]]></search>
             <add position="replace"><![CDATA[
 		        $attribute_info = $this->model_catalog_attributico->getAttributeInfo($product_attribute['attribute_id'], $this->config->get('config_language_id'));
-                ]]>
-            </add>
+            ]]>            </add>
         </operation>
         <operation error="skip">
-            <ignoreif><![CDATA[,'sort_order' => $attribute_info['sort_order'],]]></ignoreif>
             <search><![CDATA['product_attribute_description' => $product_attribute['product_attribute_description']]]></search>
             <add position="after"><![CDATA[
 		        ,'sort_order' => $attribute_info['sort_order'],
 				'group_name'  => $attribute_info['group_name'],
-                'product_id' => isset($this->request->get['product_id']) ? $this->request->get['product_id'] : 0,
-                ]]>
-            </add>
+            ]]>            </add>
         </operation>
         <operation error="skip">
-            <ignoreif><![CDATA[array_multisort($sort_order, SORT_ASC, $data['product_attributes']);]]></ignoreif>
             <search><![CDATA[// Options]]></search>
             <add position="before"><![CDATA[
 		        $sort_order = array();
@@ -521,7 +508,7 @@
                     $sort_order[$key] = $value['sort_order'];
                 }
                 array_multisort($sort_order, SORT_ASC, $data['product_attributes']);
-            ]]></add>
+            ]]>            </add>
         </operation>
     </file>
     <file path="admin/model/catalog/attribute.php">
