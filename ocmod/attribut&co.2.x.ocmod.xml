@@ -486,6 +486,7 @@
             ]]></add>
         </operation>  
         <operation error="skip">
+            <ignoreif><![CDATA[$this->load->model('catalog/attributico');]]></ignoreif>
             <search><![CDATA[$this->load->model('catalog/attribute');]]></search>
             <add position="after"><![CDATA[
 		        $this->load->model('catalog/attributico');                
@@ -524,12 +525,14 @@
             ]]></add>
         </operation>
     </file>
-    <file path="admin/model/catalog/attribute.php">
+    <file path="admin/model/catalog/attribute.php">        
         <operation>
+            <ignoreif><![CDATA[$this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET name = '" . $this->db->escape($value['name'])]]></ignoreif>
             <search index='0'><![CDATA[$this->db->query("DELETE FROM " . DB_PREFIX . "attribute_description WHERE attribute_id = '" . (int)$attribute_id . "'");]]></search>
             <add position="replace"><![CDATA[]]></add>
         </operation>
         <operation>
+            <ignoreif><![CDATA[$this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET name = '" . $this->db->escape($value['name'])]]></ignoreif>
             <search index='1'><![CDATA[
                 $this->db->query("INSERT INTO " . DB_PREFIX . "attribute_description SET attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language_id . "', name = '" . $this->db->escape($value['name']) . "'");
             ]]>            </search>
