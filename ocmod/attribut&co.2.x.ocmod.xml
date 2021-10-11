@@ -386,6 +386,7 @@
             ]]>            </add>
         </operation>       
         <operation>
+            <ignoreif><![CDATA[html += '  <td class="text-left" style="width: 5%;"><input type="text" value="" class="form-control" readonly="true"/></td>';]]></ignoreif>
             <search><![CDATA[html += '  <td class="text-left">';]]></search>
             <add position="before"><![CDATA[
                 html += '  <td class="text-left" style="width: 5%;"><input type="text" value="" class="form-control" readonly="true"/></td>';
@@ -404,7 +405,9 @@
             <add position="after"><![CDATA[
                 let index = product_attribute_id.indexOf(old_id)  
                 if (~index) {
-                    product_attribute_id[index] = item.value;
+                  product_attribute_id[index] = item.value;
+                } else {
+                  product_attribute_id.push(item['value']);
                 }      
 		        makeValuesList(item.value, attribute_row);
                 addAttributeDuty(item.value, attribute_row);
@@ -412,21 +415,21 @@
                 $('input[name=\'product_attribute[' + attribute_row + '][name]\']').parent().prepend('<label id=group-name' + attribute_row + '>' + item.category + '</label>')
             ]]>            </add>
         </operation>
-        <operation>
+        <operation error="skip">
             <search><![CDATA[<td class="text-left"><?php echo $entry_attribute; ?></td>]]></search>
             <add position="after"><![CDATA[<td class="text-left"><?php echo $entry_sort_order; ?></td>]]></add>
         </operation>
-        <operation>
+        <operation error="skip">
             <search><![CDATA[<td class="text-left" style="width: 40%;">]]></search>
             <add position="replace"><![CDATA[<td class="text-left" style="width: 40%;"><label id="group-name<?php echo $attribute_row; ?>"><?php echo $product_attribute['group_name']; ?></label>                        
             ]]>            </add>
         </operation>
-        <operation>
+        <operation error="skip">
             <search><![CDATA[<td class="text-left"><?php foreach ($languages as $language) { ?>]]></search>
             <add position="before"><![CDATA[<td class="text-left" style="width: 5%;"><input type="text" value="<?php echo $product_attribute['sort_order']; ?>" class="form-control" readonly="true"/></td>
             ]]>            </add>
         </operation>
-        <operation>
+        <operation error="skip">
             <search><![CDATA[<td class="text-left"><?php echo $entry_attribute; ?></td>]]></search>
             <add position="replace"><![CDATA[
                 <td class="text-left"><?php echo $entry_attribute; ?>
@@ -434,7 +437,7 @@
                 </td>
             ]]>            </add>
         </operation>
-        <operation>
+        <operation error="skip">
             <search><![CDATA[<td class="text-left"><?php echo $entry_text; ?></td>]]></search>
             <add position="replace"><![CDATA[
                 <td class="text-left">
@@ -467,6 +470,7 @@
     </file>
     <file path="admin/view/template/catalog/product_form.tpl">
         <operation error="skip">
+            <ignoreif><![CDATA[newCategory(item['value']);]]></ignoreif>
             <search><![CDATA[+ item['label'] + '<input type="hidden" name="product_category[]" value="' + item['value'] + '" /></div>');]]></search>
             <add position="after"><![CDATA[newCategory(item['value']);]]></add>
         </operation>
