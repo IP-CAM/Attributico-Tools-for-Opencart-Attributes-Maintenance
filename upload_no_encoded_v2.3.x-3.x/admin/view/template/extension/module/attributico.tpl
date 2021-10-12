@@ -935,6 +935,7 @@
     const token = '<?php echo $token; ?>';
     const user_token = '<?php echo $user_token; ?>';
     const extension = '<?php echo $extension; ?>'; // для v2.3 другая структура каталогов
+    const route = '<?php echo $route; ?>';
     const edit = '<?php echo $edit; ?>'; // для v1.5 другая функция входа в товар    
     const textConfirm = <?php echo json_encode($text_confirm) ?>;
     const FILTERSETTINGS = <?php echo json_encode($filter_settings) ?>;

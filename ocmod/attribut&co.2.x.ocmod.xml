@@ -414,17 +414,15 @@
                 $('#group-name' + attribute_row).remove()
                 $('input[name=\'product_attribute[' + attribute_row + '][name]\']').parent().prepend('<label id=group-name' + attribute_row + '>' + item.category + '</label>')
             ]]>            </add>
-        </operation>
+        </operation>        
         <operation error="skip">
-            <search><![CDATA[<td class="text-left"><?php echo $entry_attribute; ?></td>]]></search>
-            <add position="after"><![CDATA[<td class="text-left"><?php echo $entry_sort_order; ?></td>]]></add>
-        </operation>
-        <operation error="skip">
+            <ignoreif><![CDATA[<label id="group-name<?php echo $attribute_row; ?>"><?php echo $product_attribute['group_name']; ?></label>]]></ignoreif>
             <search><![CDATA[<td class="text-left" style="width: 40%;">]]></search>
             <add position="replace"><![CDATA[<td class="text-left" style="width: 40%;"><label id="group-name<?php echo $attribute_row; ?>"><?php echo $product_attribute['group_name']; ?></label>                        
             ]]>            </add>
         </operation>
         <operation error="skip">
+            <ignoreif><![CDATA[<td class="text-left" style="width: 5%;"><input type="text" value="<?php echo $product_attribute['sort_order']; ?>" class="form-control" readonly="true"/></td>]]></ignoreif>
             <search><![CDATA[<td class="text-left"><?php foreach ($languages as $language) { ?>]]></search>
             <add position="before"><![CDATA[<td class="text-left" style="width: 5%;"><input type="text" value="<?php echo $product_attribute['sort_order']; ?>" class="form-control" readonly="true"/></td>
             ]]>            </add>
@@ -435,6 +433,7 @@
                 <td class="text-left"><?php echo $entry_attribute; ?>
                     <button type='button' id='attach-attribute' class='btn btn-success pull-right'><i class='fa fa-plus'></i> <?php echo $tab_attribute; ?></button>
                 </td>
+                <td class="text-left"><?php echo $entry_sort_order; ?></td>
             ]]>            </add>
         </operation>
         <operation error="skip">
