@@ -1,7 +1,7 @@
 <?php
 
 // Heading
-$_['heading_title'] = '<span> Attribut<b style="color: #2199C7;">&</b>co</span>';
+$_['heading_title'] = '<span> Attribut<b style="color: #2199C7;">&</b>pro</span>';
 $_['button_check_for_updates'] = 'Check for updates';
 
 // Text
@@ -9,7 +9,7 @@ $_['text_success'] = 'Success: You have modified module!';
 $_['text_module'] = 'Modules';
 $_['text_edit'] = 'Attributes, it is easy!';
 $_['text_overwrite'] = 'Overwrite';
-$_['text_overwrite_if_empty'] = 'Overwrite if empty';
+$_['text_overwrite_if_empty'] = 'If empty';
 $_['text_insert'] = 'Insert';
 $_['text_clear'] = 'Clear';
 $_['text_keep'] = 'Keep';
@@ -218,14 +218,20 @@ $_['help_children'] = 'It enables or disables the display of Templates, Values o
 $_['help_nosettings'] = 'Settings are not necessary.';
 $_['help_about_blank'] = 'Open the product page in a new window. Attention! You take responsibility for the integrity of the data.';
 $_['help_lazyload'] = 'Templates and values are not loaded at the time of loading of the tree, and loaded on demand.';
-$_['help_group_options'] = 'Select the groups for which you want to perform this task.';
 $_['help_defrag_options'] = 'You can undo the defragmentation of Groups or Attributes by uncheckmark from the corresponding item.';
 $_['help_cache'] = 'When loading attribute trees, the data will be retrieved from the file cache corresponding to the tree.';
-$_['help_categories_options'] = 'Select the appropriate items to build a set of attributes for the categories you selected and place the attributes in the products. The placement will be done in accordance with the settings "Adding Attribute Values to the Product"';
+$_['help_filter_required'] = 'Use the filter. ';
+$_['help_group_options'] = $_['help_filter_required'] . 'Select the groups for which you want to perform this task.';
+$_['help_categories_options'] = $_['help_filter_required'] . 'If you only need to arrange ready-made attributes, do not mark the Generate... item. Check the settings Adding an attribute value to the product';
+$_['help_replace_options'] = $_['help_filter_required'] . 'If groups or categories are not marked, then search and replace will be applied to all products.';
 $_['help_multistore'] = 'Show categories for all stories';
 $_['help_clone_options'] = 'You can undo the clone of Groups, Attributes or Attribute values by uncheckmark from the corresponding item.';
 $_['help_replace_substr'] = 'Find and replace all occurrences of the edited sample in the value names.';
 $_['help_replace_match'] = 'Find and replace the names of values that exactly match the sample being edited.';
+$_['help_tools_filter'] = 'Select the items to which you want to apply this action.';
+$_['help_splitter_search'] = 'Enter one or more splitters to search for. Invalid splitters will be ignored.';
+$_['help_splitter_replace'] = 'Enter a splitter to replace. The first valid splitter will be applied.';
+$_['help_splitter'] = 'Splitter between attribute values in case of multiple value (Value1/Value2/Value3). Letters, numbers, spaces, quotes and [ ] are invalid.';
 
 // Entry
 $_['entry_attribute_groups'] = 'Attribute Groups';
@@ -233,6 +239,7 @@ $_['entry_groups'] = 'Groups';
 $_['entry_templates'] = 'Templates';
 $_['entry_attribute_values'] = 'Attribute values';
 $_['entry_values'] = 'Values';
+$_['entry_attribute_value'] = 'Attribute value';
 $_['entry_flter_all'] = 'All';
 $_['entry_flter_category'] = 'Categories';
 $_['entry_flter_duty'] = 'Duties';
@@ -271,7 +278,8 @@ $_['error_not_category'] = 'Category not selected!';
 $_['error_not_attribute'] = 'Attribute not selected!';
 $_['error_not_info'] = 'Information is not available.';
 $_['error_free'] = 'Operation have not complete, because you have used free version.';
-$_['error_status'] = 'Module not activated! Activate the module in the Extensions-> Modules section.';
+$_['error_status'] = 'The module is not activated or the Database structure is broken! Activate the module (again) in the Extensions->Modules section.';
+$_['error_splitter'] = 'Invalid splitter.';
 
 // Tab
 $_['tab_general']           = 'Settings';
@@ -302,9 +310,12 @@ $_['settings_replace'] = 'Values update';
 // tools
 $_['button_play']  = 'Start task';
 $_['head_settings']  = 'Settings';
+$_['head_tools_filter']  = 'Filter';
 $_['head_command']  = 'Commands';
 $_['head_status']  = 'Status';
 $_['head_clone']  = 'Clone language';
+$_['head_batch']  = 'Splitter replacement';
+$_['head_case']  = 'Case change';
 $_['alert_warning']  = '<strong>Warning!</strong> Do not leave this page until the operation is complete.';
 $_['alert_success']  = '<strong>Success!</strong> Operation has been completed.';
 $_['alert_info']  = 'More features will be implemented in future versions.';
@@ -326,3 +337,33 @@ $_['message_clone_group'] = 'Cloned groups: ';
 $_['message_clone_value'] = 'Cloned values: ';
 $_['message_clone_error'] = 'Clone is impossible! ';
 $_['message_clone_duty'] = 'Cloned duty: ';
+$_['message_batch'] = 'Processed records: ';
+$_['label_splitter_search'] = 'Search for splitters';
+$_['label_splitter_replace'] = 'Replace with:';
+$_['label_upper_case'] = 'Upper case';
+$_['label_lower_case'] = 'Lower case';
+$_['placeholder_splitter_search'] = 'Enter one or more splitters to search for';
+$_['placeholder_splitter_replace'] = 'Enter a splitter to replace';
+
+// Form
+$_['form_title'] = 'Fill out the form';
+$_['error_required'] = 'This element cannot be empty';
+$_['help_duty'] = 'A duty template is a default value or set of attribute values. For a list of available values, Alt+Shift+Click';
+$_['placeholder_duty'] = 'Fill out the Duty Template';
+$_['label_image'] = 'Image';
+$_['label_tooltip'] = 'Description';
+$_['help_tooltip'] = 'A tooltip when you hover the cursor over the attribute or value';
+$_['placeholder_tooltip'] = 'Enter a description of the attribute';
+$_['label_icon'] = 'Icon';
+$_['help_icon'] = 'CSS class for the icon. For example: fa fa-pencil';
+$_['placeholder_icon'] = 'CSS class';
+$_['label_unit'] = 'Units';
+$_['help_unit'] = 'Units of measurement for the values of this attribute';
+$_['not_selected'] = 'Not selected';
+$_['label_status'] = 'Status';
+$_['help_status'] = 'Managing attribute or value visibility on the product page and in the filter';
+$_['status_on'] = 'Enabled';
+$_['status_off'] = 'Disabled';
+$_['label_url'] = 'SEO URL';
+$_['help_url'] = 'You can enter a link to the filter landing page or any page for linking. If you leave it empty, the link will be formed automatically.';
+$_['placeholder_url'] = 'Enter the link to the desired page';
