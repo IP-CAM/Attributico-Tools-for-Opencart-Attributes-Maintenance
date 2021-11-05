@@ -84,7 +84,7 @@
                                             <legend><?php echo $settings_general ?></legend>
                                             <div class="form-group">
                                                 <div class="row">
-                                                    <label class="col-sm-4 control-label" for="input-attributico_splitter"><?php echo $entry_splitter; ?></label>
+                                                <label class="col-sm-4 control-label" for="input-attributico_splitter"><span data-toggle="tooltip" title="<?php echo $help_splitter; ?>"><?php echo $entry_splitter; ?></span></label>
                                                     <div class="col-sm-8">
                                                         <input type="text" name="attributico_splitter" value="<?php echo $attributico_splitter; ?>" class="form-control" id="input-attributico_splitter" />
                                                     </div>
@@ -372,24 +372,24 @@
                                             <div class="form-group">
                                                 <div class="radio">
                                                     <label class="control-label">
-                                                        <?php if ($attributico_replace_mode == 'substr') { ?>        
-                                                            <input type="radio" name="attributico_replace_mode" value="substr" checked="checked"/>
-                                                        <?php } else { ?> 
-                                                            <input type="radio" name="attributico_replace_mode" value="substr"/>
-                                                        <?php } ?>  
-                                                        <span data-toggle="tooltip" title="<?php echo $help_replace_substr;?>"><?php echo $text_replace_substr; ?>
-                                                        </span>                                                        
-                                                    </label>                                                
-                                                </div>                
+                                                        <?php if ($attributico_replace_mode == 'substr') { ?>
+                                                            <input type="radio" name="attributico_replace_mode" value="substr" checked="checked" />
+                                                        <?php } else { ?>
+                                                            <input type="radio" name="attributico_replace_mode" value="substr" />
+                                                        <?php } ?>
+                                                        <span data-toggle="tooltip" title="<?php echo $help_replace_substr; ?>"><?php echo $text_replace_substr; ?>
+                                                        </span>
+                                                    </label>
+                                                </div>
                                                 <div class="radio">
                                                     <label class="control-label">
-                                                        <?php if ($attributico_replace_mode == 'match') { ?>        
-                                                            <input type="radio" name="attributico_replace_mode" value="match" checked="checked"/>
-                                                        <?php } else { ?> 
-                                                            <input type="radio" name="attributico_replace_mode" value="match"/>
+                                                        <?php if ($attributico_replace_mode == 'match') { ?>
+                                                            <input type="radio" name="attributico_replace_mode" value="match" checked="checked" />
+                                                        <?php } else { ?>
+                                                            <input type="radio" name="attributico_replace_mode" value="match" />
                                                         <?php } ?>
-                                                        <span data-toggle="tooltip" title="<?php echo $help_replace_match;?>"><?php echo $text_replace_match;?>
-                                                        </span>                              
+                                                        <span data-toggle="tooltip" title="<?php echo $help_replace_match; ?>"><?php echo $text_replace_match; ?>
+                                                        </span>
                                                     </label>
                                                 </div>
                                             </div>
@@ -515,7 +515,7 @@
                                     <?php } ?>
                                 </div>
                             </div>
-                            <div class="tab-pane" id="tab-tools">
+                            <div class="tab-pane" id="tab-tools">                            
                                 <div class="row">
                                     <div class="col-lg-2 col-md-3" id="column-1">
                                         <ul class="nav nav-pills nav-stacked">
@@ -523,9 +523,9 @@
                                             <li><a href="#tab-scavengery" data-toggle="pill"> <?php echo $tab_scavengery; ?> </a></li>
                                             <li><a href="#tab-defrag" data-toggle="pill"> <?php echo $tab_defrag; ?></a></li>
                                             <li><a href="#tab-sorting" data-toggle="pill"><?php echo $tab_sorting; ?> </a></li>
-                                            <li><a href="#tab-detached" data-toggle="pill"> <?php echo $tab_detached; ?></a></li>
-                                            <li><a href="#tab-deduplicate" data-toggle="pill"><?php echo $tab_deduplicate; ?> </a></li>
-                                            <li><a href="#tab-category-attributes" data-toggle="pill"><?php echo $tab_category_attributes; ?> </a></li>
+                                            <li data-filter='["group"]'><a href="#tab-detached" data-toggle="pill"> <?php echo $tab_detached; ?></a></li>
+                                            <li data-filter='["group"]'><a href="#tab-deduplicate" data-toggle="pill"><?php echo $tab_deduplicate; ?> </a></li>
+                                            <li data-filter='["category"]'><a href="#tab-category-attributes" data-toggle="pill"><?php echo $tab_category_attributes; ?> </a></li>
                                             <li><a href="#tab-cache" data-toggle="pill"> <?php echo $tab_cache; ?> </a></li>
                                             <li><a href="#tab-standart" data-toggle="pill"> <?php echo $tab_standart; ?></a></li>
                                         </ul>
@@ -533,6 +533,32 @@
                                     <hr class="hidden-lg hidden-md">
                                     <div class="col-lg-10 col-md-9" style="border-left: 1px solid #eee;" id="column-2">
                                         <div class="alert alert-danger" role="alert"> <?php echo $alert_backup; ?>
+                                        </div>
+                                        <div class="table-responsive" id="filter-tools" hidden="hidden">
+                                            <table class="table table-striped table-bordered">
+                                                <thead>
+                                                    <tr>                                                   
+                                                        <th colspan="2" ><i class="fa fa-filter"></i>
+                                                            <label class="control-label"><span data-toggle="tooltip" title="<?php echo $help_tools_filter; ?>"><?php echo $head_tools_filter; ?></span></label> 
+                                                            <button class="btn btn-info pull-right" type="button" data-toggle="collapse" data-target="#filter-tools-collapse" aria-expanded="false" aria-controls="filter-tools-collapse">
+                                                                <span class="caret"></span>
+                                                            </button>                                                            
+                                                        </th>       
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="collapse" id="filter-tools-collapse">                                                        
+                                                    <tr>
+                                                        <td class="left filter-tools-group" style="width: 50%;" hidden="hidden">
+                                                            <div id="detach_tree<?php echo $config_language; ?>" name="detach_tree<?php echo $config_language; ?>" class="options"></div>
+                                                            <div class="dialog-options" id="options_detach_tree<?php echo $config_language; ?>" title="<?php echo $text_Options[$language['language_id']]; ?>"></div>
+                                                        </td>
+                                                        <td class="left filter-tools-category" hidden="hidden">
+                                                            <div id="category_check_tree<?php echo $config_language; ?>" name="category_check_tree<?php echo $config_language; ?>" class="options"></div>
+                                                            <div class="dialog-options" id="options_category_check_tree<?php echo $config_language; ?>" title="<?php echo $text_Options[$language['language_id']]; ?>"></div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
                                         <div class="tab-content">
                                             <div class="tab-pane active" id="tab-empty">
@@ -681,9 +707,7 @@
                                                         </thead>
                                                         <tbody>
                                                             <tr>
-                                                                <td>
-                                                                    <div id="detach_tree<?php echo $config_language; ?>" name="detach_tree<?php echo $config_language; ?>" class="options"></div>
-                                                                    <div class="dialog-options" id="options_detach_tree<?php echo $config_language; ?>" title="<?php echo $text_Options[$language['language_id']]; ?>"></div>
+                                                                <td>                                                    
                                                                 </td>
                                                                 <td><button type="button" onclick=" return tools('detached')" data-toggle="tooltip" title="<?php echo $button_play; ?>" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
                                                                 <td>
@@ -713,9 +737,7 @@
                                                         </thead>
                                                         <tbody>
                                                             <tr>
-                                                                <td>
-                                                                    <div id="deduplicate_tree<?php echo $config_language; ?>" name="deduplicate_tree<?php echo $config_language; ?>" class="options"></div>
-                                                                    <div class="dialog-options" id="options_deduplicate_tree<?php echo $config_language; ?>" title="<?php echo $text_Options[$language['language_id']]; ?>"></div>
+                                                                <td>                                                                    
                                                                 </td>
                                                                 <td><button type="button" onclick=" return tools('deduplicate')" data-toggle="tooltip" title="<?php echo $button_play; ?>" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
                                                                 <td>
@@ -757,18 +779,11 @@
                                                                         </label>
                                                                     </div>
                                                                 </td>
-                                                                <td></td>
-                                                                <td></td>
-                                                            <tr>
-                                                                <td>
-                                                                    <div id="category_check_tree<?php echo $config_language; ?>" name="category_check_tree<?php echo $config_language; ?>" class="options"></div>
-                                                                    <div class="dialog-options" id="options_category_check_tree<?php echo $config_language; ?>" title="<?php echo $text_Options[$language['language_id']]; ?>"></div>
-                                                                </td>
                                                                 <td><button type="button" onclick=" return tools('createcategory')" data-toggle="tooltip" title="<?php echo $button_play; ?>" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
                                                                 <td>
                                                                     <div class="ajax-loader"><img class="loader-img" src="view/javascript/fancytree/skin-win7/loading.gif" style="display:none;" /></div>
                                                                     <div class="task-complete"><img class="task-complete-img" src="view/javascript/fancytree/skin-custom/accept.png" style="display:none;" /> </div>
-                                                                </td>
+                                                                </td>                                                            
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -805,125 +820,320 @@
                                                 </div>
                                             </div>
                                             <div class="tab-pane" id="tab-standart">
-                                                <div class="table-responsive">
-                                                    <table class="table table-bordered">
-                                                        <colgroup>
-                                                            <col class="col-xs-12 col-md-10">
-                                                            <col class="col-xs-4 col-md-1">
-                                                            <col class="col-xs-4 col-md-1">
-                                                        </colgroup>
-                                                        <thead>
-                                                            <tr>
-                                                                <th><label class="control-label"><span><?php echo $head_settings; ?></span></label>
-                                                                </th>
-                                                                <th><?php echo $head_command; ?></th>
-                                                                <th><?php echo $head_status; ?></th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>
-                                                                    <div class="options">
-                                                                        <div>
-                                                                            <label class="control-label"><span data-toggle="tooltip" title="<?php echo $help_clone_options; ?>"><?php echo $head_clone; ?></span></label>
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <div class="col-sm-6">
-                                                                                <label class="checkbox-inline" for="clone-language-group">
-                                                                                    <input type="checkbox" name="clone-language-group" id="clone-language-group" value="group" checked="checked">
-                                                                                    <?php echo $entry_groups; ?>
-                                                                                </label>
-                                                                                <label class="checkbox-inline" for="clone-language-attribute">
-                                                                                    <input type="checkbox" name="clone-language-attribute" id="clone-language-attribute" value="attribute" checked="checked">
-                                                                                    <?php echo $entry_attributes; ?>
-                                                                                </label>
-                                                                                <label class="checkbox-inline" for="clone-language-value">
-                                                                                    <input type="checkbox" name="clone-language-value" id="clone-language-value" value="value" checked="checked">
-                                                                                    <?php echo $entry_values; ?>
-                                                                                </label>
-                                                                                <label class="checkbox-inline" for="clone-language-duty">
-                                                                                    <input type="checkbox" name="clone-language-duty" id="clone-language-duty" value="duty" checked="checked">
-                                                                                    <?php echo $entry_duties; ?>
-                                                                                </label>
-                                                                            </div>
-                                                                            <div class="col-sm-6">
-                                                                                <label class="radio-inline">
-                                                                                    <input type="radio" name="clone-language-mode" value="insert" checked="checked" />
-                                                                                    <?php echo $text_insert; ?>
-                                                                                </label>
-                                                                                <label class="radio-inline">
-                                                                                    <input type="radio" name="clone-language-mode" value="overwrite" />
-                                                                                    <?php echo $text_overwrite; ?>
-                                                                                </label>
-                                                                                <label class="radio-inline">
-                                                                                    <input type="radio" name="clone-language-mode" value="overifempty" />
-                                                                                    <?php echo $text_overwrite_if_empty; ?>
-                                                                                </label>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <div class="col-sm-6">
-                                                                                <label class="control-label" for="clone-language-source"><?php echo $entry_from; ?></label>
-                                                                                <select name="clone-language-source" id="clone-language-source" class="form-control">
-                                                                                    <?php foreach ($languages as $language) { ?>
-                                                                                        <?php if ($language['language_id'] == $config_language) { ?>
-                                                                                            <option value="<?php echo $language['language_id']; ?>" selected="selected"><?php echo $language['name']; ?></option>
-                                                                                        <?php } else { ?>
-                                                                                            <option value="<?php echo $language['language_id']; ?>"><?php echo $language['name']; ?></option>
-                                                                                        <?php } ?>
-                                                                                    <?php } ?>
-                                                                                </select>
-                                                                            </div>
-                                                                            <div class="col-sm-6">
-                                                                                <label class="control-label" for="clone-language-target"><?php echo $entry_to; ?></label>
-                                                                                <select name="clone-language-target" id="clone-language-target" class="form-control">
-                                                                                    <?php foreach ($languages as $language) { ?>
-                                                                                        <?php if ($language['language_id'] == $config_language) { ?>
-                                                                                            <option value="<?php echo $language['language_id']; ?>" selected="selected"><?php echo $language['name']; ?></option>
-                                                                                        <?php } else { ?>
-                                                                                            <option value="<?php echo $language['language_id']; ?>"><?php echo $language['name']; ?></option>
-                                                                                        <?php } ?>
-                                                                                    <?php } ?>
-                                                                                </select>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td><button type="button" onclick=" return tools('clone')" data-toggle="tooltip" title="<?php echo $button_play; ?>" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
-                                                                <td>
-                                                                    <div class="ajax-loader"><img class="loader-img" src="view/javascript/fancytree/skin-win7/loading.gif" style="display:none;" /></div>
-                                                                    <div class="task-complete"><img class="complete-img" src="view/javascript/fancytree/skin-custom/accept.png" style="display:none;" /></div>
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                                <div class="alert alert-info" role="alert"> <?php echo $alert_info; ?>
+                                                <div id="tabs-standart">
+                                                    <ul class="nav nav-tabs">
+                                                        <li><a href="#tab-clone" data-toggle="tab"><i class="fa fa-clone"></i>
+                                                                <?php echo $head_clone; ?> </a></li>
+                                                        <li data-filter='["group","category"]'><a href="#tab-batch" data-toggle="tab"><i class="fa fa-ellipsis-h"></i>
+                                                                <?php echo $head_batch; ?> </a></li>
+                                                        <li data-filter='["group","category"]'><a href="#tab-case" data-toggle="tab"><i class="fa fa-font"></i>
+                                                                <?php echo $head_case; ?> </a></li>               
+                                                    </ul>
+                                                    <div class="tab-content">
+                                                        <div class="tab-pane" id="tab-clone">
+                                                            <div class="table-responsive">
+                                                                <table class="table table-bordered">
+                                                                    <colgroup>
+                                                                        <col class="col-xs-12 col-md-10">
+                                                                        <col class="col-xs-4 col-md-1">
+                                                                        <col class="col-xs-4 col-md-1">
+                                                                    </colgroup>
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th><label class="control-label"><span data-toggle="tooltip" title="<?php echo $help_clone_options; ?>"><?php echo $head_settings; ?></span></label>
+                                                                            </th>
+                                                                            <th><?php echo $head_command; ?></th>
+                                                                            <th><?php echo $head_status; ?></th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td>
+                                                                                <div class="options">
+                                                                                    <div class="form-group">
+                                                                                        <div class="col-sm-6">
+                                                                                            <label class="checkbox-inline" for="clone-language-group">
+                                                                                                <input type="checkbox" name="clone-language-group" id="clone-language-group" value="group" checked="checked">
+                                                                                                <?php echo $entry_groups; ?>
+                                                                                            </label>
+                                                                                            <label class="checkbox-inline" for="clone-language-attribute">
+                                                                                                <input type="checkbox" name="clone-language-attribute" id="clone-language-attribute" value="attribute" checked="checked">
+                                                                                                <?php echo $entry_attributes; ?>
+                                                                                            </label>
+                                                                                            <label class="checkbox-inline" for="clone-language-value">
+                                                                                                <input type="checkbox" name="clone-language-value" id="clone-language-value" value="value" checked="checked">
+                                                                                                <?php echo $entry_values; ?>
+                                                                                            </label>
+                                                                                            <label class="checkbox-inline" for="clone-language-duty">
+                                                                                                <input type="checkbox" name="clone-language-duty" id="clone-language-duty" value="duty" checked="checked">
+                                                                                                <?php echo $entry_duties; ?>
+                                                                                            </label>
+                                                                                        </div>
+                                                                                        <div class="col-sm-6">
+                                                                                            <label class="radio-inline">
+                                                                                                <input type="radio" name="clone-language-mode" value="insert" checked="checked" />
+                                                                                                <?php echo $text_insert; ?>
+                                                                                            </label>
+                                                                                            <label class="radio-inline">
+                                                                                                <input type="radio" name="clone-language-mode" value="overwrite" />
+                                                                                                <?php echo $text_overwrite; ?>
+                                                                                            </label>
+                                                                                            <label class="radio-inline">
+                                                                                                <input type="radio" name="clone-language-mode" value="overifempty" />
+                                                                                                <?php echo $text_overwrite_if_empty; ?>
+                                                                                            </label>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <div class="col-sm-6">
+                                                                                            <label class="control-label" for="clone-language-source"><?php echo $entry_from; ?></label>
+                                                                                            <select name="clone-language-source" id="clone-language-source" class="form-control">
+                                                                                                <?php foreach ($languages as $language) { ?>
+                                                                                                    <?php if ($language['language_id'] == $config_language) { ?>
+                                                                                                        <option value="<?php echo $language['language_id']; ?>" selected="selected"><?php echo $language['name']; ?></option>
+                                                                                                    <?php } else { ?>
+                                                                                                        <option value="<?php echo $language['language_id']; ?>"><?php echo $language['name']; ?></option>
+                                                                                                    <?php } ?>
+                                                                                                <?php } ?>
+                                                                                            </select>
+                                                                                        </div>
+                                                                                        <div class="col-sm-6">
+                                                                                            <label class="control-label" for="clone-language-target"><?php echo $entry_to; ?></label>
+                                                                                            <select name="clone-language-target" id="clone-language-target" class="form-control">
+                                                                                                <?php foreach ($languages as $language) { ?>
+                                                                                                    <?php if ($language['language_id'] == $config_language) { ?>
+                                                                                                        <option value="<?php echo $language['language_id']; ?>" selected="selected"><?php echo $language['name']; ?></option>
+                                                                                                    <?php } else { ?>
+                                                                                                        <option value="<?php echo $language['language_id']; ?>"><?php echo $language['name']; ?></option>
+                                                                                                    <?php } ?>
+                                                                                                <?php } ?>
+                                                                                            </select>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td><button type="button" onclick=" return tools('clone')" data-toggle="tooltip" title="<?php echo $button_play; ?>" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
+                                                                            <td>
+                                                                                <div class="ajax-loader"><img class="loader-img" src="view/javascript/fancytree/skin-win7/loading.gif" style="display:none;" /></div>
+                                                                                <div class="task-complete"><img class="complete-img" src="view/javascript/fancytree/skin-custom/accept.png" style="display:none;" /></div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>                                                        
+                                                        <div class="tab-pane" id="tab-batch">
+                                                            <div class="table-responsive">
+                                                                <table class="table table-bordered">
+                                                                    <colgroup>
+                                                                        <col class="col-xs-12 col-md-10">
+                                                                        <col class="col-xs-4 col-md-1">
+                                                                        <col class="col-xs-4 col-md-1">
+                                                                    </colgroup>
+                                                                    <thead>
+                                                                        <tr>                                                                        
+                                                                            <th><label class="control-label"><span data-toggle="tooltip" title="<?php echo $help_replace_options; ?>"><?php echo $head_settings; ?></span></label>
+                                                                            </th>
+                                                                            <th><?php echo $head_command; ?></th>
+                                                                            <th><?php echo $head_status; ?></th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td>
+                                                                                <div class="options row">
+                                                                                    <div class="col-xs-12 col-md-6 form-group">
+                                                                                        <label class="col-sm-5 control-label" for="tab-batch-splitter-search">
+                                                                                            <span data-toggle="tooltip" data-container="body" title="<?php echo $help_splitter_search; ?>"><?php echo $label_splitter_search; ?></span>
+                                                                                        </label>
+                                                                                        <div class="col-sm-7">
+                                                                                            <input type="text" class="form-control" id="tab-batch-splitter-search" name="tab-batch-splitter-search" placeholder="<?php echo $placeholder_splitter_search; ?>">
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="col-xs-12 col-md-6 form-group">
+                                                                                        <label class="col-sm-5 control-label" for="tab-batch-splitter-replace">
+                                                                                            <span data-toggle="tooltip" data-container="body" title="<?php echo $help_splitter_replace; ?>"><?php echo $label_splitter_replace; ?></span>
+                                                                                        </label>
+                                                                                        <div class="col-sm-7">
+                                                                                            <input type="text" class="form-control" id="tab-batch-splitter-replace" name="tab-batch-splitter-replace" placeholder="<?php echo $placeholder_splitter_replace; ?>">
+                                                                                        </div>
+                                                                                    </div>      
+                                                                                </div>
+                                                                            </td>
+                                                                            <td><button type="button" onclick=" return tools('batchreplace')" data-toggle="tooltip" title="<?php echo $button_play; ?>" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
+                                                                            <td>
+                                                                                <div class="ajax-loader"><img class="loader-img" src="view/javascript/fancytree/skin-win7/loading.gif" style="display:none;" /></div>
+                                                                                <div class="task-complete"><img class="task-complete-img" src="view/javascript/fancytree/skin-custom/accept.png" style="display:none;" /> </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                        <div class="tab-pane" id="tab-case">
+                                                            <div class="table-responsive">
+                                                                <table class="table table-bordered">
+                                                                    <colgroup>
+                                                                        <col class="col-xs-12 col-md-10">
+                                                                        <col class="col-xs-4 col-md-1">
+                                                                        <col class="col-xs-4 col-md-1">
+                                                                    </colgroup>
+                                                                    <thead>
+                                                                        <tr>                                                                        
+                                                                            <th><label class="control-label"><span data-toggle="tooltip" title="<?php echo $help_replace_options; ?>"><?php echo $head_settings; ?></span></label>
+                                                                            </th>
+                                                                            <th><?php echo $head_command; ?></th>
+                                                                            <th><?php echo $head_status; ?></th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td>
+                                                                                <div class="options">
+                                                                                    <div class="row">
+                                                                                        <div class="col-xs-12 col-md-3">           
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                             <label><?php echo $label_upper_case; ?></label>
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                                <label><?php echo $label_lower_case; ?></label>
+                                                                                        </div> 
+                                                                                        <div class="col-xs-12 col-md-3">           
+                                                                                        </div>                           
+                                                                                    </div>
+                                                                                    <div class="row">
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <label class="checkbox-inline" for="case_group_check">
+                                                                                                <input type="checkbox" name="case_group_check" id="case_group_check" value="group" data-target="case_group">
+                                                                                                <?php echo $entry_groups; ?>
+                                                                                            </label>
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                             <label>
+                                                                                              <input type="radio" name="case_group" value="uppercase" aria-label="..." disabled="true">
+                                                                                             </label>
+                                                                                            </div> 
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                                <label>
+                                                                                                    <input type="radio" name="case_group" value="lowercase" aria-label="..." disabled="true">
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div> 
+                                                                                        <div class="col-xs-12 col-md-3">           
+                                                                                        </div>                           
+                                                                                    </div>
+                                                                                    <div class="row">
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <label class="checkbox-inline" for="case_attribute_check">
+                                                                                                <input type="checkbox" name="case_attribute_check" id="case_attribute_check" value="attribute" data-target="case_attribute">
+                                                                                                <?php echo $entry_attributes; ?>
+                                                                                            </label>
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                             <label>
+                                                                                              <input type="radio" name="case_attribute" value="uppercase" aria-label="..." disabled="true">
+                                                                                             </label>
+                                                                                            </div> 
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                                <label>
+                                                                                                    <input type="radio" name="case_attribute" value="lowercase" aria-label="..." disabled="true">
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div> 
+                                                                                        <div class="col-xs-12 col-md-3">           
+                                                                                        </div>                           
+                                                                                    </div>
+                                                                                    <div class="row">
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <label class="checkbox-inline" for="case_value_check">
+                                                                                                <input type="checkbox" name="case_value_check" id="case_value_check" value="value" data-target="case_value">
+                                                                                                <?php echo $entry_values; ?>
+                                                                                            </label>
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                             <label>
+                                                                                              <input type="radio" name="case_value" value="uppercase" aria-label="..." disabled="true">
+                                                                                             </label>
+                                                                                            </div> 
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                                <label>
+                                                                                                    <input type="radio" name="case_value" value="lowercase" aria-label="..." disabled="true">
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">           
+                                                                                        </div>                            
+                                                                                    </div>
+                                                                                    <div class="row">
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <label class="checkbox-inline" for="case_duty_check">
+                                                                                                <input type="checkbox" name="case_duty_check" id="case_duty_check" value="duty" data-target="case_duty">
+                                                                                                <?php echo $entry_duties; ?>
+                                                                                            </label>
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                             <label>
+                                                                                              <input type="radio" name="case_duty" value="uppercase" aria-label="..." disabled="true">
+                                                                                             </label>
+                                                                                            </div> 
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                                <label>
+                                                                                                    <input type="radio" name="case_duty" value="lowercase" aria-label="..." disabled="true">
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div> 
+                                                                                        <div class="col-xs-12 col-md-3">           
+                                                                                        </div>                           
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td><button type="button" onclick=" return tools('casechange')" data-toggle="tooltip" title="<?php echo $button_play; ?>" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
+                                                                            <td>
+                                                                                <div class="ajax-loader"><img class="loader-img" src="view/javascript/fancytree/skin-win7/loading.gif" style="display:none;" /></div>
+                                                                                <div class="task-complete"><img class="task-complete-img" src="view/javascript/fancytree/skin-custom/accept.png" style="display:none;" /> </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>                                                        
+                                                    </div> 
                                                 </div>
                                             </div>
+                                            <div class="alert alert-warning" role="alert" style="display: none"><?php echo $alert_warning; ?></div>
+                                            <div class="alert alert-success alert-dismissible" role="alert" style="display: none">
+                                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><?php echo $alert_success; ?>
+                                            </div>
                                         </div>
-                                        <div class="alert alert-warning" role="alert" style="display: none">
-                                            <?php echo $alert_warning; ?> </div>
-                                        <div class="alert alert-success alert-dismissible" role="alert" style="display: none">
-                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                            <?php echo $alert_success; ?>
-                                        </div>
-                                    </div>
-                                </div>
+                                    </div>                                    
+                                </div>                                
                             </div>
                             <div class="tab-pane" id="tab-support">
-                                <div class="table-responsive">
-                                    <?php echo $text_help1; ?>
-                                </div>
-                                <div class="table-responsive">
-                                    <?php echo $text_help2; ?>
-                                </div>
-                                <div class="form-group">
-                                    <?php echo $text_support; ?>
-                                </div>
+                                        <div class="table-responsive">
+                                            <?php echo $text_help1; ?>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <?php echo $text_help2; ?>
+                                        </div>
+                                        <div class="form-group">
+                                            <?php echo $text_support; ?>
+                                        </div>
                             </div>
                         </div>
-                    </div>
+                    </div>        
                 </form>
             </div>
         </div>
@@ -934,9 +1144,9 @@
     const config_language = '<?php echo $config_language; ?>';
     const token = '<?php echo $token; ?>';
     const user_token = '<?php echo $user_token; ?>';
-    const extension = '<?php echo $extension; ?>'; // для v2.3 другая структура каталогов
-    const route = '<?php echo $route; ?>';
-    const edit = '<?php echo $edit; ?>'; // для v1.5 другая функция входа в товар    
+    const extension = '<?php echo $extension; ?>'; //TODO deprecated для v2.3 другая структура каталогов
+    const route = '<?php echo $route; ?>'; // для v1.5 другая функция входа в товар 
+    const edit = '<?php echo $edit; ?>'; //TODO deprecated для v1.5 другая функция входа в товар   
     const textConfirm = <?php echo json_encode($text_confirm) ?>;
     const FILTERSETTINGS = <?php echo json_encode($filter_settings) ?>;
 
@@ -1084,5 +1294,11 @@
     $('#tab-duty_language a:first').tab('show');
     $('#tab-products_language a:first').tab('show');
     $('#verticalTab a:first').tab('show');
+    $('#tab-standart a:first').tab('show');
+</script>
+<script type="text/javascript">
+     $("#column-1 li").on('click', function () { 
+        $('#column-2 #tabs-standart a:first').tab('show')           
+    })
 </script>
 <?php echo $footer; ?>

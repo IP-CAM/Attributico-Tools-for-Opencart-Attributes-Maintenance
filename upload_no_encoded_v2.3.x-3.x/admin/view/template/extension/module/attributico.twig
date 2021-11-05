@@ -46,7 +46,7 @@
                         </div>
                     </div>
                 </div>
-                <form action="{{action}}" method="post" enctype="multipart/form-data" id="form-attributico" class="form-horizontal">
+                <form action="{{action}}" method="post" enctype="multipart/form-data" id="form-attributipro" class="form-horizontal">
                     <div id="tabs">
                         <ul class="nav nav-tabs">
                             <li><a href="#tab-general" data-toggle="tab"><i class="fa fa-cog"></i> {{tab_general}} </a></li>
@@ -75,104 +75,104 @@
                                             <legend>{{settings_general}}</legend>
                                             <div class="form-group">
                                                 <div class="row">
-                                                    <label class="col-sm-4 control-label" for="input-attributico_splitter">{{entry_splitter}}</label>
+                                                    <label class="col-sm-4 control-label" for="input-attributipro_splitter"><span data-toggle="tooltip" data-container="body" title="{{help_splitter}}">{{entry_splitter}}</span></label>
                                                     <div class="col-sm-8">
-                                                        <input type="text" name="attributico_splitter" value="{{attributico_splitter}}" class="form-control" id="input-attributico_splitter" />
+                                                        <input type="text" name="attributipro_splitter" value="{{attributipro_splitter}}" class="form-control" id="input-attributipro_splitter" />
                                                     </div>
                                                 </div>
                                                 <div class="row">
-                                                    <label class="col-sm-4 control-label" for="input-attributico_sortorder"><span data-toggle="tooltip" title="{{help_sortorder}}">{{entry_sortorder}}</span></label>
+                                                    <label class="col-sm-4 control-label" for="input-attributipro_sortorder"><span data-toggle="tooltip" data-container="body" title="{{help_sortorder}}">{{entry_sortorder}}</span></label>
                                                     <div class="col-sm-8">
                                                         <div class="checkbox">
                                                             <label>
-                                                                {% if attributico_sortorder %}
-                                                                <input type="checkbox" name="attributico_sortorder" value="1" checked="checked" id="input-attributico_sortorder" />
+                                                                {% if attributipro_sortorder %}
+                                                                <input type="checkbox" name="attributipro_sortorder" value="1" checked="checked" id="input-attributipro_sortorder" />
                                                                 {% else %}
-                                                                <input type="checkbox" name="attributico_sortorder" value="1" id="input-attributico_sortorder" />
+                                                                <input type="checkbox" name="attributipro_sortorder" value="1" id="input-attributipro_sortorder" />
                                                                 {% endif %}
                                                             </label>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="row">
-                                                    <label class="col-sm-4 control-label" for="input-attributico_smart_scroll"><span data-toggle="tooltip" title="{{help_smart_scroll}}">{{entry_smart_scroll}}</span></label>
+                                                    <label class="col-sm-4 control-label" for="input-attributipro_smart_scroll"><span data-toggle="tooltip" title="{{help_smart_scroll}}">{{entry_smart_scroll}}</span></label>
                                                     <div class="col-sm-8">
                                                         <div class="checkbox">
                                                             <label>
-                                                                {% if attributico_smart_scroll %}
-                                                                <input type="checkbox" name="attributico_smart_scroll" value="1" checked="checked" id="input-attributico_smart_scroll" />
+                                                                {% if attributipro_smart_scroll %}
+                                                                <input type="checkbox" name="attributipro_smart_scroll" value="1" checked="checked" id="input-attributipro_smart_scroll" />
                                                                 {% else %}
-                                                                <input type="checkbox" name="attributico_smart_scroll" value="1" id="input-attributico_smart_scroll" />
+                                                                <input type="checkbox" name="attributipro_smart_scroll" value="1" id="input-attributipro_smart_scroll" />
                                                                 {% endif %}
                                                             </label>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="row">
-                                                    <label class="col-sm-4 control-label" for="input-attributico_empty"><span data-toggle="tooltip" title="{{help_empty}}">{{entry_empty}}</span></label>
+                                                    <label class="col-sm-4 control-label" for="input-attributipro_empty"><span data-toggle="tooltip" title="{{help_empty}}">{{entry_empty}}</span></label>
                                                     <div class="col-sm-8">
                                                         <div class="checkbox">
                                                             <label>
-                                                                {% if attributico_empty %}
-                                                                <input type="checkbox" name="attributico_empty" value="1" checked="checked" id="input-attributico_empty" />
+                                                                {% if attributipro_empty %}
+                                                                <input type="checkbox" name="attributipro_empty" value="1" checked="checked" id="input-attributipro_empty" />
                                                                 {% else %}
-                                                                <input type="checkbox" name="attributico_empty" value="1" id="input-attributico_empty" />
+                                                                <input type="checkbox" name="attributipro_empty" value="1" id="input-attributipro_empty" />
                                                                 {% endif %}
                                                             </label>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="row">
-                                                    <label class="col-sm-4 control-label" for="input-attributico_about_blank"><span data-toggle="tooltip" title="{{help_about_blank}}">{{entry_about_blank}}</span></label>
+                                                    <label class="col-sm-4 control-label" for="input-attributipro_about_blank"><span data-toggle="tooltip" title="{{help_about_blank}}">{{entry_about_blank}}</span></label>
                                                     <div class="col-sm-8">
                                                         <div class="checkbox">
                                                             <label>
-                                                                {% if attributico_about_blank %}
-                                                                <input type="checkbox" name="attributico_about_blank" value="1" checked="checked" id="input-attributico_about_blank" />
+                                                                {% if attributipro_about_blank %}
+                                                                <input type="checkbox" name="attributipro_about_blank" value="1" checked="checked" id="input-attributipro_about_blank" />
                                                                 {% else %}
-                                                                <input type="checkbox" name="attributico_about_blank" value="1" id="input-attributico_about_blank" />
+                                                                <input type="checkbox" name="attributipro_about_blank" value="1" id="input-attributipro_about_blank" />
                                                                 {% endif %}
                                                             </label>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="row">
-                                                    <label class="col-md-4 col-sm-6 control-label" for="input-attributico_lazyload"><span data-toggle="tooltip" title="{{help_lazyload}}">{{entry_lazyload}}</span></label>
+                                                    <label class="col-md-4 col-sm-6 control-label" for="input-attributipro_lazyload"><span data-toggle="tooltip" title="{{help_lazyload}}">{{entry_lazyload}}</span></label>
                                                     <div class="col-md-8 col-sm-6">
                                                         <div class="checkbox">
                                                             <label>
-                                                                {% if attributico_lazyload %}
-                                                                <input type="checkbox" name="attributico_lazyload" value="1" checked="checked" id="input-attributico_lazyload" />
+                                                                {% if attributipro_lazyload %}
+                                                                <input type="checkbox" name="attributipro_lazyload" value="1" checked="checked" id="input-attributipro_lazyload" />
                                                                 {% else %}
-                                                                <input type="checkbox" name="attributico_lazyload" value="1" id="input-attributico_lazyload" />
+                                                                <input type="checkbox" name="attributipro_lazyload" value="1" id="input-attributipro_lazyload" />
                                                                 {% endif %}
                                                             </label>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="row">
-                                                    <label class="col-md-4 col-sm-6 control-label" for="input-attributico_cache"><span data-toggle="tooltip" title="{{help_cache}}">{{entry_cache}}</span></label>
+                                                    <label class="col-md-4 col-sm-6 control-label" for="input-attributipro_cache"><span data-toggle="tooltip" title="{{help_cache}}">{{entry_cache}}</span></label>
                                                     <div class="col-md-8 col-sm-6">
                                                         <div class="checkbox">
                                                             <label>
-                                                                {% if attributico_cache %}
-                                                                <input type="checkbox" name="attributico_cache" value="1" checked="checked" id="input-attributico_cache" />
+                                                                {% if attributipro_cache %}
+                                                                <input type="checkbox" name="attributipro_cache" value="1" checked="checked" id="input-attributipro_cache" />
                                                                 {% else %}
-                                                                <input type="checkbox" name="attributico_cache" value="1" id="input-attributico_cache" />
+                                                                <input type="checkbox" name="attributipro_cache" value="1" id="input-attributipro_cache" />
                                                                 {% endif %}
                                                             </label>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="row">
-                                                    <label class="col-md-4 col-sm-6 control-label" for="input-attributico_multistore"><span data-toggle="tooltip" title="{{help_multistore}}">{{entry_multistore}}</span></label>
+                                                    <label class="col-md-4 col-sm-6 control-label" for="input-attributipro_multistore"><span data-toggle="tooltip" title="{{help_multistore}}">{{entry_multistore}}</span></label>
                                                     <div class="col-md-8 col-sm-6">
                                                         <div class="checkbox">
                                                             <label>
-                                                                {% if attributico_multistore %}
-                                                                <input type="checkbox" name="attributico_multistore" value="1" checked="checked" id="input-attributico_multistore" />
+                                                                {% if attributipro_multistore %}
+                                                                <input type="checkbox" name="attributipro_multistore" value="1" checked="checked" id="input-attributipro_multistore" />
                                                                 {% else %}
-                                                                <input type="checkbox" name="attributico_multistore" value="1" id="input-attributico_multistore" />
+                                                                <input type="checkbox" name="attributipro_multistore" value="1" id="input-attributipro_multistore" />
                                                                 {% endif %}
                                                             </label>
                                                         </div>
@@ -220,28 +220,28 @@
                                             <div class="form-group">
                                                 <div class="row">
                                                     <div class="col-md-6">
-                                                        <label class="col-sm-8 control-label" for="input-attributico_autoadd"><span data-toggle="tooltip" title="{{help_autoattribute}}">{{entry_autoattribute}}</span></label>
+                                                        <label class="col-sm-8 control-label" for="input-attributipro_autoadd"><span data-toggle="tooltip" title="{{help_autoattribute}}">{{entry_autoattribute}}</span></label>
                                                         <div class="col-sm-4">
                                                             <div class="checkbox">
                                                                 <label>
-                                                                    {% if attributico_autoadd %}
-                                                                    <input type="checkbox" name="attributico_autoadd" value="1" checked="checked" id="input-attributico_autoadd" />
+                                                                    {% if attributipro_autoadd %}
+                                                                    <input type="checkbox" name="attributipro_autoadd" value="1" checked="checked" id="input-attributipro_autoadd" />
                                                                     {% else %}
-                                                                    <input type="checkbox" name="attributico_autoadd" value="1" id="input-attributico_autoadd" />
+                                                                    <input type="checkbox" name="attributipro_autoadd" value="1" id="input-attributipro_autoadd" />
                                                                     {% endif %}
                                                                 </label>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-6">
-                                                        <label class="col-sm-8 control-label" for="input-attributico_autodel"><span data-toggle="tooltip" title="{{help_autodel}}">{{entry_autodel}}</span></label>
+                                                        <label class="col-sm-8 control-label" for="input-attributipro_autodel"><span data-toggle="tooltip" title="{{help_autodel}}">{{entry_autodel}}</span></label>
                                                         <div class="col-sm-4">
                                                             <div class="checkbox">
                                                                 <label>
-                                                                    {% if attributico_autodel %}
-                                                                    <input type="checkbox" name="attributico_autodel" value="1" checked="checked" id="input-attributico_autodel" />
+                                                                    {% if attributipro_autodel %}
+                                                                    <input type="checkbox" name="attributipro_autodel" value="1" checked="checked" id="input-attributipro_autodel" />
                                                                     {% else %}
-                                                                    <input type="checkbox" name="attributico_autodel" value="1" id="input-attributico_autodel" />
+                                                                    <input type="checkbox" name="attributipro_autodel" value="1" id="input-attributipro_autodel" />
                                                                     {% endif %}
                                                                 </label>
                                                             </div>
@@ -255,28 +255,28 @@
                                             <div class="form-group">
                                                 <div class="row">
                                                     <div class="col-md-6">
-                                                        <label class="col-sm-8 control-label" for="input-attributico_autoadd_subcategory"><span data-toggle="tooltip" title="{{help_autoadd_inherit}}">{{entry_autoadd_inherit}}</span></label>
+                                                        <label class="col-sm-8 control-label" for="input-attributipro_autoadd_subcategory"><span data-toggle="tooltip" title="{{help_autoadd_inherit}}">{{entry_autoadd_inherit}}</span></label>
                                                         <div class="col-sm-4">
                                                             <div class="checkbox">
                                                                 <label>
-                                                                    {% if attributico_autoadd_subcategory %}
-                                                                    <input type="checkbox" name="attributico_autoadd_subcategory" value="1" checked="checked" id="input-attributico_autoadd_subcategory" />
+                                                                    {% if attributipro_autoadd_subcategory %}
+                                                                    <input type="checkbox" name="attributipro_autoadd_subcategory" value="1" checked="checked" id="input-attributipro_autoadd_subcategory" />
                                                                     {% else %}
-                                                                    <input type="checkbox" name="attributico_autoadd_subcategory" value="1" id="input-attributico_autoadd_subcategory" />
+                                                                    <input type="checkbox" name="attributipro_autoadd_subcategory" value="1" id="input-attributipro_autoadd_subcategory" />
                                                                     {% endif %}
                                                                 </label>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-6">
-                                                        <label class="col-sm-8 control-label" for="input-attributico_autodel_subcategory"><span data-toggle="tooltip" title="{{help_autodel_inherit}}">{{entry_autodel_inherit}}</span></label>
+                                                        <label class="col-sm-8 control-label" for="input-attributipro_autodel_subcategory"><span data-toggle="tooltip" title="{{help_autodel_inherit}}">{{entry_autodel_inherit}}</span></label>
                                                         <div class="col-sm-4">
                                                             <div class="checkbox">
                                                                 <label>
-                                                                    {% if attributico_autodel_subcategory %}
-                                                                    <input type="checkbox" name="attributico_autodel_subcategory" value="1" checked="checked" id="input-attributico_autodel_subcategory" />
+                                                                    {% if attributipro_autodel_subcategory %}
+                                                                    <input type="checkbox" name="attributipro_autodel_subcategory" value="1" checked="checked" id="input-attributipro_autodel_subcategory" />
                                                                     {% else %}
-                                                                    <input type="checkbox" name="attributico_autodel_subcategory" value="1" id="input-attributico_autodel_subcategory" />
+                                                                    <input type="checkbox" name="attributipro_autodel_subcategory" value="1" id="input-attributipro_autodel_subcategory" />
                                                                     {% endif %}
                                                                 </label>
                                                             </div>
@@ -285,14 +285,14 @@
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="col-sm-4 control-label" for="input-attributico_multiselect"><span data-toggle="tooltip" title="{{help_multiselect}}">{{entry_multiselect}}</span></label>
+                                                <label class="col-sm-4 control-label" for="input-attributipro_multiselect"><span data-toggle="tooltip" title="{{help_multiselect}}">{{entry_multiselect}}</span></label>
                                                 <div class="col-sm-8">
                                                     <div class="checkbox">
                                                         <label>
-                                                            {% if attributico_multiselect %}
-                                                            <input type="checkbox" name="attributico_multiselect" value="1" checked="checked" id="input-attributico_multiselect" />
+                                                            {% if attributipro_multiselect %}
+                                                            <input type="checkbox" name="attributipro_multiselect" value="1" checked="checked" id="input-attributipro_multiselect" />
                                                             {% else %}
-                                                            <input type="checkbox" name="attributico_multiselect" value="1" id="input-attributico_multiselect" />
+                                                            <input type="checkbox" name="attributipro_multiselect" value="1" id="input-attributipro_multiselect" />
                                                             {% endif %}
                                                         </label>
                                                     </div>
@@ -306,44 +306,44 @@
                                                 <div class="col-sm-9">
                                                     <div class="radio">
                                                         <label>
-                                                            {% if attributico_product_text == 'clean' %}
-                                                            <input type="radio" name="attributico_product_text" value='clean' checked="checked" />
+                                                            {% if attributipro_product_text == 'clean' %}
+                                                            <input type="radio" name="attributipro_product_text" value='clean' checked="checked" />
                                                             {{text_clear}}
                                                             {% else %}
-                                                            <input type="radio" name="attributico_product_text" value='clean' />
+                                                            <input type="radio" name="attributipro_product_text" value='clean' />
                                                             {{text_clear}}
                                                             {% endif %}
                                                         </label>
                                                     </div>
                                                     <div class="radio">
                                                         <label>
-                                                            {% if attributico_product_text == 'unchange' %}
-                                                            <input type="radio" name="attributico_product_text" value='unchange' checked="checked" />
+                                                            {% if attributipro_product_text == 'unchange' %}
+                                                            <input type="radio" name="attributipro_product_text" value='unchange' checked="checked" />
                                                             {{text_keep}}
                                                             {% else %}
-                                                            <input type="radio" name="attributico_product_text" value='unchange' />
+                                                            <input type="radio" name="attributipro_product_text" value='unchange' />
                                                             {{text_keep}}
                                                             {% endif %}
                                                         </label>
                                                     </div>
                                                     <div class="radio">
                                                         <label>
-                                                            {% if attributico_product_text == 'overwrite' %}
-                                                            <input type="radio" name="attributico_product_text" value='overwrite' checked="checked" />
+                                                            {% if attributipro_product_text == 'overwrite' %}
+                                                            <input type="radio" name="attributipro_product_text" value='overwrite' checked="checked" />
                                                             {{text_duty}}
                                                             {% else %}
-                                                            <input type="radio" name="attributico_product_text" value='overwrite' />
+                                                            <input type="radio" name="attributipro_product_text" value='overwrite' />
                                                             {{text_duty}}
                                                             {% endif %}
                                                         </label>
                                                     </div>
                                                     <div class="radio">
                                                         <label>
-                                                            {% if attributico_product_text == 'ifempty' %}
-                                                            <input type="radio" name="attributico_product_text" value='ifempty' checked="checked" />
+                                                            {% if attributipro_product_text == 'ifempty' %}
+                                                            <input type="radio" name="attributipro_product_text" value='ifempty' checked="checked" />
                                                             {{text_duty_only}}
                                                             {% else %}
-                                                            <input type="radio" name="attributico_product_text" value='ifempty' />
+                                                            <input type="radio" name="attributipro_product_text" value='ifempty' />
                                                             {{text_duty_only}}
                                                             {% endif %}
                                                         </label>
@@ -356,10 +356,10 @@
                                             <div class="form-group">
                                                 <div class="radio">
                                                     <label class="control-label">
-                                                        {% if attributico_replace_mode == 'substr' %}  
-                                                            <input type="radio" name="attributico_replace_mode" value="substr" checked="checked"/>
+                                                        {% if attributipro_replace_mode == 'substr' %}  
+                                                            <input type="radio" name="attributipro_replace_mode" value="substr" checked="checked"/>
                                                         {% else %} 
-                                                            <input type="radio" name="attributico_replace_mode" value="substr"/>
+                                                            <input type="radio" name="attributipro_replace_mode" value="substr"/>
                                                         {% endif %} 
                                                         <span data-toggle="tooltip" title="{{help_replace_substr}}">{{text_replace_substr}}
                                                         </span>                                                        
@@ -367,10 +367,10 @@
                                                 </div>                
                                                 <div class="radio">
                                                     <label class="control-label">
-                                                        {% if attributico_replace_mode == 'match' %}          
-                                                            <input type="radio" name="attributico_replace_mode" value="match" checked="checked"/>
+                                                        {% if attributipro_replace_mode == 'match' %}          
+                                                            <input type="radio" name="attributipro_replace_mode" value="match" checked="checked"/>
                                                         {% else %}
-                                                            <input type="radio" name="attributico_replace_mode" value="match"/>
+                                                            <input type="radio" name="attributipro_replace_mode" value="match"/>
                                                         {% endif %}
                                                         <span data-toggle="tooltip" title="{{help_replace_match}}">{{text_replace_match}}
                                                         </span>                              
@@ -503,9 +503,9 @@
                                             <li><a href="#tab-scavengery" data-toggle="pill"> {{tab_scavengery}} </a></li>
                                             <li><a href="#tab-defrag" data-toggle="pill"> {{tab_defrag}} </a></li>
                                             <li><a href="#tab-sorting" data-toggle="pill"> {{tab_sorting}} </a></li>
-                                            <li><a href="#tab-detached" data-toggle="pill"> {{tab_detached}} </a></li>
-                                            <li><a href="#tab-deduplicate" data-toggle="pill"> {{tab_deduplicate}} </a></li>
-                                            <li><a href="#tab-category-attributes" data-toggle="pill"> {{tab_category_attributes}} </a></li>
+                                            <li data-filter='["group"]'><a href="#tab-detached" data-toggle="pill"> {{tab_detached}} </a></li>
+                                            <li data-filter='["group"]'><a href="#tab-deduplicate" data-toggle="pill"> {{tab_deduplicate}} </a></li>
+                                            <li data-filter='["category"]'><a href="#tab-category-attributes" data-toggle="pill"> {{tab_category_attributes}} </a></li>
                                             <li><a href="#tab-cache" data-toggle="pill"> {{tab_cache}} </a></li>
                                             <li><a href="#tab-standart" data-toggle="pill"> {{tab_standart}} </a></li>
                                         </ul>
@@ -513,6 +513,32 @@
                                     <hr class="hidden-lg hidden-md">
                                     <div class="col-lg-10 col-md-9" style="border-left: 1px solid #eee;" id="column-2">
                                         <div class="alert alert-danger" role="alert"> {{alert_backup}} </div>
+                                        <div class="table-responsive" id="filter-tools" hidden="hidden">
+                                            <table class="table table-striped table-bordered">
+                                                <thead>
+                                                    <tr>                                                   
+                                                        <th colspan="2" ><i class="fa fa-filter"></i>
+                                                            <label class="control-label"><span data-toggle="tooltip" title="{{help_tools_filter}}">{{head_tools_filter}}</span></label> 
+                                                            <button class="btn btn-info pull-right" type="button" data-toggle="collapse" data-target="#filter-tools-collapse" aria-expanded="false" aria-controls="filter-tools-collapse">
+                                                                <span class="caret"></span>
+                                                            </button>                                                            
+                                                        </th>       
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="collapse" id="filter-tools-collapse">                                                        
+                                                    <tr>
+                                                        <td class="left filter-tools-group" style="width: 50%;" hidden="hidden">
+                                                            <div id="detach_tree{{config_language}}" name="detach_tree{{config_language}}" class="options"></div>
+                                                            <div class="dialog-options" id="options_detach_tree{{config_language}}" title="{{text_Options[language['language_id']]}}"></div>
+                                                        </td>
+                                                        <td class="left filter-tools-category" hidden="hidden">
+                                                            <div id="category_check_tree{{config_language}}" name="category_check_tree{{config_language}}" class="options"></div>
+                                                            <div class="dialog-options" id="options_category_check_tree{{config_language}}" title="{{text_Options[language['language_id']]}}"></div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                         <div class="tab-content">
                                             <div class="tab-pane active" id="tab-empty">
                                                 <div class="table-responsive">
@@ -652,9 +678,7 @@
                                                         </thead>
                                                         <tbody>
                                                             <tr>
-                                                                <td>
-                                                                    <div id="detach_tree{{config_language}}" name="detach_tree{{config_language}}" class="options"></div>
-                                                                    <div class="dialog-options" id="options_detach_tree{{config_language}}" title="{{text_Options[language['language_id']]}}"></div>
+                                                                <td>                                                                    
                                                                 </td>
                                                                 <td><button type="button" onclick=" return tools('detached')" data-toggle="tooltip" title="{{button_play}}" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
                                                                 <td>
@@ -683,9 +707,7 @@
                                                         </thead>
                                                         <tbody>
                                                             <tr>
-                                                                <td>
-                                                                    <div id="deduplicate_tree{{config_language}}" name="deduplicate_tree{{config_language}}" class="options"></div>
-                                                                    <div class="dialog-options" id="options_deduplicate_tree{{config_language}}" title="{{text_Options[language['language_id']]}}"></div>
+                                                                <td>                                                                   
                                                                 </td>
                                                                 <td><button type="button" onclick=" return tools('deduplicate')" data-toggle="tooltip" title="{{button_play}}" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
                                                                 <td>
@@ -723,12 +745,7 @@
                                                                             <input type="checkbox" name="tab-inject-to-products" id="tab-inject-to-products" checked="checked"> {{entry_inject_to_products}}
                                                                         </label>
                                                                     </div>
-                                                                </td>
-                                                            <tr>
-                                                                <td>
-                                                                    <div id="category_check_tree{{config_language}}" name="category_check_tree{{config_language}}" class="options"></div>
-                                                                    <div class="dialog-options" id="options_category_check_tree{{config_language}}" title="{{text_Options[language['language_id']]}}"></div>
-                                                                </td>
+                                                                </td>                                                            
                                                                 <td><button type="button" onclick=" return tools('createcategory')" data-toggle="tooltip" title="{{button_play}}" class="btn btn-warning"><i class="fa fa-play"></i></button>
                                                                 </td>
                                                                 <td>
@@ -769,105 +786,300 @@
                                                 </div>
                                             </div>
                                             <div class="tab-pane" id="tab-standart">
-                                                <div class="table-responsive">
-                                                    <table class="table table-bordered">
-                                                        <colgroup>
-                                                            <col class="col-xs-12 col-md-10">
-                                                            <col class="col-xs-4 col-md-1">
-                                                            <col class="col-xs-4 col-md-1">
-                                                        </colgroup>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>{{head_settings}}</th>
-                                                                <th>{{head_command}}</th>
-                                                                <th>{{head_status}}</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>
-                                                                    <div class="options">
-                                                                        <div>
-                                                                            <label class="control-label"><span data-toggle="tooltip" title="{{help_clone_options}}">{{head_clone}}</span></label>
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <div class="col-sm-6">
-                                                                                <label class="checkbox-inline" for="clone-language-group">
-                                                                                    <input type="checkbox" name="clone-language-group" id="clone-language-group" value="group" checked="checked">
-                                                                                    {{entry_groups}}
-                                                                                </label>
-                                                                                <label class="checkbox-inline" for="clone-language-attribute">
-                                                                                    <input type="checkbox" name="clone-language-attribute" id="clone-language-attribute" value="attribute" checked="checked">
-                                                                                    {{entry_attributes}}
-                                                                                </label>
-                                                                                <label class="checkbox-inline" for="clone-language-value">
-                                                                                    <input type="checkbox" name="clone-language-value" id="clone-language-value" value="value" checked="checked">
-                                                                                    {{entry_values}}
-                                                                                </label>
-                                                                                <label class="checkbox-inline" for="clone-language-duty">
-                                                                                    <input type="checkbox" name="clone-language-duty" id="clone-language-duty" value="duty" checked="checked">
-                                                                                    {{entry_duties}}
-                                                                                </label>
-                                                                            </div>
-                                                                            <div class="col-sm-6">
-                                                                                <label class="radio-inline">
-                                                                                    <input type="radio" name="clone-language-mode" value="insert" checked="checked" />
-                                                                                    {{text_insert}}
-                                                                                </label>
-                                                                                <label class="radio-inline">
-                                                                                    <input type="radio" name="clone-language-mode" value="overwrite" />
-                                                                                    {{text_overwrite}}
-                                                                                </label>
-                                                                                <label class="radio-inline">
-                                                                                    <input type="radio" name="clone-language-mode" value="overifempty" />
-                                                                                    {{text_overwrite_if_empty}}
-                                                                                </label>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <div class="col-sm-6">
-                                                                                <label class="control-label" for="clone-language-source">{{entry_from}}</label>
-                                                                                <select name="clone-language-source" id="clone-language-source" class="form-control">
-                                                                                    {% for language in languages %}
-                                                                                    {% if language['language_id'] == config_language %}
-                                                                                    <option value="{{language['language_id']}}" selected="selected">{{language['name']}}</option>
-                                                                                    {% else %}
-                                                                                    <option value="{{language['language_id']}}">{{language['name']}}</option>
-                                                                                    {% endif %}
-                                                                                    {% endfor %}
-                                                                                </select>
-                                                                            </div>
-                                                                            <div class="col-sm-6">
-                                                                                <label class="control-label" for="clone-language-target">{{entry_to}}</label>
-                                                                                <select name="clone-language-target" id="clone-language-target" class="form-control">
-                                                                                    {% for language in languages %}
-                                                                                    {% if language['language_id'] == config_language %}
-                                                                                    <option value="{{language['language_id']}}" selected="selected">{{language['name']}}</option>
-                                                                                    {% else %}
-                                                                                    <option value="{{language['language_id']}}">{{language['name']}}</option>
-                                                                                    {% endif %}
-                                                                                    {% endfor %}
-                                                                                </select>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td><button type="button" onclick=" return tools('clone')" data-toggle="tooltip" title="{{button_play}}" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
-                                                                <td>
-                                                                    <div class="ajax-loader"><img class="loader-img" src="view/javascript/fancytree/skin-win7/loading.gif" style="display:none;" /></div>
-                                                                    <div class="task-complete"><img class="complete-img" src="view/javascript/fancytree/skin-custom/accept.png" style="display:none;" /></div>
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
+                                                <div id="tabs-standart">
+                                                    <ul class="nav nav-tabs">
+                                                        <li><a href="#tab-clone" data-toggle="tab"><i class="fa fa-clone"></i>
+                                                                {{head_clone}} </a></li>
+                                                        <li data-filter='["group","category"]'><a href="#tab-batch" data-toggle="tab"><i class="fa fa-ellipsis-h"></i>
+                                                                {{head_batch}} </a></li>
+                                                        <li data-filter='["group","category"]'><a href="#tab-case" data-toggle="tab"><i class="fa fa-font"></i>
+                                                                {{head_case}} </a></li>                                                                                                                      
+                                                    </ul>
+                                                    <div class="tab-content">
+                                                        <div class="tab-pane" id="tab-clone">
+                                                            <div class="table-responsive">
+                                                                <table class="table table-bordered">
+                                                                    <colgroup>
+                                                                        <col class="col-xs-12 col-md-10">
+                                                                        <col class="col-xs-4 col-md-1">
+                                                                        <col class="col-xs-4 col-md-1">
+                                                                    </colgroup>
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th><label class="control-label"><span data-toggle="tooltip" title="{{help_clone_options}}">{{head_settings}}</span></label>
+                                                                            </th>
+                                                                            <th>{{head_command}}</th>
+                                                                            <th>{{head_status}}</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td>
+                                                                                <div class="options">
+                                                                                    <div class="form-group">
+                                                                                        <div class="col-sm-6">
+                                                                                            <label class="checkbox-inline" for="clone-language-group">
+                                                                                                <input type="checkbox" name="clone-language-group" id="clone-language-group" value="group" checked="checked">
+                                                                                                {{entry_groups}}
+                                                                                            </label>
+                                                                                            <label class="checkbox-inline" for="clone-language-attribute">
+                                                                                                <input type="checkbox" name="clone-language-attribute" id="clone-language-attribute" value="attribute" checked="checked">
+                                                                                                {{entry_attributes}}
+                                                                                            </label>
+                                                                                            <label class="checkbox-inline" for="clone-language-value">
+                                                                                                <input type="checkbox" name="clone-language-value" id="clone-language-value" value="value" checked="checked">
+                                                                                                {{entry_values}}
+                                                                                            </label>
+                                                                                            <label class="checkbox-inline" for="clone-language-duty">
+                                                                                                <input type="checkbox" name="clone-language-duty" id="clone-language-duty" value="duty" checked="checked">
+                                                                                                {{entry_duties}}
+                                                                                            </label>
+                                                                                        </div>
+                                                                                        <div class="col-sm-6">
+                                                                                            <label class="radio-inline">
+                                                                                                <input type="radio" name="clone-language-mode" value="insert" checked="checked" />
+                                                                                                {{text_insert}}
+                                                                                            </label>
+                                                                                            <label class="radio-inline">
+                                                                                                <input type="radio" name="clone-language-mode" value="overwrite" />
+                                                                                                {{text_overwrite}}
+                                                                                            </label>
+                                                                                            <label class="radio-inline">
+                                                                                                <input type="radio" name="clone-language-mode" value="overifempty" />
+                                                                                                {{text_overwrite_if_empty}}
+                                                                                            </label>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <div class="col-sm-6">
+                                                                                            <label class="control-label" for="clone-language-source">{{entry_from}}</label>
+                                                                                            <select name="clone-language-source" id="clone-language-source" class="form-control">
+                                                                                                {% for language in languages %}
+                                                                                                {% if language['language_id'] == config_language %}
+                                                                                                <option value="{{language['language_id']}}" selected="selected">{{language['name']}}</option>
+                                                                                                {% else %}
+                                                                                                <option value="{{language['language_id']}}">{{language['name']}}</option>
+                                                                                                {% endif %}
+                                                                                                {% endfor %}
+                                                                                            </select>
+                                                                                        </div>
+                                                                                        <div class="col-sm-6">
+                                                                                            <label class="control-label" for="clone-language-target">{{entry_to}}</label>
+                                                                                            <select name="clone-language-target" id="clone-language-target" class="form-control">
+                                                                                                {% for language in languages %}
+                                                                                                {% if language['language_id'] == config_language %}
+                                                                                                <option value="{{language['language_id']}}" selected="selected">{{language['name']}}</option>
+                                                                                                {% else %}
+                                                                                                <option value="{{language['language_id']}}">{{language['name']}}</option>
+                                                                                                {% endif %}
+                                                                                                {% endfor %}
+                                                                                            </select>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td><button type="button" onclick=" return tools('clone')" data-toggle="tooltip" title="{{button_play}}" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
+                                                                            <td>
+                                                                                <div class="ajax-loader"><img class="loader-img" src="view/javascript/fancytree/skin-win7/loading.gif" style="display:none;" /></div>
+                                                                                <div class="task-complete"><img class="complete-img" src="view/javascript/fancytree/skin-custom/accept.png" style="display:none;" /></div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                        <div class="tab-pane" id="tab-batch">
+                                                            <div class="table-responsive">
+                                                                <table class="table table-bordered">
+                                                                    <colgroup>
+                                                                        <col class="col-xs-12 col-md-10">
+                                                                        <col class="col-xs-4 col-md-1">
+                                                                        <col class="col-xs-4 col-md-1">
+                                                                    </colgroup>
+                                                                    <thead>
+                                                                        <tr>                                                                        
+                                                                            <th><label class="control-label"><span data-toggle="tooltip" title="{{help_replace_options}}">{{head_settings}}</span></label>
+                                                                            </th>
+                                                                            <th>{{head_command}}</th>
+                                                                            <th>{{head_status}}</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td>
+                                                                                <div class="options row">
+                                                                                    <div class="col-xs-12 col-md-6 form-group">
+                                                                                        <label class="col-sm-5 control-label" for="tab-batch-splitter-search"><span data-toggle="tooltip" data-container="body" title="{{help_splitter_search}}">{{label_splitter_search}}</span></label>
+                                                                                        <div class="col-sm-7">
+                                                                                            <input type="text" class="form-control" id="tab-batch-splitter-search" name="tab-batch-splitter-search" placeholder="{{placeholder_splitter_search}}">
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="col-xs-12 col-md-6 form-group">
+                                                                                        <label class="col-sm-5 control-label" for="tab-batch-splitter-replace"><span data-toggle="tooltip" data-container="body" title="{{help_splitter_replace}}">{{label_splitter_replace}}</span></label>
+                                                                                        <div class="col-sm-7">
+                                                                                            <input type="text" class="form-control" id="tab-batch-splitter-replace" name="tab-batch-splitter-replace" placeholder="{{placeholder_splitter_replace}}">
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td><button type="button" onclick=" return tools('batchreplace')" data-toggle="tooltip" title="{{button_play}}" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
+                                                                            <td>
+                                                                                <div class="ajax-loader"><img class="loader-img" src="view/javascript/fancytree/skin-win7/loading.gif" style="display:none;" /></div>
+                                                                                <div class="task-complete"><img class="task-complete-img" src="view/javascript/fancytree/skin-custom/accept.png" style="display:none;" /> </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                        <div class="tab-pane" id="tab-case">
+                                                            <div class="table-responsive">
+                                                                <table class="table table-bordered">
+                                                                    <colgroup>
+                                                                        <col class="col-xs-12 col-md-10">
+                                                                        <col class="col-xs-4 col-md-1">
+                                                                        <col class="col-xs-4 col-md-1">
+                                                                    </colgroup>
+                                                                    <thead>
+                                                                        <tr>                                                                        
+                                                                            <th><label class="control-label"><span data-toggle="tooltip" title="{{help_replace_options}}">{{head_settings}}</span></label>
+                                                                            </th>
+                                                                            <th>{{head_command}}</th>
+                                                                            <th>{{head_status}}</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td>
+                                                                                <div class="options">
+                                                                                    <div class="row">
+                                                                                        <div class="col-xs-12 col-md-3">           
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                             <label>{{label_upper_case}}</label>
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                                <label>{{label_lower_case}}</label>
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">           
+                                                                                        </div>                                                       
+                                                                                    </div>
+                                                                                    <div class="row">
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <label class="checkbox-inline" for="case_group_check">
+                                                                                                <input type="checkbox" name="case_group_check" id="case_group_check" value="group" data-target="case_group">
+                                                                                                {{entry_groups}}
+                                                                                            </label>
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                             <label>
+                                                                                              <input type="radio" name="case_group" value="uppercase" aria-label="..." disabled="true">
+                                                                                             </label>
+                                                                                            </div> 
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                                <label>
+                                                                                                    <input type="radio" name="case_group" value="lowercase" aria-label="..." disabled="true">
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div> 
+                                                                                        <div class="col-xs-12 col-md-3">           
+                                                                                        </div>                                                      
+                                                                                    </div>
+                                                                                    <div class="row">
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <label class="checkbox-inline" for="case_attribute_check">
+                                                                                                <input type="checkbox" name="case_attribute_check" id="case_attribute_check" value="attribute" data-target="case_attribute">
+                                                                                                {{entry_attributes}}
+                                                                                            </label>
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                             <label>
+                                                                                              <input type="radio" name="case_attribute" value="uppercase" aria-label="..." disabled="true">
+                                                                                             </label>
+                                                                                            </div> 
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                                <label>
+                                                                                                    <input type="radio" name="case_attribute" value="lowercase" aria-label="..." disabled="true">
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div> 
+                                                                                        <div class="col-xs-12 col-md-3">           
+                                                                                        </div>                                                      
+                                                                                    </div>
+                                                                                    <div class="row">
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <label class="checkbox-inline" for="case_value_check">
+                                                                                                <input type="checkbox" name="case_value_check" id="case_value_check" value="value" data-target="case_value">
+                                                                                                {{entry_values}}
+                                                                                            </label>
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                             <label>
+                                                                                              <input type="radio" name="case_value" value="uppercase" aria-label="..." disabled="true">
+                                                                                             </label>
+                                                                                            </div> 
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                                <label>
+                                                                                                    <input type="radio" name="case_value" value="lowercase" aria-label="..." disabled="true">
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div> 
+                                                                                        <div class="col-xs-12 col-md-3">           
+                                                                                        </div>                                                      
+                                                                                    </div>
+                                                                                    <div class="row">
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <label class="checkbox-inline" for="case_duty_check">
+                                                                                                <input type="checkbox" name="case_duty_check" id="case_duty_check" value="duty" data-target="case_duty">
+                                                                                                {{entry_duties}}
+                                                                                            </label>
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                             <label>
+                                                                                              <input type="radio" name="case_duty" value="uppercase" aria-label="..." disabled="true">
+                                                                                             </label>
+                                                                                            </div> 
+                                                                                        </div>
+                                                                                        <div class="col-xs-12 col-md-3">
+                                                                                            <div class="radio-inline">
+                                                                                                <label>
+                                                                                                    <input type="radio" name="case_duty" value="lowercase" aria-label="..." disabled="true">
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div> 
+                                                                                        <div class="col-xs-12 col-md-3">           
+                                                                                        </div>                                                      
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td><button type="button" onclick=" return tools('casechange')" data-toggle="tooltip" title="{{button_play}}" class="btn btn-warning"><i class="fa fa-play"></i></button></td>
+                                                                            <td>
+                                                                                <div class="ajax-loader"><img class="loader-img" src="view/javascript/fancytree/skin-win7/loading.gif" style="display:none;" /></div>
+                                                                                <div class="task-complete"><img class="task-complete-img" src="view/javascript/fancytree/skin-custom/accept.png" style="display:none;" /> </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>                                                                                                                
+                                                    </div> 
                                                 </div>
-                                                <div class="alert alert-info" role="alert"> {{alert_info}} </div>
                                             </div>
-                                        </div>
-                                        <div class="alert alert-warning" role="alert" style="display: none"> {{alert_warning}} </div>
-                                        <div class="alert alert-success alert-dismissible" role="alert" style="display: none">
-                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                            {{alert_success}}
+                                            <div class="alert alert-warning" role="alert" style="display: none"> {{alert_warning}} </div>
+                                            <div class="alert alert-success alert-dismissible" role="alert" style="display: none">
+                                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                {{alert_success}}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -896,8 +1108,8 @@
     const token = '{{token}}';
     const user_token = '{{user_token}}';
     const extension = '{{extension}}'; // для v2.3 другая структура каталогов
+    const edit = '{{edit}}'; // для v1.5 другая функция входа в товар
     const route = '{{route}}';
-    const edit = '{{edit}}'; // для v1.5 другая функция входа в товар    
     const textConfirm = {{text_confirm | json_encode()}};
     const FILTERSETTINGS = {{filter_settings | json_encode()}};
 
@@ -954,12 +1166,12 @@
             sortorder: {
                 label: {{ text_sortOrder | json_encode() }}[lng_id],
                 selector: 'sortOrder',
-                state: {{ attributico_sortorder }}
+                state: {{ attributipro_sortorder }}
             },
             lazyload: {
                 label: {{ text_lazyLoad | json_encode() }} [lng_id],
                 selector: 'lazyLoad',
-                state: {{ attributico_lazyload }}
+                state: {{ attributipro_lazyload }}
             },
             autocollapse: {
                 label: {{ text_autoCollapse | json_encode() }} [lng_id],
@@ -969,7 +1181,7 @@
             hierarchy: {
                 label: {{ text_multiSelect | json_encode() }} [lng_id],
                 selector: 'multiSelect',
-                state: {{ attributico_multiselect }}
+                state: {{ attributipro_multiselect }}
             },
             divergency: {
                 label: {{ text_Diver | json_encode() }} [lng_id],
@@ -987,5 +1199,10 @@
     $('#tab-duty_language a:first').tab('show');
     $('#tab-products_language a:first').tab('show');
     $('#verticalTab a:first').tab('show');
+</script>
+<script type="text/javascript">
+     $("#column-1 li").on('click', function () { 
+        $('#column-2 #tabs-standart a:first').tab('show')           
+    })
 </script>
 {{footer}}
