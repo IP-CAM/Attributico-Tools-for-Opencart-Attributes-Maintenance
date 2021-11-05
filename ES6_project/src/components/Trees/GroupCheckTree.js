@@ -3,9 +3,9 @@ import { smartScroll } from '../../constants/global';
 import { KeydownCommand } from '../KeyDownCommand';
 export default class GroupCheckTree {
     constructor(element,store) {
-        this.tree = $(element);
-        this.lng_id = config_language;
-        this.sortOrder = $('input[name = "attributico_sortorder"]:checkbox').is(":checked");
+        this.tree = $(element);        
+        this.lng_id = parseInt(element.id.replace(/\D+/ig, ''));        
+        this.sortOrder = $('input[id = "sortOrder_' + element.id + '"]:checkbox').is(":checked");       
         this.store = store;
         
         this.config = {
@@ -19,7 +19,7 @@ export default class GroupCheckTree {
                     'sortOrder': this.sortOrder,
                     'onlyGroup': true                    
                 },
-                url: 'index.php?route=' + extension + 'module/attributico/getAttributeGroupTree'
+                url: route + 'getAttributeGroupTree'
             },
             keydown: (e, data) => {
                 let command = new KeydownCommand(e, data, this.store);

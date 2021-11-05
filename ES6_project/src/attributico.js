@@ -21,6 +21,7 @@ import { checkForUpdates, dutyUpgrade } from './functions/WindowContext/Upgrade'
 import buildDialog from './containers/BuildDialog';
 import dialogOptionEvents from './components/DialogOption';
 import commonSettings from './components/CommonSettings';
+import toolsEvents from './components/Events/ToolsEvents';
 import configureStore from './store';
 import reducer from './reducers';
 import Observer from './observers/observer';
@@ -78,17 +79,7 @@ $(function () {
         //  return false;
         //TODO submit deprecated
     });
-
-    /**
-     * Alerts for tools when tasks is running
-     * Placed in div = column-2, because column-1 is vtabs
-     **/
-    $('a[data-toggle="pill"]').on('click', function (e) {
-        $("#column-2 .alert-success").hide();
-        $("#column-2 .task-complete").hide();
-        $("#column-2 .alert-info").show();
-    });
-
+    
     /**
      * Common settings change event hundlers
      *
@@ -113,5 +104,11 @@ $(function () {
     });
 
     dialogOptionEvents();
+
+    /**
+     * Tools events manage
+     *
+     **/   
+     toolsEvents(); 
 
 }); // end of document ready
