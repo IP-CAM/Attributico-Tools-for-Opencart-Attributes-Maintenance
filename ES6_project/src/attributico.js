@@ -1,5 +1,5 @@
 /** http://servenus.com © 2015-2021 All Rights Reserved **/
-/** For Attribut&co v.3.1.5  **/
+/** For Attribut&pro v.0.0.8  **/
 
 import 'jquery.fancytree';
 import 'jquery-ui';
@@ -19,18 +19,19 @@ import tools from './functions/WindowContext/Tools'
 import { apply, submit } from './functions/WindowContext/Apply'
 import { checkForUpdates, dutyUpgrade } from './functions/WindowContext/Upgrade'
 import buildDialog from './containers/BuildDialog';
-import dialogOptionEvents from './components/DialogOption';
-import commonSettings from './components/CommonSettings';
+import dialogEvents from './components/Events/DialogEvents';
+import commonSettings from './components/Events/CommonSettings';
 import toolsEvents from './components/Events/ToolsEvents';
 import configureStore from './store';
 import reducer from './reducers';
 import Observer from './observers/observer';
+//import { unitEvents } from './components/Events/UnitFormEvent.js';
 
 window.tools = tools;
 window.apply = apply;
-window.submit =submit;
+window.submit = submit;
 window.checkForUpdates = checkForUpdates;
-window.dutyUpgrade = dutyUpgrade;
+//window.dutyUpgrade = dutyUpgrade;
 
 window.selNodes = null;
 window.selCategories = null;
@@ -41,7 +42,7 @@ window.clipboardTitles = [];
 window.pasteMode = null;
 
 // document ready actions
-$(function () {
+$(function(){
     let t0 = performance.now();
 
     $('.fancyfilter').each(buildFilter);
@@ -64,21 +65,7 @@ $(function () {
             let t1 = performance.now();
             console.log("Call to initTrees took " + (t1 - t0) + " milliseconds.");
         }
-    });
-
-
-    /* Button Save onclick event */
-    $("#form-attributico").on('submit', function () {
-        // Render hidden <input> elements for active and selected nodes
-        $('[id ^= "tree"].settings').each(function (indx, element) {
-            let tree = $.ui.fancytree.getTree("#" + element.id);
-            tree.generateFormElements();
-        });
-        // alert("POST data:\n" + jQuery.param($(this).serializeArray()));
-        // return false to prevent submission of this sample
-        //  return false;
-        //TODO submit deprecated
-    });
+    });  
     
     /**
      * Common settings change event hundlers
@@ -89,26 +76,19 @@ $(function () {
     /**
      * Context menu dialog events
      *
-     **/
-    // Attach dialog
-    $('.dialog-options').dialog({
-        autoOpen: false,
-        resizable: false,
-        modal: true,
-        closeOnEscape: true,
-        buttons: {
-            Ok: function () {
-                $(this).dialog("close");
-            }
-        }
-    });
-
-    dialogOptionEvents();
-
+     **/   
+    dialogEvents();     
+    
     /**
      * Tools events manage
      *
      **/   
      toolsEvents(); 
+
+    /**
+     * Unit form events
+     *
+     **/   
+   // unitEvents();
 
 }); // end of document ready

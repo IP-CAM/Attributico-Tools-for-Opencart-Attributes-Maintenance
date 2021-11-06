@@ -4,7 +4,7 @@ import { KeydownCommand } from '../KeyDownCommand';
 import { deSelectNodes, getSelectedKeys, selectControl } from '../../functions/Select';
 import { loadError } from '../Events/LoadError';
 import { saveAfterEdit } from '../Events/SaveAfterEdit'
-import { editDuty } from '../Events/EditDuty';
+import { editNode } from '../Events/EditNode';
 import { smartScroll } from '../../constants/global';
 import { moveNode } from '../../functions/Move';
 
@@ -12,9 +12,9 @@ export default class AttributeGroupTree {
     constructor(element, store) {
         this.lng_id = parseInt(element.id.replace(/\D+/ig, ''));
         this.currentTab = 'tab-attribute';
-        this.tree = $("#attribute_group_tree" + this.lng_id);
-        this.sortOrder = $('input[id = "sortOrder_attribute_group_tree' + this.lng_id + '"]:checkbox').is(":checked");
-        this.lazyLoad = $('input[id = "lazyLoad_attribute_group_tree' + this.lng_id + '"]:checkbox').is(":checked");
+        this.tree = $(element);
+        this.sortOrder = $('input[id = "sortOrder_' + element.id + '"]:checkbox').is(":checked");
+        this.lazyLoad = $('input[id = "lazyLoad_' + element.id + '"]:checkbox').is(":checked");
         this.store = store;
 
         this.config = {
@@ -34,7 +34,7 @@ export default class AttributeGroupTree {
                     'lazyLoad': this.lazyLoad,
                     'tree': "1"
                 },
-                url: 'index.php?route=' + extension + 'module/attributico/getAttributeGroupTree'
+                url: route + 'getAttributeGroupTree'
             },
             loadError: (e, data) => loadError(e, data),
             lazyLoad: (event, data) => {
@@ -48,7 +48,7 @@ export default class AttributeGroupTree {
                         'lazyLoad': this.lazyLoad,
                         'tree': "1",
                     }, // cache:true,
-                    url: data.node.isGroup() ? 'index.php?route=' + extension + 'module/attributico/getLazyGroup' : 'index.php?route=' + extension + 'module/attributico/getLazyAttributeValues'
+                    url: data.node.isGroup() ? route + 'getLazyGroup' : route + 'getLazyAttributeValues'
                 };
             },
             edit: {
@@ -64,7 +64,7 @@ export default class AttributeGroupTree {
                     this.tree.options.filter['highlight'] = false;
                     this.tree.clearFilter();
                 },
-                edit: (event, data) => editDuty(event, data), // Editor was opened (available as data.input)                
+                edit: (event, data) => editNode(event, data, this.store), // Editor was opened (available as data.input)                
                 beforeClose: function (event, data) {
                     // Return false to prevent cancel/save (data.input is available)
                 },

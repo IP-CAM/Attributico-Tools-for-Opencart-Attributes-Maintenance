@@ -1,30 +1,30 @@
-import { CATEGORY_TREE, CATEGORY_CHECK_TREE, ATTRIBUTE_SYNCRO_TREES } from "../../constants/global";
+import { CATEGORY_TREE, CATEGORY_CHECK_TREE, ATTRIBUTE_SYNCRO_TREES, MODULE } from "../../constants/global";
 
 export function apply() {
     $('[id ^= "tree"].settings').each(function (indx, element) {
         let tree = $.ui.fancytree.getTree("#" + element.id);
         tree.generateFormElements();
     });
-    //alert("POST data:\n" + jQuery.param($("#form-attributico").serializeArray()));
+    //alert("POST data:\n" + jQuery.param($("#form-' + MODULE + '").serializeArray()));
     $(".alert-success, #error_warning.alert-danger").hide();
-    $.post($("#form-attributico").attr('action'), $("#form-attributico").serialize(), function (html) {
-        var $success = $(html).find(".alert-success, #error_warning.alert-danger"); // если после редиректа форма выставила success        
+    $.post($('#form-' + MODULE).attr('action'), $('#form-' + MODULE).serialize(), function (html) {
+        var $success = $(html).find(".alert-success, #error_warning.alert-danger"); // если после редиректа форма выставила success
         if ($success.length > 0) {
             $(".alert-before").before($success);
         } else {
             // если нет, то ищем success по ссылке, котрая в селекте или active для unshop
-            var $href = $(html).find("[selected=\"selected\"]").val() || $(html).find(".active").val(); 
+            var $href = $(html).find("[selected=\"selected\"]").val() || $(html).find(".active").val();
             $.post($href, "", function (html) {
-                var $success = $(html).find(".alert-success, #error_warning.alert-danger");                
+                var $success = $(html).find(".alert-success, #error_warning.alert-danger");
                 if ($success.length > 0) {
                     $(".alert-before").before($success);
                 }
             });
         }
         // Re-apply settings for each trees and contextmenus
-        $('input[id ^= "multiSelect"]:checkbox').prop("checked", $('input[name = "attributico_multiselect"]:checkbox').is(":checked"));
-        $('input[id ^= "sortOrder"]:checkbox').prop("checked", $('input[name = "attributico_sortorder"]:checkbox').is(":checked"));
-        $('input[id ^= "lazyLoad"]:checkbox').prop("checked", $('input[name = "attributico_lazyload"]:checkbox').is(":checked"));
+        $('input[id ^= "multiSelect"]:checkbox').prop("checked", $('input[name = "' + MODULE + '_multiselect"]:checkbox').is(":checked"));
+        $('input[id ^= "sortOrder"]:checkbox').prop("checked", $('input[name = "' + MODULE + '_sortorder"]:checkbox').is(":checked"));
+        $('input[id ^= "lazyLoad"]:checkbox').prop("checked", $('input[name = "' + MODULE + '_lazyload"]:checkbox').is(":checked"));
         $(CATEGORY_TREE).each(function (indx, element) {
             var tree = $.ui.fancytree.getTree("#" + element.id);
             tree.options.selectMode = $('input[id ^= "multiSelect"]:checkbox').is(":checked") ? 3 : 2;
@@ -48,6 +48,6 @@ export function submit() {
         let tree = $.ui.fancytree.getTree("#" + element.id);
         tree.generateFormElements();
     });
-    //alert("POST data:\n" + jQuery.param($("#form-attributico").serializeArray()));
-    $('#form-attributico').trigger('submit')
+    //alert("POST data:\n" + jQuery.param($('#form-' + MODULE).serializeArray()));
+    $('#form-' + MODULE + '').trigger('submit')
 }

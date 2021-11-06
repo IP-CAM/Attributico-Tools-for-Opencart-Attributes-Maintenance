@@ -3,7 +3,7 @@ import { ContextmenuCommand } from '../ContextMenuCommand';
 import { KeydownCommand } from '../KeyDownCommand';
 import { deSelectNodes, selectControl } from '../../functions/Select';
 import { loadError } from '../Events/LoadError';
-import { editDuty } from '../Events/EditDuty';
+import { editNode } from '../Events/EditNode';
 import { saveAfterEdit } from '../Events/SaveAfterEdit';
 import { smartScroll } from '../../constants/global';
 
@@ -12,9 +12,9 @@ export default class AttributeTree {
     constructor(element, store) {
         this.lng_id = parseInt(element.id.replace(/\D+/ig, ''));
         this.currentTab = 'tab-category';
-        this.tree = $("#attribute_tree" + this.lng_id);
-        this.sortOrder = $('input[id = "sortOrder_attribute_tree' + this.lng_id + '"]:checkbox').is(":checked");
-        this.lazyLoad = $('input[id = "lazyLoad_attribute_tree' + this.lng_id + '"]:checkbox').is(":checked");
+        this.tree = $(element);
+        this.sortOrder = $('input[id = "sortOrder_' + element.id + '"]:checkbox').is(":checked");
+        this.lazyLoad = $('input[id = "lazyLoad_' + element.id + '"]:checkbox').is(":checked");
         this.store = store;
 
         this.config = {
@@ -34,7 +34,7 @@ export default class AttributeTree {
                     'lazyLoad': this.lazyLoad,
                     'tree': "3"
                 },
-                url: 'index.php?route=' + extension + 'module/attributico/getAttributeGroupTree'
+                url: route + 'getAttributeGroupTree'
             },
             loadError: (e, data) => loadError(e, data),
             lazyLoad: (event, data) => {
@@ -48,7 +48,7 @@ export default class AttributeTree {
                         'lazyLoad': this.lazyLoad,
                         'tree': "3"
                     }, // cache:true,
-                    url: data.node.isGroup() ? 'index.php?route=' + extension + 'module/attributico/getLazyGroup' : 'index.php?route=' + extension + 'module/attributico/getLazyAttributeValues'
+                    url: data.node.isGroup() ? route + 'getLazyGroup' : route + 'getLazyAttributeValues'
                 };
             },
             edit: {
@@ -66,7 +66,7 @@ export default class AttributeTree {
                 },
                 // Editor was opened (available as data.input)
                 // Alt+Shift+click on input call autocomplete function
-                edit: (event, data) => editDuty(event, data),
+                edit: (event, data) => editNode(event, data, this.store),
                 beforeClose: function (event, data) {
                     // Return false to prevent cancel/save (data.input is available)
                 },

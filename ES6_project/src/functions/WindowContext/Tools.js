@@ -1,4 +1,5 @@
 import { reloadAttribute, reactivateCategory } from "../Syncronisation";
+import { MODULE } from '../../constants/global'
 
 export default function tools(task) {
     $('[id *= "tree"].options').each(function (indx, element) {
@@ -9,13 +10,13 @@ export default function tools(task) {
         });
     });
     //var complete_img = '<img class= "complete-img" src="view/javascript/fancytree/skin-custom/accept.png"/>  ';
-    // alert("POST data:\n" + jQuery.param($("#form-attributico").serializeArray()));
+    // alert("POST data:\n" + jQuery.param($('#form-' + MODULE + '').serializeArray()));
     $.ajax({
         data: {            
             'task': task,
-            'options': $("#form-attributico").serialize()
+            'options': $('#form-' + MODULE).serialize()
         },        
-        url: `index.php?route=${extension}module/attributico/tools&user_token=${user_token}&token=${token}`,
+        url: `${route}tools&user_token=${user_token}&token=${token}`,
         type: 'POST',
         beforeSend: function () {            
             $("#column-2 .loader-img").show();
@@ -23,7 +24,7 @@ export default function tools(task) {
             $("#column-2 .alert-warning").show();
         },
         success: function (json) {
-            reloadAttribute();
+            reloadAttribute(task);
             reactivateCategory();
             $("#column-2 .loader-img").hide();           
             $("#column-2 .alert-warning").hide();

@@ -6,7 +6,7 @@
 export default class ChildConfigTree {
     constructor(element) {
         this.id = parseInt(element.id.replace(/\D+/ig, ''));
-        this.tree = $("#tree" + this.id);
+        this.tree = $(element);
         this.config = {
             checkbox: true,
             selectMode: 2,
@@ -16,7 +16,7 @@ export default class ChildConfigTree {
                     'token': token,
                     'tree': this.id
                 },
-                url: 'index.php?route=' + extension + 'module/attributico/getChildrenSettings'
+                url: route + 'getChildrenSettings'
             }
         }
     }

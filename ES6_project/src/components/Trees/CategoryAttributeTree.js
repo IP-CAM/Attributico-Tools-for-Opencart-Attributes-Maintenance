@@ -5,13 +5,14 @@ import { ContextmenuCommandCategory } from '../ContextMenuCommand';
 import { loadError } from '../Events/LoadError';
 import { smartScroll } from '../../constants/global';
 import { dndAddNode } from '../../actions';
+import { attributeAutoComplete } from '../../functions/AutoComplete';
 
 // --------------------------------------- category attribute tree -------------------------------------
 export default class CategoryAttributeTree {
     constructor(element, store) {
         this.lng_id = parseInt(element.id.replace(/\D+/ig, ''));
-        this.tree = $("#category_attribute_tree" + this.lng_id);
-        this.sortOrder = $('input[id = "sortOrder_category_attribute_tree' + this.lng_id + '"]:checkbox').is(":checked");
+        this.tree = $(element);
+        this.sortOrder = $('input[id = "sortOrder_' + element.id + '"]:checkbox').is(":checked");
         this.store = store;
 
         this.config = {
@@ -27,7 +28,7 @@ export default class CategoryAttributeTree {
                     'sortOrder': this.sortOrder,
                     'tree': "4"
                 },                
-                url: `index.php?route=${extension}module/attributico/getCategoryAttributeTree&user_token=${user_token}&token=${token}`,
+                url: `${route}getCategoryAttributeTree&user_token=${user_token}&token=${token}`,
             },
             loadError: (e, data) => loadError(e, data),
             lazyLoad: (event, data) => {
@@ -38,7 +39,7 @@ export default class CategoryAttributeTree {
                         'sortOrder': this.sortOrder,
                         'tree': "4"
                     }, // cache:true,                   
-                    url: `index.php?route=${extension}module/attributico/getLazyAttributeValues&user_token=${user_token}&token=${token}`,
+                    url: `${route}getLazyAttributeValues&user_token=${user_token}&token=${token}`,
                 };
             },
             edit: {
@@ -51,36 +52,7 @@ export default class CategoryAttributeTree {
                         return false;
                     }
                 },
-                edit: (event, data) => {
-                    $(data.node.span).addClass("fancytree-loading");
-                    data.input.dropmenu({
-                        'source': function (request, response) {
-                            $.ajax({
-                                data: {
-                                    'user_token': user_token,
-                                    'token': token,
-                                    'filter_name': encodeURIComponent(request),
-                                    'language_id': this.lng_id
-                                },
-                                url: 'index.php?route=' + extension + 'module/attributico/autocomplete',
-                                dataType: 'json',
-                                success: function (json) {
-                                    response($.map(json, function (item) {
-                                        return {
-                                            category: item.attribute_group,
-                                            label: item.name,
-                                            value: item.attribute_id
-                                        };
-                                    }));
-                                }
-                            });
-                        },
-                        'select': function (item) {
-                            data.input.val(item.label);
-                            data.node.key = 'attribute_' + item.value;
-                        }
-                    });
-                },
+                edit: (event, data) => attributeAutoComplete(data),
                 beforeClose: function (event, data) {
                     // Return false to prevent cancel/save (data.input is available)
                 },
@@ -91,7 +63,7 @@ export default class CategoryAttributeTree {
                             'category_id': data.node.getParent().key,
                             'categories': selCategories ? getSelectedKeys(selCategories) : [data.node.getParent().key]
                         },                        
-                        url: `index.php?route=${extension}module/attributico/addCategoryAttributes&user_token=${user_token}&token=${token}`,
+                        url: `${route}addCategoryAttributes&user_token=${user_token}&token=${token}`,
                         type: 'POST'
                     }).done(function () {
                         $(data.node.span).removeClass("pending");

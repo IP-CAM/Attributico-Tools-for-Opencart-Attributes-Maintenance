@@ -2,7 +2,7 @@
  * @class Observer
  */
 import { Store, StoreCreator } from 'redux';
-import { CATEGORY_TREE } from '../constants/global';
+import { CATEGORY_TREE, MODULE } from '../constants/global';
 import { getSelectedTitles } from '../functions/Select'
 export default class Observer {
     store: Store
@@ -120,7 +120,7 @@ export default class Observer {
         $(state.boundTrees).each( (index: number, treeSelector: HTMLUListElement) => { treeSelectors.push(treeSelector)})
         treeSelectors.forEach(async (treeSelector: HTMLUListElement): Promise<void> => {
             let tree = $.ui.fancytree.getTree("#" + treeSelector.id);
-            tree.options.source.data.cache = $('input[name = "attributico_cache"]:checkbox').is(":checked");
+            tree.options.source.data.cache = $('input[name = "' + MODULE + '_cache"]:checkbox').is(":checked");
             if (state.affectedNodes !== null) {                
                 if ((tree !== state.tree) || state.selfReload) {
                     await this.smartReload(tree, state.affectedNodes)
@@ -150,7 +150,7 @@ export default class Observer {
 
         for (let treeSelector of treeSelectors) {
             let tree = $.ui.fancytree.getTree("#" + treeSelector.id);
-            tree.options.source.data.cache = $('input[name = "attributico_cache"]:checkbox').is(":checked");
+            tree.options.source.data.cache = $('input[name = "' + MODULE + '_cache"]:checkbox').is(":checked");
             if (state.affectedNodes !== null) {
                 // self перенести в реюсер т.к. разное управление для разных операций
                 // console.log('(', tree !== state.tree, '||', state.targetNode.getParent().isLazy(), ') ||', state.selfReload) /

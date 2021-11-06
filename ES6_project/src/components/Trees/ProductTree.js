@@ -1,14 +1,14 @@
 import { ContextmenuCommand } from "../ContextMenuCommand";
 import { KeydownCommand } from "../KeyDownCommand";
 import { loadError } from "../Events/LoadError";
-import { smartScroll } from "../../constants/global";
+import { smartScroll, MODULE } from "../../constants/global";
 
 export default class ProductTree {
     constructor(element,store) {
         this.lng_id = parseInt(element.id.replace(/\D+/ig, ''));        
-        this.tree = $("#product_tree" + this.lng_id);
-        this.diver = $('input[id = "diver_product_tree' + this.lng_id + '"]:checkbox').is(":checked");      
-        this.sortOrder = $('input[id = "sortOrder_product_tree' + this.lng_id + '"]:checkbox').is(":checked");
+        this.tree = $(element);
+        this.diver = $('input[id = "diver_' + element.id + '"]:checkbox').is(":checked");      
+        this.sortOrder = $('input[id = "sortOrder_' + element.id + '"]:checkbox').is(":checked");
         this.store = store;
 
         this.config = {     
@@ -23,7 +23,7 @@ export default class ProductTree {
                     'sortOrder': this.sortOrder,
                     'invert': this.diver
                 },
-                url: 'index.php?route=' + extension + 'module/attributico/getProductTree'
+                url: route + 'getProductTree'
             },
             loadError: (e, data) => loadError(e, data),
             dblclick: (event, data) => {
@@ -31,7 +31,7 @@ export default class ProductTree {
                     data.node.setExpanded(!data.node.isExpanded());
                     return false;
                 }
-                var about_blank = $('input[id = "input-attributico_about_blank"]:checkbox').is(":checked");
+                var about_blank = $('input[id = "input-' + MODULE + '_about_blank"]:checkbox').is(":checked");
                 var attribute_product_tree = $.ui.fancytree.getTree("#attribute_product_tree" + this.lng_id);
                 var attribute_node = attribute_product_tree.getActiveNode();
                 if (about_blank) {

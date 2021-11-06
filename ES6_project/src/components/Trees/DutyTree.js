@@ -4,7 +4,7 @@ import Filter from '../FancyFilter';
 import { loadError } from '../Events/LoadError';
 //import { isOneOf, isDuty, isAttribute, isTemplate, isValue } from '../../functions/Plugin/NodeMethod';
 import { saveAfterEdit } from '../Events/SaveAfterEdit';
-import { editDuty } from '../Events/EditDuty';
+import { editNode } from '../Events/EditNode';
 import { smartScroll } from '../../constants/global';
 
 // --------------------------------------- duty attribute tree ----------------------------------------------
@@ -12,9 +12,9 @@ export default class DutyTree {
     constructor(element, store) {
         this.lng_id = parseInt(element.id.replace(/\D+/ig, ''));
         this.currentTab = 'tab-duty';
-        this.tree = $("#duty_attribute_tree" + this.lng_id);
-        this.sortOrder = $('input[id = "sortOrder_duty_attribute_tree' + this.lng_id + '"]:checkbox').is(":checked");
-        this.lazyLoad = $('input[id = "lazyLoad_duty_attribute_tree' + this.lng_id + '"]:checkbox').is(":checked");
+        this.tree = $(element);
+        this.sortOrder = $('input[id = "sortOrder_' + element.id + '"]:checkbox').is(":checked");
+        this.lazyLoad = $('input[id = "lazyLoad_' + element.id + '"]:checkbox').is(":checked");
         this.store = store;
 
         this.config = {
@@ -33,7 +33,7 @@ export default class DutyTree {
                     'lazyLoad': this.lazyLoad,
                     'tree': "2"
                 },
-                url: 'index.php?route=' + extension + 'module/attributico/getAttributeGroupTree'
+                url: route + 'getAttributeGroupTree'
             },
             loadError: (e, data) => loadError(e, data),
             lazyLoad: (event, data) => {
@@ -47,7 +47,7 @@ export default class DutyTree {
                         'lazyLoad': this.lazyLoad,
                         'tree': "2"
                     }, // cache:true,
-                    url: data.node.isGroup() ? 'index.php?route=' + extension + 'module/attributico/getLazyGroup' : 'index.php?route=' + extension + 'module/attributico/getLazyAttributeValues'
+                    url: data.node.isGroup() ? route + 'getLazyGroup' : route + 'getLazyAttributeValues'
                 };
             },
             edit: {
@@ -63,7 +63,7 @@ export default class DutyTree {
                     this.tree.options.filter['highlight'] = false;
                     this.tree.clearFilter();
                 },
-                edit: (event, data) => editDuty(event, data),
+                edit: (event, data) => editNode(event, data, this.store),
                 save: (event, data) => saveAfterEdit(event, data, this.store),
                 close: function (event, data) {
                     if (data.save) {

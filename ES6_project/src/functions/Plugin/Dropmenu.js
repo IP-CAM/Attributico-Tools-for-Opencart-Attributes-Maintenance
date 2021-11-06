@@ -54,7 +54,7 @@
                 event.preventDefault();
                 //    event.stopPropagation();  // нельзя будет вылетать
                 value = $(event.target).parent().attr('data-value');
-
+                
                 if (value && this.items[value]) {
                     this.select(this.items[value]);
                 }
@@ -97,7 +97,7 @@
 
                     for (i = 0; i < json.length; i++) {
                         if (!json[i]['category']) {
-                            html += '<li data-value="' + json[i]['value'] + '"><a href="#">' + json[i]['label'] + '</a></li>';
+                            html += '<li data-value="' + json[i]['value'] + '"><span>' + json[i]['label'] + '</span></li>';
                         }
                     }
 
@@ -120,7 +120,7 @@
                         //  html += '<li>' + category[i]['name'] + '</li>';
                         html += '<li class="drop-header">' + category[i]['name'] + '</li>';
                         for (j = 0; j < category[i]['item'].length; j++) {
-                            html += '<li data-value="' + category[i]['item'][j]['value'] + '"><a href="#">&nbsp;&nbsp;&nbsp;' + category[i]['item'][j]['label'] + '</a></li>';
+                            html += '<li data-value="' + category[i]['item'][j]['value'] + '"><span>&nbsp;&nbsp;&nbsp;' + category[i]['item'][j]['label'] + '</span></li>';
                         }
                     }
                 }
@@ -137,7 +137,7 @@
 
             $(this).after($div);
             $menu.appendTo($div);
-            $(this).siblings('div').children($menu).delegate('a', 'mousedown', $.proxy(this.click, this));
+            $(this).siblings('div').children($menu).on('mousedown', 'span', $.proxy(this.click, this));
 
         });
     }
