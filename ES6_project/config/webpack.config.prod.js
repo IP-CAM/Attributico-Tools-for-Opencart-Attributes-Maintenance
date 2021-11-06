@@ -51,18 +51,32 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /.scss$/,
+                test: /\.(scss|css)$/,
                 use: [
-                    MiniCssExtractPlugin.loader,
+                    /* MiniCssExtractPlugin.loader, */
+                    {
+                        loader: "style-loader"                        
+                    },
                     {
                         loader: 'css-loader',
                         options: {
-                            modules: true,
-                            camelCase: 'dashes'
+                            modules: true,                           
                         }
                     },
                     {
-                        loader: 'postcss-loader'
+                        loader: 'postcss-loader',
+                        options: {
+                            postcssOptions: {
+                                plugins: [
+                                    [
+                                        'postcss-preset-env',
+                                        {
+                                            // Options
+                                        },
+                                    ],
+                                ],
+                            },
+                        },
                     },
                     {
                         loader: 'resolve-url-loader'
@@ -79,7 +93,8 @@ module.exports = {
                 query: {
                     'plugins': [
                         ['@babel/plugin-proposal-decorators', { 'legacy': true }],
-                        ['@babel/plugin-proposal-class-properties', { 'loose': true }]
+                        ['@babel/plugin-proposal-class-properties', { 'loose': true }],
+                        ["@babel/plugin-proposal-private-methods", { "loose": true }]
                     ]
                 }
             },

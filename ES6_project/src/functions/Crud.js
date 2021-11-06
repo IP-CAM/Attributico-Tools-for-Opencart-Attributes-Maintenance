@@ -185,7 +185,7 @@ export function copyPaste(action, actionNode, store) {
 
                 clipboardNodes[lng_id] = [];
                 clipboardTitles[lng_id] = [];
-
+// @ts-ignore
                 if (selNodes) {
                     selNodes.forEach(node => {
                         let selNode = tree.getNodeByKey(node.key);

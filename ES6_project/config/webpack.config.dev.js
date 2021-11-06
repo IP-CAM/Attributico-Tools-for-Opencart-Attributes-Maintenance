@@ -1,5 +1,6 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 const path = require('path');
 
@@ -44,24 +45,38 @@ module.exports = {
         extensions: ['.js', '.jsx', '.jsm', ".ts", ".tsx"],
         alias: {
             styles: path.resolve(__dirname, '../src/styles'),
-            'react-dom': '@hot-loader/react-dom'
+            /* 'react-dom': path.resolve(path.join(__dirname, './node_modules/@hot-loader/react-dom')),
+            'react-dom': '@hot-loader/react-dom' */
         }
     },
     module: {
         rules: [
             {
-                test: /.scss$/,
+                test: /\.(scss|css)$/,
                 use: [
-                    {
-                        loader: 'style-loader'
-                    },
+                    /* MiniCssExtractPlugin.loader, */                    
+                    "style-loader"                        
+                    ,
                     {
                         loader: 'css-loader',
                         options: {
                             modules: true,
-                            camelCase: 'dashes',
-                            localIdentName: '[path][name]__[local]'
                         }
+                    },                    
+                    {
+                        loader: 'postcss-loader',
+                        options: {
+                            postcssOptions: {
+                                plugins: [
+                                    [
+                                        'postcss-preset-env',
+                                        {
+                                            // Options
+                                        },
+                                    ],
+                                ],
+                            },
+                        },
                     },
                     {
                         loader: 'resolve-url-loader'
@@ -78,7 +93,8 @@ module.exports = {
                 query: {
                     'plugins': [
                         ['@babel/plugin-proposal-decorators', { 'legacy': true }],
-                        ['@babel/plugin-proposal-class-properties', { 'loose': true }]
+                        ['@babel/plugin-proposal-class-properties', { 'loose': true }],
+                        ["@babel/plugin-proposal-private-methods", { "loose": true }]
                     ]
                 }
             },

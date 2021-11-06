@@ -27,7 +27,7 @@ export async function moveNode(sourceNode, targetNode, clipboard, ctrlKey, direc
     let dispatchAction = null;
     let sourceGroup = sourceNode.getParentGroup();
     let affectedNodes;
-
+// @ts-ignore
     if (merge && !confirm(textConfirm)) {
         return;
     }
