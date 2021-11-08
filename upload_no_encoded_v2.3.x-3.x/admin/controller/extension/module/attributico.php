@@ -1931,7 +1931,7 @@ class ControllerModuleAttributico extends Controller
     {
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'http://servenus.com/check_for_updates.php?module=' . $this->module);
+        curl_setopt($ch, CURLOPT_URL, 'http://attributico.su/check_for_updates.php?module=' . $this->module);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);

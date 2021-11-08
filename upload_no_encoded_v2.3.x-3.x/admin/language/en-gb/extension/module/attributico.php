@@ -68,7 +68,7 @@ $_['text_support'] = '<fieldset>
                                 For all questions related to the operation of the module, please contact:<br/>
 				<strong>E-mail:</strong> <a href="mailto:#">comtronics@mail.ru</a><br/>
 				<strong>Demo:</strong> <a href="http://demo.radiocity.kz">demo.radiocity.kz/admin (demo, demo)</a><br/>
-                                <strong>Manual:</strong> <a href="http://servenus.com/ru/doc_attributico_ru.html">http://servenus.com/index.php?lang=en&page=/doc/ru/attributico</a><br/>
+                                <strong>Manual:</strong> <a href="http://attributico.su/doc/en/attributico.html">http://attributico.su/doc/en/attributico.html</a><br/>
                                 <strong>Forum:</strong> <a href="https://opencartforum.com/topic/62060-attributco-opencart-atributy-eto-legko/">opencartforum.com</a>
                             </address>
                     </fieldset>	';

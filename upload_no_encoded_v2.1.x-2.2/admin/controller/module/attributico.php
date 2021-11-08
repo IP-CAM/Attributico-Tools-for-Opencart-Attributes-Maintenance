@@ -6,6 +6,8 @@ require_once(DIR_SYSTEM . 'library/attributico/attributico.php');
 class ControllerModuleAttributico extends Controller
 {
     const MODULE_VERSION =  'v3.1.9';
+    const TOOLS_GROUP_TREE = 'ft_6';
+    const TOOLS_CATEGORY_TREE = 'ft_7';
     protected $data = array();
     private $error = array();
     private $debug_mode = false;
@@ -53,7 +55,8 @@ class ControllerModuleAttributico extends Controller
         }
 
         if (version_compare(VERSION, '2.2.0', '>=')) {
-            $this->load->language($extension . $this->modulefile);
+            // $this->load->language($extension . $this->modulefile);
+            $this->data = array_merge($this->data, $this->load->language($extension . $this->modulefile));
             $ssl = true;
         } else {
             $this->language->load($this->modulefile);
@@ -79,7 +82,7 @@ class ControllerModuleAttributico extends Controller
         $coworking = $this->db->query("SELECT status FROM " . DB_PREFIX . "modification WHERE `code`='' . $this->module");
         $this->coworking = $coworking->row['status']; */
 
-        $this->data['heading_title'] = $this->language->get('heading_title') . ' ' . $this::MODULE_VERSION;
+        $this->data['heading_title'] = $this->data['heading_title'] . ' ' . $this::MODULE_VERSION;
 
         $this->load->model('setting/setting');
 
@@ -108,7 +111,7 @@ class ControllerModuleAttributico extends Controller
 
             $this->model_setting_setting->editSetting($this->module, $this->request->post);
             $this->model_setting_setting->editSetting('module_' . $this->module, $this->request->post);
-            $this->session->data['success'] = $this->language->get('text_success');
+            $this->session->data['success'] = $this->data['text_success'];
 
             if (version_compare(VERSION, '2.0.1', '>=')) { // иначе вылетает из админки
                 $this->response->redirect($this->url->link($link, $token_name . '=' . $this->token . '&type=module', $ssl));
@@ -122,135 +125,16 @@ class ControllerModuleAttributico extends Controller
         }
         $this->session->data['free'] = $vendor->franchise();
         if ($this->session->data['free']) {
-            $this->data['heading_title'] = $this->language->get('heading_title') . ' View ' . $this::MODULE_VERSION . '(free)';
+            $this->data['heading_title'] = $this->data['heading_title'] . ' View ' . $this::MODULE_VERSION . '(free)';
         }
 
         if (!$this->dbStructureCheck()) {
-            $this->error['warning'] = $this->language->get('error_status');
+            $this->error['warning'] = $this->data['error_status'];
         }
 
         if (isset($this->session->data['a_debug_mode'])) {
             $this->debug_mode = $this->session->data['a_debug_mode'];
         }
-
-        $this->data['text_edit'] = $this->language->get('text_edit');
-        $this->data['text_enabled'] = $this->language->get('text_enabled');
-        $this->data['text_disabled'] = $this->language->get('text_disabled');
-        $this->data['text_support'] = $this->language->get('text_support');
-        $this->data['text_help1'] = $this->language->get('text_help1');
-        $this->data['text_help2'] = $this->language->get('text_help2');
-        $this->data['text_overwrite'] = $this->language->get('text_overwrite');
-        $this->data['text_overwrite_if_empty'] = $this->language->get('text_overwrite_if_empty');
-        $this->data['text_clear'] = $this->language->get('text_clear');
-        $this->data['text_insert'] = $this->language->get('text_insert');
-        $this->data['text_keep'] = $this->language->get('text_keep');
-        $this->data['text_confirm'] = $this->language->get('text_confirm');
-        $this->data['error_not_info'] = $this->language->get('error_not_info');
-        $this->data['text_replace_substr'] = $this->language->get('text_replace_substr');
-        $this->data['text_replace_match'] = $this->language->get('text_replace_match');
-
-        $this->data['text_duty'] = $this->language->get('text_duty');
-        $this->data['text_duty_only'] = $this->language->get('text_duty_only');
-        $this->data['text_attention'] = $this->language->get('text_attention');
-        $this->data['help_upgrade'] = $this->language->get('help_upgrade');
-        $this->data['entry_upgrade'] = $this->language->get('entry_upgrade');
-
-        $this->data['tab_general'] = $this->language->get('tab_general');
-        $this->data['tab_attribute'] = $this->language->get('tab_attribute');
-        $this->data['tab_category'] = $this->language->get('tab_category');
-        $this->data['tab_duty'] = $this->language->get('tab_duty');
-        $this->data['tab_support'] = $this->language->get('tab_support');
-        $this->data['tab_tools'] = $this->language->get('tab_tools');
-        $this->data['tab_products'] = $this->language->get('tab_products');
-        $this->data['tab_empty'] = $this->language->get('tab_empty');
-        $this->data['tab_defrag'] = $this->language->get('tab_defrag');
-        $this->data['tab_sorting'] = $this->language->get('tab_sorting');
-        $this->data['tab_scavengery'] = $this->language->get('tab_scavengery');
-        $this->data['tab_standart'] = $this->language->get('tab_standart');
-        $this->data['tab_detached'] = $this->language->get('tab_detached');
-        $this->data['tab_deduplicate'] = $this->language->get('tab_deduplicate');
-        $this->data['tab_cache'] = $this->language->get('tab_cache');
-        $this->data['tab_category_attributes'] = $this->language->get('tab_category_attributes');
-
-        $this->data['settings_general'] = $this->language->get('settings_general');
-        $this->data['settings_category'] = $this->language->get('settings_category');
-        $this->data['settings_algorithm'] = $this->language->get('settings_algorithm');
-        $this->data['settings_inherit'] = $this->language->get('settings_inherit');
-        $this->data['settings_children'] = $this->language->get('settings_children');
-        $this->data['settings_replace'] = $this->language->get('settings_replace');
-
-        $this->data['entry_splitter'] = $this->language->get('entry_splitter');
-        $this->data['entry_sortorder'] = $this->language->get('entry_sortorder');
-        $this->data['entry_smart_scroll'] = $this->language->get('entry_smart_scroll');
-        $this->data['entry_empty'] = $this->language->get('entry_empty');
-        $this->data['entry_multiselect'] = $this->language->get('entry_multiselect');
-        $this->data['entry_autoattribute'] = $this->language->get('entry_autoattribute');
-        $this->data['entry_autodel'] = $this->language->get('entry_autodel');
-        $this->data['entry_autoadd_inherit'] = $this->language->get('entry_autoadd_inherit');
-        $this->data['entry_autodel_inherit'] = $this->language->get('entry_autodel_inherit');
-        $this->data['entry_attribute_values'] = $this->language->get('entry_attribute_values');
-        $this->data['entry_values'] = $this->language->get('entry_values');
-        $this->data['entry_attribute_category'] = $this->language->get('entry_attribute_category');
-        $this->data['entry_duty'] = $this->language->get('entry_duty');
-        $this->data['entry_duties'] = $this->language->get('entry_duties');
-        $this->data['entry_attribute_groups'] = $this->language->get('entry_attribute_groups');
-        $this->data['entry_groups'] = $this->language->get('entry_groups');
-        $this->data['entry_attributes'] = $this->language->get('entry_attributes');
-        $this->data['entry_products'] = $this->language->get('entry_products');
-        $this->data['entry_about_blank'] = $this->language->get('entry_about_blank');
-        $this->data['entry_lazyload'] = $this->language->get('entry_lazyload');
-        $this->data['entry_cache'] = $this->language->get('entry_cache');
-        $this->data['entry_info_title'] = $this->language->get('entry_info_title');
-        $this->data['entry_create_categories'] = $this->language->get('entry_create_categories');
-        $this->data['entry_inject_to_products'] = $this->language->get('entry_inject_to_products');
-        $this->data['entry_multistore'] = $this->language->get('entry_multistore');
-        $this->data['entry_from'] = $this->language->get('entry_from');
-        $this->data['entry_to'] = $this->language->get('entry_to');
-        $this->data['entry_flter_all'] = $this->language->get('entry_flter_all');
-        $this->data['entry_flter_category'] = $this->language->get('entry_flter_category');
-        $this->data['entry_flter_duty'] = $this->language->get('entry_flter_duty');
-
-        $this->data['help_sortorder'] = $this->language->get('help_sortorder');
-        $this->data['help_smart_scroll'] = $this->language->get('help_smart_scroll');
-        $this->data['help_multiselect'] = $this->language->get('help_multiselect');
-        $this->data['help_empty'] = $this->language->get('help_empty');
-        $this->data['help_autoattribute'] = $this->language->get('help_autoattribute');
-        $this->data['help_autodel'] = $this->language->get('help_autodel');
-        $this->data['help_autodel_inherit'] = $this->language->get('help_autodel_inherit');
-        $this->data['help_autoadd_inherit'] = $this->language->get('help_autoadd_inherit');
-        $this->data['help_product_text'] = $this->language->get('help_product_text');
-        $this->data['help_children'] = $this->language->get('help_children');
-        $this->data['help_nosettings'] = $this->language->get('help_nosettings');
-        $this->data['help_about_blank'] = $this->language->get('help_about_blank');
-        $this->data['help_lazyload'] = $this->language->get('help_lazyload');
-        $this->data['help_group_options'] = $this->language->get('help_group_options');
-        $this->data['help_defrag_options'] = $this->language->get('help_defrag_options');
-        $this->data['help_cache'] = $this->language->get('help_cache');
-        $this->data['help_categories_options'] = $this->language->get('help_categories_options');
-        $this->data['help_multistore'] = $this->language->get('help_multistore');
-        $this->data['help_clone_options'] = $this->language->get('help_clone_options');
-        $this->data['help_replace_substr'] = $this->language->get('help_replace_substr');
-        $this->data['help_replace_match'] = $this->language->get('help_replace_match');
-
-        $this->data['button_apply'] = $this->language->get('button_apply');
-        $this->data['button_save'] = $this->language->get('button_save');
-        $this->data['button_cancel'] = $this->language->get('button_cancel');
-        $this->data['button_play'] = $this->language->get('button_play');
-        $this->data['button_close'] = $this->language->get('button_close');
-        $this->data['button_check_for_updates'] = $this->language->get('button_check_for_updates');
-
-        $this->data['head_settings'] = $this->language->get('head_settings');
-        $this->data['head_command'] = $this->language->get('head_command');
-        $this->data['head_status'] = $this->language->get('head_status');
-        $this->data['alert_warning'] = $this->language->get('alert_warning');
-        $this->data['alert_success'] = $this->language->get('alert_success');
-        $this->data['alert_info'] = $this->language->get('alert_info');
-        $this->data['alert_reload'] = $this->language->get('alert_reload');
-        $this->data['alert_backup'] = $this->language->get('alert_backup');
-        $this->data['alert_remove_ca_confirm'] = $this->language->get('alert_remove_ca_confirm');
-        $this->data['head_clone'] = $this->language->get('head_clone');
-        $this->data['label_unit'] = $this->language->get('label_unit');
-        $this->data['help_unit'] = $this->language->get('help_unit');
 
         if (isset($this->error['warning'])) {
             $this->data['error_warning'] = $this->error['warning'];
@@ -261,19 +145,19 @@ class ControllerModuleAttributico extends Controller
         $this->data['breadcrumbs'] = array();
 
         $this->data['breadcrumbs'][] = array(
-            'text' => $this->language->get('text_home'),
+            'text' => $this->data['text_home'],
             'href' => $this->url->link('common/dashboard', $token_name . '=' . $this->token, $ssl),
             'separator' => false
         );
 
         $this->data['breadcrumbs'][] = array(
-            'text' => $this->language->get('text_module'),
+            'text' => $this->data['text_module'],
             'href' => $this->url->link($link, $token_name . '=' . $this->token . '&type=module', $ssl),
             'separator' => ' :: '
         );
 
         $this->data['breadcrumbs'][] = array(
-            'text' => $this->language->get('heading_title'),
+            'text' => $this->data['heading_title'],
             'href' => $this->url->link($extension . $this->modulefile, $token_name . '=' . $this->token, $ssl),
             'separator' => ' :: '
         );
@@ -290,6 +174,31 @@ class ControllerModuleAttributico extends Controller
         }
 
         $default_settings = array();
+        $global_words = [
+            'entry_attribute_groups', 'entry_templates', 'entry_values', 'entry_duty', 'entry_attribute_category', 'error_not_category',
+            'entry_categories', 'error_not_attribute', 'entry_products', 'entry_attribute', 'entry_attributes'
+        ];
+        foreach ($global_words as $word) {
+            $this->session->data[$word] = [];
+        }
+        $menu_words = [
+            'text_New_attribute', 'text_New_group', 'text_Expande', 'text_Collapse', 'text_Refresh', 'text_sortOrder', 'text_Diver',
+            'text_Edit', 'text_Delete', 'text_Copy', 'text_Cut', 'text_Paste', 'text_Merge', 'text_lazyLoad', 'entry_clone'
+        ];
+        foreach ($menu_words as $word) {
+            $this->data[$word] = [];
+        }
+        $filter_words = [
+            'text_matches', 'text_filter', 'text_autoComplete', 'text_Hide_unmatched_nodes', 'text_autoCollapse', 'text_Regular_expression',
+            'text_Highlight', 'text_Fuzzy', 'text_hideExpandedCounter', 'text_Counter_badges', 'text_Auto_expand', 'text_Leaves_only', 'text_Attributes_only', 'button_filter_action', 'f_empty', 'f_digital', 'f_html', 'f_default'
+        ];
+        foreach ($filter_words as $word) {
+            $this->data[$word] = [];
+        }
+        $option_words = ['text_Options', 'text_Sort', 'button_submit', 'text_multiSelect'];
+        foreach ($option_words as $word) {
+            $this->data[$word] = [];
+        }
 
         foreach ($this->data['languages'] as $language) {
             $lng = $this->getLanguage($language['language_id']);
@@ -300,58 +209,22 @@ class ControllerModuleAttributico extends Controller
                 $this->data['languages'][$language['code']]['src'] = 'view/image/flags/' . $language['image'];
             }
             // global tree entry-text
-            $this->session->data['entry_attribute_groups'][$language['language_id']] = $lng->get('entry_attribute_groups');
-            $this->session->data['entry_templates'][$language['language_id']] = $lng->get('entry_templates');
-            $this->session->data['entry_values'][$language['language_id']] = $lng->get('entry_values');
-            $this->session->data['entry_duty'][$language['language_id']] = $lng->get('entry_duty');
-            $this->session->data['entry_attribute_category'][$language['language_id']] = $lng->get('entry_attribute_category');
-            $this->session->data['error_not_category'][$language['language_id']] = $lng->get('error_not_category');
-            $this->session->data['entry_categories'][$language['language_id']] = $lng->get('entry_categories');
-            $this->session->data['error_not_attribute'][$language['language_id']] = $lng->get('error_not_attribute');
-            $this->session->data['entry_products'][$language['language_id']] = $lng->get('entry_products');
-            $this->session->data['entry_attribute'][$language['language_id']] = $lng->get('entry_attribute');
-            $this->session->data['entry_attributes'][$language['language_id']] = $lng->get('entry_attributes');
+            foreach ($global_words as $word) {
+                $this->session->data[$word][$language['language_id']] = $lng->get($word);
+            }
             // menu
-            $this->data['text_New_attribute'][$language['language_id']] = $lng->get('text_New_attribute');
-            $this->data['text_New_group'][$language['language_id']] = $lng->get('text_New_group');
-            $this->data['text_Expande'][$language['language_id']] = $lng->get('text_Expande');
-            $this->data['text_Collapse'][$language['language_id']] = $lng->get('text_Collapse');
-            $this->data['text_Refresh'][$language['language_id']] = $lng->get('text_Refresh');
-            $this->data['text_sortOrder'][$language['language_id']] = $lng->get('text_sortOrder');
-            $this->data['text_Diver'][$language['language_id']] = $lng->get('text_Diver');
-            $this->data['text_Edit'][$language['language_id']] = $lng->get('text_Edit');
-            $this->data['text_Delete'][$language['language_id']] = $lng->get('text_Delete');
-            $this->data['text_Copy'][$language['language_id']] = $lng->get('text_Copy');
-            $this->data['text_Cut'][$language['language_id']] = $lng->get('text_Cut');
-            $this->data['text_Paste'][$language['language_id']] = $lng->get('text_Paste');
-            $this->data['text_Merge'][$language['language_id']] = $lng->get('text_Merge');
-            $this->data['text_lazyLoad'][$language['language_id']] = $lng->get('text_lazyLoad');
-            $this->data['entry_clone'][$language['language_id']] = $lng->get('entry_clone');
+            foreach ($menu_words as $word) {
+                $this->data[$word][$language['language_id']] = $lng->get($word);
+            }
             // options
-            $this->data['text_Options'][$language['language_id']] = $lng->get('text_Options');
-            $this->data['text_Sort'][$language['language_id']] = $lng->get('text_Sort');
-            $this->data['button_submit'][$language['language_id']] = $lng->get('button_submit');
-            $this->data['text_multiSelect'][$language['language_id']] = $lng->get('text_multiSelect');
+            foreach ($option_words as $word) {
+                $this->data[$word][$language['language_id']] = $lng->get($word);
+            }
             // filter
-            $this->data['text_matches'][$language['language_id']] = $lng->get('text_matches');
-            $this->data['text_filter'][$language['language_id']] = $lng->get('text_filter');
-            $this->data['text_Hide_unmatched_nodes'][$language['language_id']] = $lng->get('text_Hide_unmatched_nodes');
-            $this->data['text_autoCollapse'][$language['language_id']] = $lng->get('text_autoCollapse');
-            $this->data['text_autoComplete'][$language['language_id']] = $lng->get('text_autoComplete');
-            $this->data['text_Regular_expression'][$language['language_id']] = $lng->get('text_Regular_expression');
-            $this->data['text_Highlight'][$language['language_id']] = $lng->get('text_Highlight');
-            $this->data['text_Fuzzy'][$language['language_id']] = $lng->get('text_Fuzzy');
-            $this->data['text_Highlight'][$language['language_id']] = $lng->get('text_Highlight');
-            $this->data['text_hideExpandedCounter'][$language['language_id']] = $lng->get('text_hideExpandedCounter');
-            $this->data['text_Counter_badges'][$language['language_id']] = $lng->get('text_Counter_badges');
-            $this->data['text_Auto_expand'][$language['language_id']] = $lng->get('text_Auto_expand');
-            $this->data['text_Leaves_only'][$language['language_id']] = $lng->get('text_Leaves_only');
-            $this->data['text_Attributes_only'][$language['language_id']] = $lng->get('text_Attributes_only');
-            $this->data['button_filter_action'][$language['language_id']] = $lng->get('button_filter_action');
-            $this->data['f_empty'][$language['language_id']] = $lng->get('f_empty');
-            $this->data['f_digital'][$language['language_id']] = $lng->get('f_digital');
-            $this->data['f_html'][$language['language_id']] = $lng->get('f_html');
-            $this->data['f_default'][$language['language_id']] = $lng->get('f_default');
+            foreach ($filter_words as $word) {
+                $this->data[$word][$language['language_id']] = $lng->get($word);
+            }
+
             $alltabs = ['tab-attribute', 'tab-duty', 'tab-category', 'tab-products'];
             foreach ($alltabs as $tab) {
                 array_push($default_settings, 'fs_' . $tab . '_autoComplete' . $language['language_id'], 'fs_' . $tab . '_autoExpand' . $language['language_id'], 'fs_' . $tab . '_counter' . $language['language_id'], 'fs_' . $tab . '_hideExpandedCounter' . $language['language_id'], 'fs_' . $tab . '_highlight' . $language['language_id']);
@@ -384,7 +257,7 @@ class ControllerModuleAttributico extends Controller
         $this->assignData($this->module . '_replace_mode', 'substr');
 
         if ($this->module === 'attributipro') {
-            $this->data['units'] = $this->getUnitOptions($this->config->get('config_language_id'), $this->language->get('not_selected'));
+            $this->data['units'] = $this->getUnitOptions($this->config->get('config_language_id'), $this->data['not_selected']);
         }
 
         if (version_compare(VERSION, '2.0.1', '>=')) {
@@ -395,7 +268,7 @@ class ControllerModuleAttributico extends Controller
             $tpl = version_compare(VERSION, '2.2.0', '>=') ? "" : ".tpl";
             $this->response->setOutput($this->load->view($extension . $this->modulefile . $tpl, $this->data));
         } else {
-            $this->template = 'module/' . $this->module. '_1_5_x.tpl';
+            $this->template = 'module/' . $this->module . '_1_5_x.tpl';
             $this->children = array(
                 'common/header',
                 'common/footer'
@@ -408,7 +281,15 @@ class ControllerModuleAttributico extends Controller
     {
         $extension = version_compare(VERSION, '2.3.0', '>=') ? "extension/" : "";
         if (!$this->user->hasPermission('modify', $extension . $this->modulefile)) {
-            $this->error['warning'] = $this->language->get('error_permission');
+            $this->error['warning'] = $this->data['error_permission'];
+        }
+
+        $splitter = isset($this->request->post[$this->module . '_splitter']) ? $this->request->post[$this->module . '_splitter'] :
+            $this->config->get($this->module . '_splitter');
+        if (
+            strlen($splitter) > 1 || preg_match_all('/(?!_)[\w\d\s\[\]\'\"\-]/mu', $splitter)
+        ) {
+            $this->error['warning'] = $this->data['error_splitter'];
         }
         return !$this->error;
     }
@@ -568,7 +449,7 @@ class ControllerModuleAttributico extends Controller
         return $select;
     }
 
-    private function splitTemplate($templates)
+    protected function splitTemplate($templates)
     {
         $splitter = !($this->config->get($this->module . '_splitter') == '') ? $this->config->get($this->module . '_splitter') : '/';
 
@@ -650,16 +531,16 @@ class ControllerModuleAttributico extends Controller
         $select .= "</select>";
 
         $splitter = !($this->config->get($this->module . '_splitter') == '') ? $this->config->get($this->module . '_splitter') : '/';
-        $attributico_autoadd = $this->config->get($this->module . '_autoadd') ? $this->config->get($this->module . '_autoadd') : 0;
+        $autoadd = $this->config->get($this->module . '_autoadd') ? $this->config->get($this->module . '_autoadd') : 0;
         /* $remove_category_attribute = $this->language->get('alert_remove_ca_confirm');
         $attach_category_attributes = $this->language->get('tab_category_attributes'); */
 
-        $json = ['serv_panel' => $labels . $buttons . $select, 'splitter' => quotemeta($splitter), $this->module . '_autoadd' => $attributico_autoadd, 'extension' => $extension, 'remove_category_attribute' => $this->language->get('alert_remove_ca_confirm'), 'attach_category_attributes' => $this->language->get('tab_category_attributes')];
+        $json = ['serv_panel' => $labels . $buttons . $select, 'splitter' => quotemeta($splitter), $this->module . '_autoadd' => $autoadd, 'extension' => $extension, 'remove_category_attribute' => $this->language->get('alert_remove_ca_confirm'), 'attach_category_attributes' => $this->language->get('tab_category_attributes')];
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
-    }    
-
+    }
+//TODO chek permission to unit
     protected function getUnitOptions($language_id, $title0)
     {
         $this->load->model('localisation/unit');
@@ -687,7 +568,7 @@ class ControllerModuleAttributico extends Controller
         }
         return $option_list;
     }
-    
+
     /* Tree functions */
     public function getAttributeGroupTree()
     {
@@ -1703,7 +1584,7 @@ class ControllerModuleAttributico extends Controller
         $data[$this->module . '_cache'] = '1';
         $data[$this->module . '_lazyload'] = '1';
         $data[$this->module . '_children'] = 'a:5:{i:1;a:2:{i:0;s:8:"template";i:1;s:5:"value";}i:2;a:1:{i:0;s:4:"duty";}i:3;a:1:{i:0;s:4:"duty";}i:4;a:2:{i:0;s:8:"template";i:1;s:5:"value";}i:5;a:2:{i:0;s:8:"template";i:1;s:5:"value";}}';
-        $data['module_'.$this->module.'_status'] = '1';
+        $data['module_' . $this->module . '_status'] = '1';
 
         $this->load->model('setting/setting');
         $this->model_setting_setting->editSetting($this->module, $data);
@@ -1861,8 +1742,8 @@ class ControllerModuleAttributico extends Controller
                 break;
             case 'detached':
                 $count_of_detached = 0;
-                if (isset($options['ft_6'])) {
-                    foreach ($options['ft_6'] as $group) {
+                if (isset($options[$this::TOOLS_GROUP_TREE])) {
+                    foreach ($options[$this::TOOLS_GROUP_TREE] as $group) {
                         $group_id = explode("_", $group);
                         if ($group_id[0] == 'group') {
                             $count_of_detached = $this->{$this->model_tools}->detached($group_id[1]);
@@ -1873,8 +1754,8 @@ class ControllerModuleAttributico extends Controller
                 break;
             case 'deduplicate':
                 $count_of_duplicates = 0;
-                if (isset($options['ft_7'])) {
-                    foreach ($options['ft_7'] as $group) {
+                if (isset($options[$this::TOOLS_GROUP_TREE])) {
+                    foreach ($options[$this::TOOLS_GROUP_TREE] as $group) {
                         $group_id = explode("_", $group);
                         if ($group_id[0] == 'group') {
                             $count_of_duplicates += $this->{$this->model_tools}->deduplicate($group_id[1]);
@@ -1888,8 +1769,8 @@ class ControllerModuleAttributico extends Controller
                 $count_of_products = 0;
                 $categories = array();
                 /* $start_time = microtime(true); */
-                if (isset($options['ft_8'])) {
-                    foreach ($options['ft_8'] as $category) {
+                if (isset($options[$this::TOOLS_CATEGORY_TREE])) {
+                    foreach ($options[$this::TOOLS_CATEGORY_TREE] as $category) {
                         $categories[] = explode("_", $category)[1];
                     }
                     if (isset($options['tab-create-categories'])) {
@@ -1935,16 +1816,122 @@ class ControllerModuleAttributico extends Controller
                 }
 
                 break;
+            case 'batchreplace':
+                $count_of_batch = 0;
+                $search = isset($options['tab-batch-splitter-search']) ? $options['tab-batch-splitter-search'] : '';
+                $replace = isset($options['tab-batch-splitter-replace']) ? $options['tab-batch-splitter-replace'] : '';
+                $categories = $this->explodeOptions($options, $this::TOOLS_CATEGORY_TREE);
+                $groups = $this->explodeOptions($options, $this::TOOLS_GROUP_TREE);
+
+                // Pattern and replace cleaning
+                $matches = preg_filter('/(?!_)[\w\d\s\[\]\'\"\-]/mu', '', ' ' . $search);
+                $pattern =  '[' . preg_quote($matches, '/') . ']';
+                $splitter = preg_filter('/(?!_)[\w\d\s\[\]\'\"\-]/mu', '', ' ' . $replace);
+
+                if ($matches && $splitter) {
+                    $splitter = substr($splitter, 0, 1);
+
+                    $batch_records = $this->{$this->model}->getValues($pattern, $categories, $groups);
+
+                    if ($batch_records) {
+                        foreach ($batch_records as $key => $record) {
+                            $batch_records[$key]['text'] = preg_replace('/\s*' . $pattern . '\s*/mu', $splitter, $record['text']);
+                        }
+                        $count_of_batch += $this->{$this->model}->updateValues($batch_records);
+                    }
+
+                    $task_result .= $language->get('message_batch') . "  " . (string) ($count_of_batch);
+                } else {
+                    $task_result = $language->get('error_splitter') . "  " . $language->get('message_batch') . "  " . (string) ($count_of_batch);
+                }
+                break;
+            case 'casechange':
+                $count_of_batch = 0;
+                $group_case = isset($options['case_group_check']) ? $options['case_group'] : '';
+                $attribute_case = isset($options['case_attribute_check']) ? $options['case_attribute'] : '';
+                $value_case = isset($options['case_value_check']) ? $options['case_value'] : '';
+                $duty_case = isset($options['case_duty_check']) ? $options['case_duty'] : '';
+                $categories = $this->explodeOptions($options, $this::TOOLS_CATEGORY_TREE);
+                $groups = $this->explodeOptions($options, $this::TOOLS_GROUP_TREE);
+
+                if ($group_case) {
+                    $case_records = $this->{$this->model}->getGroups($groups);
+                    $this->changeFirstCase($case_records, $group_case, 'name');
+                    $count_of_batch += $this->{$this->model}->updateGroups($case_records);
+                }
+
+                if ($attribute_case) {
+                    $case_records = $this->{$this->model}->getAttributesByGroups($groups);
+                    $this->changeFirstCase($case_records, $attribute_case, 'name');
+                    $count_of_batch += $this->{$this->model}->updateAttributes($case_records);
+                }
+
+                if ($value_case) {
+                    $pattern = '.';
+                    $case_records = $this->{$this->model}->getValues($pattern, $categories, $groups);
+                    $this->changeFirstCase($case_records, $value_case, 'text');
+                    $count_of_batch += $this->{$this->model}->updateValues($case_records);
+                }
+
+                if ($duty_case) {
+                    $case_records = $this->{$this->model}->getDuties($groups);
+                    $this->changeFirstCase($case_records, $duty_case, 'duty');
+                    $count_of_batch += $this->{$this->model}->updateDuties($case_records);
+                }
+
+                $task_result .= $language->get('message_batch') . "  " . (string) ($count_of_batch);
+                break;
         }
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($task_result));
+    }
+
+    private function changeFirstCase(&$case_records, $case, $column)
+    {
+        $splitter = !($this->config->get($this->module . '_splitter') == '') ? $this->config->get($this->module . '_splitter') : '/';
+
+        if ($case_records) {
+            foreach ($case_records as $key => $record) {
+                // Split template
+                $elements = explode($splitter, $record[$column]);
+                switch ($case) {
+                    case 'uppercase':
+                        // Uppercase elements
+                        foreach ($elements as $index => $element) {
+                            $elements[$index] =  mb_ucfirst($element);
+                        }
+                        break;
+                    case 'lowercase':
+                        foreach ($elements as $index => $element) {
+                            $elements[$index] =  mb_lcfirst($element);
+                        }
+                        break;
+                }
+                // Concat template
+                $new_name = implode($splitter, $elements);
+                // Return to records
+                $case_records[$key][$column] = $new_name;
+            }
+        }
+    }
+
+    private function explodeOptions($options, $option_name)
+    {
+        $options_array = array();
+
+        if (isset($options[$option_name])) {
+            foreach ($options[$option_name] as $option) {
+                $options_array[] = explode("_", $option)[1];
+            }
+        }
+        return $options_array;
     }
 
     public function checkForUpdates()
     {
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'http://servenus.com/check_for_updates.php?module=' . $this->module);
+        curl_setopt($ch, CURLOPT_URL, 'http://attributico.su/check_for_updates.php?module=' . $this->module);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
@@ -1982,7 +1969,9 @@ class ControllerExtensionModuleAttributico extends ControllerModuleAttributico
 }
 class ControllerModuleAttributipro extends ControllerModuleAttributico
 {
-    const MODULE_VERSION =  'v0.0.4';
+    const MODULE_VERSION =  'v0.0.7';
+    const TOOLS_GROUP_TREE = 'ft_6';
+    const TOOLS_CATEGORY_TREE = 'ft_7';
     protected $dbstructure = array(
         'attribute' => array(
             'image ' => "varchar(255) DEFAULT NULL",
@@ -2040,7 +2029,9 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             }
 
             $info['thumb'] = $thumb;
-
+            /* Start url */
+            /* $url = explode($this->config->get($this->module . '_splitter'), $info['text']);
+            $info['url'] =  $this->url->link('product/category', 'path=' . '20' . '&' . implode('~', array_map('str2url', $url))); */
 
             $language = $this->getLanguage($language_id);
 
@@ -2103,23 +2094,38 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
                                     </div>
                                 </div>
                             </div>
-                            <div>
-                                <div class='form-group'>
-                                    <label class='col-sm-2 control-label' for='url'>{$language->get('label_url')}<span data-toggle='tooltip' title='{$language->get('help_url')}'></span></label>
-                                    <div class='col-sm-10'>
-                                        <div><input type='text' class='form-control' id='url' name='url' placeholder='{$language->get('placeholder_url')}' value='{$info['url']}'></div>
-                                    </div>
-                                </div>
+                            <div>" . $this->formElement(
+                        'text',
+                        'url',
+                        $info['url'],
+                        [
+                            'label' => $language->get('label_url'),
+                            'tooltip' => $language->get('help_url'),
+                            'placeholder' => $language->get('placeholder_url')
+                        ]
+                    ) . "
                             </div>
-                            <div class='form-group'>
-                                <label class='col-sm-2 control-label' for='unit_id'>{$language->get('label_unit')}<span data-toggle='tooltip' title='{$language->get('help_unit')}'></span></label>
-                                <div class='col-sm-10'><select class='form-control' name='unit_id'>{$units}</select></div>
-                            </div>
-                            <div>
-                                <div class='form-group'>
-                                    <label class='col-sm-2 control-label' for='status'>{$language->get('label_status')}<span data-toggle='tooltip' title='{$language->get('help_status')}'></span></label>
-                                    <div class='col-sm-10'><select class='form-control' name='status'>{$statuses}</select></div>
-                                </div>
+                            <div>" . $this->formElement(
+                        'select',
+                        'unit_id',
+                        $units,
+                        [
+                            'label' => $language->get('label_unit'),
+                            'tooltip' => $language->get('help_unit'),
+                            'placeholder' => ''
+                        ]
+                    ) . "
+                            </div>  
+                            <div>" . $this->formElement(
+                        'select',
+                        'status',
+                        $statuses,
+                        [
+                            'label' => $language->get('label_status'),
+                            'tooltip' => $language->get('help_status'),
+                            'placeholder' => ''
+                        ]
+                    ) . "
                             </div>
                         </div>
                         <div class='modal-footer'>
@@ -2140,7 +2146,25 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($info, JSON_UNESCAPED_UNICODE));
     }
+    private function formElement($type, $name, $value, $attr = ['label' => '', 'tooltip' => '', 'placeholder' => ''])
+    {
 
+        switch ($type) {
+            case 'select':
+                return "<div class='form-group'>
+                        <label class='col-sm-2 control-label' for='{$name}'>{$attr['label']}<span data-toggle='tooltip' title='{$attr['tooltip']}'></span></label>
+                        <div class='col-sm-10'><select class='form-control' name='{$name}'>{$value}</select></div>
+                    </div>";
+            case 'text':
+            default:
+                return "<div class='form-group'>
+                        <label class='col-sm-2 control-label' for='{$name}'>{$attr['label']}<span data-toggle='tooltip' title='{$attr['tooltip']}'></span></label>
+                        <div class='col-sm-10'>
+                            <div><input type='text' class='form-control' id='{$name}' name='{$name}' placeholder='{$attr['placeholder']}' value='{$value}'></div>
+                        </div>
+                    </div>";
+        }
+    }
     public function setAttributeValueInfo()
     {
         $data = array();
@@ -2305,7 +2329,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
         ];
 
         return $config;
-    }    
+    }
 
     public function editInfo()
     {
