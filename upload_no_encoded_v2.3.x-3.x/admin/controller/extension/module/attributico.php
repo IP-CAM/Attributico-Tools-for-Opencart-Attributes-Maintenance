@@ -1898,12 +1898,12 @@ class ControllerModuleAttributico extends Controller
                     case 'uppercase':
                         // Uppercase elements
                         foreach ($elements as $index => $element) {
-                            $elements[$index] =  mb_ucfirst($element);
+                            $elements[$index] =  mb_ucfirst(trim($element));
                         }
                         break;
                     case 'lowercase':
                         foreach ($elements as $index => $element) {
-                            $elements[$index] =  mb_lcfirst($element);
+                            $elements[$index] =  mb_lcfirst(trim($element));
                         }
                         break;
                 }
@@ -1969,7 +1969,7 @@ class ControllerExtensionModuleAttributico extends ControllerModuleAttributico
 }
 class ControllerModuleAttributipro extends ControllerModuleAttributico
 {
-    const MODULE_VERSION =  'v0.0.7';
+    const MODULE_VERSION =  'v0.0.9';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
     protected $dbstructure = array(
