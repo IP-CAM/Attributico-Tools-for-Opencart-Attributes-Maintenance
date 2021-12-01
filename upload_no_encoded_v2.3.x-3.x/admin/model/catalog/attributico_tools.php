@@ -1,7 +1,4 @@
 <?php
-
-require_once(DIR_SYSTEM . 'library/attributico/array_column.php');
-
 class ModelCatalogAttributicoTools extends Model
 {
 
@@ -20,19 +17,19 @@ class ModelCatalogAttributicoTools extends Model
 
         $query = $this->db->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='" . DB_DATABASE . "' AND COLUMN_NAME ='" . $field . "'");
         foreach ($query->rows as $row) {
-           // if (!in_array(DB_PREFIX . $basetable, $row)) {
-                $schema[] = $row;
-           // }
+            // if (!in_array(DB_PREFIX . $basetable, $row)) {
+            $schema[] = $row;
+            // }
         }
 
         set_time_limit(600);
         $this->db->query("CREATE TABLE " . DB_PREFIX . $basetable . "_relation (`new_id` INTEGER(11) NOT NULL AUTO_INCREMENT, " . $field .
             " INTEGER NOT NULL, PRIMARY KEY (`new_id`))");
-        $this->db->query("INSERT INTO " . DB_PREFIX . $basetable . "_relation (" . $field . ") SELECT " . $field . " FROM " . DB_PREFIX . $basetable 
-            . " ORDER BY " . $field ." ASC");
+        $this->db->query("INSERT INTO " . DB_PREFIX . $basetable . "_relation (" . $field . ") SELECT " . $field . " FROM " . DB_PREFIX . $basetable
+            . " ORDER BY " . $field . " ASC");
         $count_of_defrag = $this->db->countAffected();
 
-        foreach ($schema as $table) {            
+        foreach ($schema as $table) {
             $this->db->query("UPDATE " . $table['TABLE_NAME'] . " t, " . DB_PREFIX . $basetable . "_relation tr SET t." . $field . " = tr.new_id
                             WHERE t." . $field . " = tr." . $field);
         }
@@ -46,7 +43,8 @@ class ModelCatalogAttributicoTools extends Model
         return $count_of_defrag;
     }
 
-    public function sorting() {
+    public function sorting()
+    {
         set_time_limit(600);
         $this->db->query("SET @num :=0");
         $this->db->query("UPDATE " . DB_PREFIX . "attribute a INNER JOIN (SELECT t1.attribute_id FROM  " . DB_PREFIX . "attribute t1 LEFT JOIN  " . DB_PREFIX . "attribute_group t2 ON t1.attribute_group_id = t2.attribute_group_id ORDER BY t2.sort_order ASC, t1.sort_order ASC) AS g ON a.attribute_id = g.attribute_id SET a.sort_order = @num :=@num+1");

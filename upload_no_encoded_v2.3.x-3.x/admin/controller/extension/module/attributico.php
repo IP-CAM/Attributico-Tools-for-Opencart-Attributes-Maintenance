@@ -2,6 +2,7 @@
 
 @include_once(DIR_SYSTEM . 'license/sllic.lic');
 require_once(DIR_SYSTEM . 'library/attributico/attributico.php');
+require_once(DIR_SYSTEM . 'library/attributico/interlink.php');
 
 class ControllerModuleAttributico extends Controller
 {
@@ -30,11 +31,10 @@ class ControllerModuleAttributico extends Controller
     protected $modelfile = 'catalog/attributico';
     protected $model = 'model_catalog_attributico';
     protected $model_tools = 'model_catalog_attributico_tools';
-
+    protected $extension;
     /*  private $coworking; */
 
-
-    public function index()
+    protected function init()
     {
         if (version_compare(VERSION, '2.0.1', '>=')) {
             $this->document->addStyle('view/stylesheet/jquery-ui.css');
@@ -46,7 +46,7 @@ class ControllerModuleAttributico extends Controller
 
         $this->document->addScript('view/javascript/' . $this->module . '.js');
 
-        $extension = version_compare(VERSION, '2.3.0', '>=') ? "extension/" : "";
+        $this->extension = version_compare(VERSION, '2.3.0', '>=') ? "extension/" : "";
         $edit = version_compare(VERSION, '2.0.0', '>=') ? "edit" : "update";
         $link = version_compare(VERSION, '2.3.0', '>=') ? "extension/extension" : "extension/module";
 
@@ -55,8 +55,8 @@ class ControllerModuleAttributico extends Controller
         }
 
         if (version_compare(VERSION, '2.2.0', '>=')) {
-            // $this->load->language($extension . $this->modulefile);
-            $this->data = array_merge($this->data, $this->load->language($extension . $this->modulefile));
+            // $this->load->language($this->extension . $this->modulefile);
+            $this->data = array_merge($this->data, $this->load->language($this->extension . $this->modulefile));
             $ssl = true;
         } else {
             $this->language->load($this->modulefile);
@@ -73,14 +73,14 @@ class ControllerModuleAttributico extends Controller
         }
 
         $this->data['user_token'] = $this->data['token'] = $this->token;
-        $this->data['extension'] = $extension;
-        $this->data['route'] = 'index.php?route=' . $extension . $this->modulefile . '/';
+        $this->data['extension'] = $this->extension;
+        $this->data['route'] = 'index.php?route=' . $this->extension . $this->modulefile . '/';
         $this->data['edit'] = $edit;
 
         /*  $coworking = $this->db->query("SELECT extension_id FROM " . DB_PREFIX . "extension WHERE `type`='module' AND  `code`='' . $this->module");
-        $this->coworking = $coworking->row['extension_id'];
-        $coworking = $this->db->query("SELECT status FROM " . DB_PREFIX . "modification WHERE `code`='' . $this->module");
-        $this->coworking = $coworking->row['status']; */
+    $this->coworking = $coworking->row['extension_id'];
+    $coworking = $this->db->query("SELECT status FROM " . DB_PREFIX . "modification WHERE `code`='' . $this->module");
+    $this->coworking = $coworking->row['status']; */
 
         $this->data['heading_title'] = $this->data['heading_title'] . ' ' . $this::MODULE_VERSION;
 
@@ -158,7 +158,7 @@ class ControllerModuleAttributico extends Controller
 
         $this->data['breadcrumbs'][] = array(
             'text' => $this->data['heading_title'],
-            'href' => $this->url->link($extension . $this->modulefile, $token_name . '=' . $this->token, $ssl),
+            'href' => $this->url->link($this->extension . $this->modulefile, $token_name . '=' . $this->token, $ssl),
             'separator' => ' :: '
         );
 
@@ -231,7 +231,7 @@ class ControllerModuleAttributico extends Controller
             }
         }
 
-        $this->data['action'] = $this->url->link($extension . $this->modulefile, $token_name . '=' . $this->token, $ssl);
+        $this->data['action'] = $this->url->link($this->extension . $this->modulefile, $token_name . '=' . $this->token, $ssl);
         $this->data['cancel'] = $this->url->link($link, $token_name . '=' . $this->token . '&type=module', $ssl);
 
         if ($this->config->get($this->module . '_filter')) {
@@ -255,19 +255,17 @@ class ControllerModuleAttributico extends Controller
         $this->assignData($this->module . '_cache', 0);
         $this->assignData($this->module . '_multistore', 0);
         $this->assignData($this->module . '_replace_mode', 'substr');
+    }
 
-        if ($this->module === 'attributipro') {
-            $this->data['units'] = $this->getUnitOptions($this->config->get('config_language_id'), $this->data['not_selected']);
-            $this->data['profiles'] = $this->makeOptionList($this->getProfileOptions(), $this->config->get($this->module . '_interlink'));
-        }
-
+    protected function out()
+    {
         if (version_compare(VERSION, '2.0.1', '>=')) {
             $this->data['header'] = $this->load->controller('common/header');
             $this->data['column_left'] = $this->load->controller('common/column_left');
             $this->data['footer'] = $this->load->controller('common/footer');
 
             $tpl = version_compare(VERSION, '2.2.0', '>=') ? "" : ".tpl";
-            $this->response->setOutput($this->load->view($extension . $this->modulefile . $tpl, $this->data));
+            $this->response->setOutput($this->load->view($this->extension . $this->modulefile . $tpl, $this->data));
         } else {
             $this->template = 'module/' . $this->module . '_1_5_x.tpl';
             $this->children = array(
@@ -277,11 +275,18 @@ class ControllerModuleAttributico extends Controller
             $this->response->setOutput($this->render());
         }
     }
+    public function index()
+    {
+
+        $this->init();
+
+        $this->out();
+    }
 
     protected function validate()
     {
-        $extension = version_compare(VERSION, '2.3.0', '>=') ? "extension/" : "";
-        if (!$this->user->hasPermission('modify', $extension . $this->modulefile)) {
+        //$this->extension = version_compare(VERSION, '2.3.0', '>=') ? "extension/" : "";
+        if (!$this->user->hasPermission('modify', $this->extension . $this->modulefile)) {
             $this->error['warning'] = $this->data['error_permission'];
         }
 
@@ -475,30 +480,6 @@ class ControllerModuleAttributico extends Controller
 
         return $value_list;
     }
-    /**
-     * Only one template string will be separated using a splitter and transferred to a plane array of values
-     *
-     * @param string $value
-     * @return array
-     */
-    protected function splitValue($value)
-    {
-        $splitter = !($this->config->get($this->module . '_splitter') == '') ? $this->config->get($this->module . '_splitter') : '/';
-
-        $all_elements = array();
-        $elements = explode($splitter, $value);
-
-        foreach ($elements as $element) {
-            if ($element != "") {
-                $all_elements[] = trim($element);
-            }
-        }
-
-        $value_list = array_unique($all_elements);
-        array_multisort($value_list);
-
-        return $value_list;
-    }
 
     /** Fuction for product form integration */
     public function getAttributeDuty()
@@ -570,20 +551,7 @@ class ControllerModuleAttributico extends Controller
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
     }
-    //TODO chek permission to unit
-    protected function getUnitOptions($language_id, $title0)
-    {
-        $this->load->model('localisation/unit');
-        $units = $this->model_localisation_unit->getUnits(['language_id' => $language_id]);
-
-        $options = [['key' => '0', 'value' => '0', 'title' => $title0]];
-        foreach ($units as $unit) {
-            $options[] =  ['key' => $unit['unit_id'], 'value' => $unit['unit_id'], 'title' => $unit['title'] . ', ' . $unit['unit']];
-        }
-
-        return $options;
-    }
-
+   
     protected function makeOptionList($options, $default_value, $title0 = '', $style = '')
     {
         $option_list = $title0 ? "<option key='{0}' value='{0}'>{$title0}</option>" : '';
@@ -597,21 +565,6 @@ class ControllerModuleAttributico extends Controller
             }
         }
         return $option_list;
-    }
-
-    //TODO chek permission to profile
-    protected function getProfileOptions()
-    {
-        $this->load->model('attributico/interlink');
-        $rules = $this->model_attributico_interlink->getRules();
-
-        $options = [];
-        /* $options = [['key' => '0', 'value' => '0', 'title' => '$title0']]; */
-        foreach ($rules as $rule) {
-            $options[] =  ['key' => $rule['rule_id'], 'value' => $rule['rule_id'], 'title' => $rule['name']];
-        }
-
-        return $options;
     }
 
     /* Tree functions */
@@ -1546,10 +1499,10 @@ class ControllerModuleAttributico extends Controller
 
     protected function getLanguage($language_id)
     {
-        $extension = version_compare(VERSION, '2.3.0', '>=') ? "extension/" : "";
+        //$this->extension = version_compare(VERSION, '2.3.0', '>=') ? "extension/" : "";
         $directory = $this->getLanguageDirectory($language_id);
         $language = new Language($directory);
-        $language->load($extension . $this->modulefile);
+        $language->load($this->extension . $this->modulefile);
         return $language;
     }
 
@@ -2051,6 +2004,49 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
     protected $model = 'model_catalog_attributipro';
     protected $model_tools = 'model_catalog_attributipro_tools';
 
+    public function index()
+    {
+
+        $this->init();
+
+        if ($this->module === 'attributipro') {
+            $this->data['units'] = $this->getUnitOptions($this->config->get('config_language_id'), $this->data['not_selected']);
+            $this->data['profiles'] = $this->makeOptionList($this->getProfileOptions(), $this->config->get($this->module . '_interlink'));
+        }
+
+        $this->out();
+    }
+
+     //TODO chek permission to unit
+     protected function getUnitOptions($language_id, $title0)
+     {
+         $this->load->model('localisation/unit');
+         $units = $this->model_localisation_unit->getUnits(['language_id' => $language_id]);
+ 
+         $options = [['key' => '0', 'value' => '0', 'title' => $title0]];
+         foreach ($units as $unit) {
+             $options[] =  ['key' => $unit['unit_id'], 'value' => $unit['unit_id'], 'title' => $unit['title'] . ', ' . $unit['unit']];
+         }
+ 
+         return $options;
+     }
+ 
+    //TODO chek permission to profile
+    protected function getProfileOptions()
+    {
+        $this->load->model('attributico/interlink');
+        $rules = $this->model_attributico_interlink->getRules();
+
+        $options = [];
+        /* $options = [['key' => '0', 'value' => '0', 'title' => '$title0']]; */
+        foreach ($rules as $rule) {
+            $options[] =  ['key' => $rule['rule_id'], 'value' => $rule['rule_id'], 'title' => $rule['name']];
+        }
+
+        return $options;
+    }
+
+
     public function getAttributeValueInfo()
     {
         $language_id = isset($this->request->post['language_id']) ? $this->request->post['language_id'] : $this->config->get('config_language_id');
@@ -2398,7 +2394,8 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
                 return 'path=' . $hightly_likely_chain['path'];
             case 'value':
-                $values = $this->splitValue($info['text']);
+                $splitter = !($this->config->get($this->module . '_splitter') == '') ? $this->config->get($this->module . '_splitter') : '/';
+                $values = splitValue($info['text'], $splitter);
                 $valuesUrl = implode($profile['value_separator'] ? $profile['value_separator'] : ',', array_map('str2url', $values));
                 return $valuesUrl;
             case 'alias':
