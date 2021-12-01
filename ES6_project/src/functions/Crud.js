@@ -74,14 +74,13 @@ export function deleteAttribute(node, store) {
 
 export function deleteDuty(node, store) {
     $.ajax({
-        data: {
-            'user_token': user_token,
-            'token': token,
+        data: {            
             'key': node.key,
             'language_id': node.getLanguageId(),
             'name': '',
         },
-        url: route + 'editAttribute',
+        url: `${route}editAttribute&user_token=${user_token}&token=${token}`,
+        type: 'POST',
         success: function () {
             // при удалении надо перезагрузить дерево т.к. поле не удаестя сделать пустым при edit
             store.dispatch(deleteNode(node, [node.getParentGroup()]));
@@ -92,15 +91,14 @@ export function deleteDuty(node, store) {
 export function cloneDuty(node, store) {
     if (node.title === '' && !confirm('Warning! This node is empty. All cloned nodes will become empty. Are you sure?')) return
     $.ajax({
-        data: {
-            'user_token': user_token,
-            'token': token,
+        data: {            
             'key': node.key,
             'language_id': node.getLanguageId(),
             'name': node.title,
             'clone': true
         },
-        url: route + 'editAttribute',
+        url: `${route}editAttribute&user_token=${user_token}&token=${token}`,
+        type: 'POST',
         success: function () {
             // при удалении надо перезагрузить дерево т.к. поле не удаестя сделать пустым при edit
             store.dispatch(updateNode(node, [node.getParentGroup()]));
@@ -111,6 +109,7 @@ export function cloneDuty(node, store) {
 
 // sourceNode = data.otherNode это узел источника
 // Синхронизировать деревья атрибутов надо, т.к. могли добавиться или удалиться значения после add/delete
+//TODO multistore see backend
 export function addAttributeToCategory(sourceNode, targetNode, clipboard, remove, store) {
     $.ajax({
         data: {
@@ -133,7 +132,7 @@ export function addAttributeToCategory(sourceNode, targetNode, clipboard, remove
         }
     });
 }
-
+//TODO multistore see backend
 export function deleteAttributesFromCategory(sourceNode, targetNode, clipboard, store) {
     let category_id = sourceNode.getParent().key;
 

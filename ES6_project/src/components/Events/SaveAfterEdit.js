@@ -3,15 +3,14 @@ import { updateNode } from '../../actions';
 export function saveAfterEdit(event, data, store) {
     let lng_id = data.node.getLanguageId()
     $.ajax({
-        data: {
-            'user_token': user_token,
-            'token': token,
+        data: {            
             'key': data.node.key,
             'name': data.input.val(),
             'language_id': lng_id,
             'oldname': data.orgTitle
         },
-        url: route + 'editAttribute'
+        url: `${route}editAttribute&user_token=${user_token}&token=${token}`,
+        type: 'POST'
     }).done(function (result) {
         // Server might return an error or a modified title
         // Maybe also check for non-ajax errors, e.g. 'title invalid', ... in case server modified it         

@@ -5,7 +5,7 @@ require_once(DIR_SYSTEM . 'library/attributico/attributico.php');
 
 class ControllerModuleAttributico extends Controller
 {
-    const MODULE_VERSION =  'v3.1.9';
+    const MODULE_VERSION =  'v3.2.0';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
     protected $data = array();
@@ -258,6 +258,7 @@ class ControllerModuleAttributico extends Controller
 
         if ($this->module === 'attributipro') {
             $this->data['units'] = $this->getUnitOptions($this->config->get('config_language_id'), $this->data['not_selected']);
+            $this->data['profiles'] = $this->makeOptionList($this->getProfileOptions(), $this->config->get($this->module . '_interlink'));
         }
 
         if (version_compare(VERSION, '2.0.1', '>=')) {
@@ -448,7 +449,12 @@ class ControllerModuleAttributico extends Controller
         }
         return $select;
     }
-
+    /**
+     * All templates of this attribute will be separated using a splitter and transferred to a plane array of values
+     *
+     * @param array $templates
+     * @return array
+     */
     protected function splitTemplate($templates)
     {
         $splitter = !($this->config->get($this->module . '_splitter') == '') ? $this->config->get($this->module . '_splitter') : '/';
@@ -461,6 +467,30 @@ class ControllerModuleAttributico extends Controller
                 if ($element != "") {
                     $all_elements[] = trim($element);
                 }
+            }
+        }
+
+        $value_list = array_unique($all_elements);
+        array_multisort($value_list);
+
+        return $value_list;
+    }
+    /**
+     * Only one template string will be separated using a splitter and transferred to a plane array of values
+     *
+     * @param string $value
+     * @return array
+     */
+    protected function splitValue($value)
+    {
+        $splitter = !($this->config->get($this->module . '_splitter') == '') ? $this->config->get($this->module . '_splitter') : '/';
+
+        $all_elements = array();
+        $elements = explode($splitter, $value);
+
+        foreach ($elements as $element) {
+            if ($element != "") {
+                $all_elements[] = trim($element);
             }
         }
 
@@ -540,7 +570,7 @@ class ControllerModuleAttributico extends Controller
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
     }
-//TODO chek permission to unit
+    //TODO chek permission to unit
     protected function getUnitOptions($language_id, $title0)
     {
         $this->load->model('localisation/unit');
@@ -567,6 +597,21 @@ class ControllerModuleAttributico extends Controller
             }
         }
         return $option_list;
+    }
+
+    //TODO chek permission to profile
+    protected function getProfileOptions()
+    {
+        $this->load->model('attributico/interlink');
+        $rules = $this->model_attributico_interlink->getRules();
+
+        $options = [];
+        /* $options = [['key' => '0', 'value' => '0', 'title' => '$title0']]; */
+        foreach ($rules as $rule) {
+            $options[] =  ['key' => $rule['rule_id'], 'value' => $rule['rule_id'], 'title' => $rule['name']];
+        }
+
+        return $options;
     }
 
     /* Tree functions */
@@ -916,10 +961,10 @@ class ControllerModuleAttributico extends Controller
     //------------------------------------------------ProductTree-------------------------------------------------------
     public function getProductTree()
     {
-        $language_id = isset($this->request->get['language_id']) ? $this->request->get['language_id'] : $this->config->get('config_language_id');
-        $key = isset($this->request->get['attribute_id']) ? explode("_", $this->request->get['attribute_id']) : array('0', '0');
-        $title = isset($this->request->get['title']) ? htmlspecialchars_decode($this->request->get['title']) : '';
-        $invert = isset($this->request->get['invert']) ? filter_var($this->request->get['invert'], FILTER_VALIDATE_BOOLEAN) : false;
+        $language_id = isset($this->request->post['language_id']) ? $this->request->post['language_id'] : $this->config->get('config_language_id');
+        $key = isset($this->request->post['attribute_id']) ? explode("_", $this->request->post['attribute_id']) : array('0', '0');
+        $title = isset($this->request->post['title']) ? htmlspecialchars_decode($this->request->post['title']) : '';
+        $invert = isset($this->request->post['invert']) ? filter_var($this->request->post['invert'], FILTER_VALIDATE_BOOLEAN) : false;
 
         if (($key[0] == 'template' || $key[0] == 'value' || $key[0] == 'duty') && $invert) {
             $invert = false;
@@ -1034,11 +1079,12 @@ class ControllerModuleAttributico extends Controller
     public function editAttribute()
     {
         $data = array();
-        $language_id = isset($this->request->get['language_id']) ? $this->request->get['language_id'] : $this->config->get('config_language_id');
-        $name = isset($this->request->get['name']) ? htmlspecialchars_decode($this->request->get['name']) : '';
-        $key = isset($this->request->get['key']) ? explode("_", $this->request->get['key']) : array('0', '0');
+        $language_id = isset($this->request->post['language_id']) ? $this->request->post['language_id'] : $this->config->get('config_language_id');
+        $name = isset($this->request->post['name']) ? htmlspecialchars_decode($this->request->post['name']) : '';
+        $key = isset($this->request->post['key']) ? explode("_", $this->request->post['key']) : array('0', '0');
         $splitter = !($this->config->get($this->module . '_splitter') == '') ? $this->config->get($this->module . '_splitter') : '/';
-        $clone = isset($this->request->get['clone']) ? filter_var($this->request->get['clone'], FILTER_VALIDATE_BOOLEAN) : false;
+        $clone = isset($this->request->post['clone']) ? filter_var($this->request->post['clone'], FILTER_VALIDATE_BOOLEAN) : false;
+        $oldname = isset($this->request->post['oldname']) ? htmlspecialchars_decode($this->request->post['oldname']) : '';
 
         $this->load->model($this->modelfile);
 
@@ -1064,7 +1110,7 @@ class ControllerModuleAttributico extends Controller
         if ($key[0] == 'template') {
             $attribute_id = $key[1];
             $data['language_id'] = $language_id;
-            $data['oldtext'] = isset($this->request->get['oldname']) ? htmlspecialchars_decode($this->request->get['oldname']) : '';
+            $data['oldtext'] = $oldname;
             $data['newtext'] = trim($name, $splitter);
             $this->{$this->model}->editAttributeTemplates($attribute_id, $data);
         }
@@ -1072,7 +1118,7 @@ class ControllerModuleAttributico extends Controller
         if ($key[0] == 'value') {
             $attribute_id = $key[1];
             $data['language_id'] = $language_id;
-            $data['oldtext'] = isset($this->request->get['oldname']) ? htmlspecialchars_decode($this->request->get['oldname']) : '';
+            $data['oldtext'] = $oldname;
             $data['newtext'] = trim($name, $splitter);
             $this->{$this->model}->editAttributeValues($attribute_id, $data);
         }
@@ -1175,7 +1221,23 @@ class ControllerModuleAttributico extends Controller
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($node_data));
     }
-    /* Paste attributes */
+    /* TODO rename function*/
+    /**
+     * Paste Attributes functions
+     * @param array $titles
+     * $titles oldstructure example
+     * [[empty,A1ru,empty,A1en],[empty,A2ru,empty,A2en],...[empty,A100ru,empty,A100en]]
+     * empty if language not present by any id
+     * 
+     * @param array $attributes
+     * @param string $target NodeKey type
+     * 
+     * This function knows nothing about the data structure.
+     * It just prepares headers and identifiers
+     * Placement is made by the model
+     * 
+     * @return json
+     */
     public function addAttributes()
     {
         /** $titles oldstructure example
@@ -1201,10 +1263,12 @@ class ControllerModuleAttributico extends Controller
             $attributes_id[] = explode("_", $attribute)[1];
         }
 
-        /* $languages = $this->session->data['languages']; */
         $languages = $this->getLanguages();
-        // Transform arr.id [123, 124 ... 129] and arr.titles [[],[тайтл123,тайтл124... ],[],[title123,title124,...]
-        // to arr [123 => [тайтл123,title123], 124 => [тайтл123,title123], ...]
+
+        /** 
+         * Transform arr.id [123, 124 ... 129] and arr.titles [[],[тайтл123,тайтл124... ],[],[title123,title124,...]
+         * to arr [123 => [тайтл123,title123], 124 => [тайтл123,title123], ...]
+         */
         $new_titles = [];
         foreach ($languages as $language) {
             foreach ($titles[$language['language_id']] as $key => $title) {
@@ -1218,9 +1282,9 @@ class ControllerModuleAttributico extends Controller
         foreach ($new_titles as $attribute_id => $title) {
             if ($attribute_group_id) {
                 $data['attribute_group_id'] = $attribute_group_id;
+                $data['attribute_id'] = $attribute_id;
                 foreach ($languages as $language) {
                     $data['attribute_description'][$language['language_id']]['name'] = $title[$language['language_id']];
-                    $data['attribute_description'][$language['language_id']]['attribute_id'] = $attribute_id;
                 }
                 $id = $this->{$this->model}->addAttribute($data);
             }
@@ -1357,7 +1421,7 @@ class ControllerModuleAttributico extends Controller
         $attributes = isset($this->request->post['attributes']) ? $this->request->post['attributes'] : array();
         $categoryList = isset($this->request->post['categories']) ? $this->request->post['categories'] : array();
         $subCategory = $this->config->get($this->module . '_autoadd_subcategory');
-        $multistore = isset($this->request->get['multistore']) ? filter_var($this->request->get['multistore'], FILTER_VALIDATE_BOOLEAN) : $this->config->get($this->module . '_multistore');
+        $multistore = isset($this->request->post['multistore']) ? filter_var($this->request->post['multistore'], FILTER_VALIDATE_BOOLEAN) : $this->config->get($this->module . '_multistore');
 
         $this->config->set($this->module . '_multistore', (string) $multistore);
 
@@ -1411,7 +1475,7 @@ class ControllerModuleAttributico extends Controller
         $attributes = isset($this->request->post['attributes']) ? $this->request->post['attributes'] : array();
         $categoryList = isset($this->request->post['categories']) ? $this->request->post['categories'] : array();
         $subCategory = $this->config->get($this->module . '_autodel_subcategory');
-        $multistore = isset($this->request->get['multistore']) ? filter_var($this->request->get['multistore'], FILTER_VALIDATE_BOOLEAN) : $this->config->get($this->module . '_multistore');
+        $multistore = isset($this->request->post['multistore']) ? filter_var($this->request->post['multistore'], FILTER_VALIDATE_BOOLEAN) : $this->config->get($this->module . '_multistore');
 
         $this->config->set($this->module . '_multistore', (string) $multistore);
 
@@ -1561,18 +1625,6 @@ class ControllerModuleAttributico extends Controller
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "category_attribute
 		(`category_id` INTEGER(11) NOT NULL,`attribute_id` INTEGER(11) NOT NULL, PRIMARY KEY (`category_id`,`attribute_id`) USING BTREE)
         ENGINE=MyISAM ROW_FORMAT=FIXED CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'");
-
-        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "unit
-		(unit_id int(11) NOT NULL AUTO_INCREMENT, unit_group_id int(11) NOT NULL DEFAULT 0, sort_order int(3) NOT NULL DEFAULT 0, PRIMARY KEY (unit_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
-
-        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "unit_description
-		(unit_id int(11) NOT NULL, language_id int(11) NOT NULL, title varchar(255) NOT NULL DEFAULT '', unit varchar(32) NOT NULL DEFAULT '',
-        PRIMARY KEY (unit_id, language_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
-
-        /* $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "attribute_info
-        ( attribute_id int(11) NOT NULL, language_id int(11) NOT NULL, duty text NOT NULL, image varchar(255) DEFAULT NULL, class varchar(255) NOT NULL, unit_id int(11) NOT NULL, status tinyint(1) NOT NULL DEFAULT 1, url varchar(255) NOT NULL, PRIMARY KEY (attribute_id, language_id))
-        ENGINE = MYISAM, CHARACTER SET utf8, CHECKSUM = 0, COLLATE utf8_general_ci"); */
-
         foreach ($this->dbstructure as $checking_table => $checking_column) {
             foreach ($checking_column as $column_name => $column_type)
                 if (!$this->columnCheck($checking_table, $column_name)) {
@@ -1969,7 +2021,7 @@ class ControllerExtensionModuleAttributico extends ControllerModuleAttributico
 }
 class ControllerModuleAttributipro extends ControllerModuleAttributico
 {
-    const MODULE_VERSION =  'v0.0.9';
+    const MODULE_VERSION =  'v0.1.0';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
     protected $dbstructure = array(
@@ -1991,7 +2043,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             'status' => "tinyint(1) NOT NULL DEFAULT 1",
             'url' => "varchar(255) NOT NULL",
             'tooltip' => "TEXT NOT NULL",
-        ),
+        ), //TODO unit?
     );
     protected $module = 'attributipro';
     protected $modulefile = 'module/attributipro';
@@ -2001,18 +2053,27 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
     public function getAttributeValueInfo()
     {
-        $language_id = isset($this->request->get['language_id']) ? $this->request->get['language_id'] : $this->config->get('config_language_id');
-        $attribute_id = isset($this->request->get['attribute_id']) ? $this->request->get['attribute_id'] : 0;
-        $product_id = isset($this->request->get['product_id']) ? $this->request->get['product_id'] : 0;
-        $attribute_row = isset($this->request->get['attribute_row']) ? $this->request->get['attribute_row'] : 0;
-        $size = isset($this->request->get['size']) ? $this->request->get['size'] : 100;
-        $form = isset($this->request->get['form']) ? filter_var($this->request->get['form'], FILTER_VALIDATE_BOOLEAN) : false;
-        $text = isset($this->request->get['text']) ? $this->request->get['text'] : '';
-        $view_mode = isset($this->request->get['view_mode']) ? $this->request->get['view_mode'] : 'template';
-        $categories = isset($this->request->get['categories']) ? $this->request->get['categories'] : array();
-        $duty = isset($this->request->get['duty']) ? $this->request->get['duty'] : false;
+        $language_id = isset($this->request->post['language_id']) ? $this->request->post['language_id'] : $this->config->get('config_language_id');
+        $attribute_id = isset($this->request->post['attribute_id']) ? $this->request->post['attribute_id'] : 0;
+        $product_id = isset($this->request->post['product_id']) ? $this->request->post['product_id'] : 0;
+        $attribute_row = isset($this->request->post['attribute_row']) ? $this->request->post['attribute_row'] : 0;
+        $size = isset($this->request->post['size']) ? $this->request->post['size'] : 100;
+        $form = isset($this->request->post['form']) ? filter_var($this->request->post['form'], FILTER_VALIDATE_BOOLEAN) : false;
+        $text = isset($this->request->post['text']) ? $this->request->post['text'] : '';
+        $view_mode = isset($this->request->post['view_mode']) ? $this->request->post['view_mode'] : 'template';
+        $filter_values = isset($this->request->post['filter_values']) ? $this->request->post['filter_values'] : 'all';
+        $categories = isset($this->request->post['categories']) ? $this->request->post['categories'] : array();
+        $main_category_id = isset($this->request->post['main_category_id']) ? $this->request->post['main_category_id'] : 0;
         $info = [];
-        //$units = '';
+        $request_info = [
+            'product_id' => $product_id,
+            'attribute_id' => $attribute_id,
+            'text' => $text,
+            'value' => $text,
+            'category_id' => $categories,
+            'main_category_id' => $main_category_id,
+            'path' => ''
+        ];
 
         $this->load->model($this->modelfile);
 
@@ -2029,9 +2090,11 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             }
 
             $info['thumb'] = $thumb;
-            /* Start url */
-            /* $url = explode($this->config->get($this->module . '_splitter'), $info['text']);
-            $info['url'] =  $this->url->link('product/category', 'path=' . '20' . '&' . implode('~', array_map('str2url', $url))); */
+
+            $info = array_merge($info, $request_info);
+
+            /* Start url parser */
+            //TODO надо ли это делать ? $info['path'] = $this->urlParse($info);
 
             $language = $this->getLanguage($language_id);
 
@@ -2043,7 +2106,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             ];
             $statuses = $this->makeOptionList($status_options, $info['status']);
 
-            $values = $this->fetchValueList($attribute_id, $duty, $categories);
+            $values = $this->fetchValueList($attribute_id, $filter_values === 'duty', $filter_values === 'categories' ? $categories : array());
             if (!isset($values[$language_id])) {
                 $values[$language_id][] = array('text' => '');
             }
@@ -2061,51 +2124,73 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
                     <form id='_valueForm' method='post' action='javascript:void(null)' onSubmit='return valueSubmit(this)'>
                         <div class='panel-body'>
                             <div class='form-group'>
-                                <label class='col-sm-2 control-label' for='value-text'>{$language->get('entry_attribute_value')}</label>
+                                <label class='col-sm-2 control-label' for='value_text'>{$language->get('entry_attribute_value')}</label>
                                 <div class='col-sm-10'>
                                     " . $select . "
-                                    <textarea class='form-control' id='value-text' name='text'>{$text}</textarea>
+                                    <textarea class='form-control' id='value_text' name='text'>{$text}</textarea>
                                 </div>
                             </div>
                             <div></div>
                             <div class='row' style='margin-left: 15px; margin-right: 15px;'>
-                                <div class='col-sm-5 col-md-5 col-xs-12'>
-                                    <div>
-                                        <div class='form-group text-center'>
-                                            <label class='control-label' for='attribute-image-image'>{$language->get('label_image')}</label>
-                                            <div><a href='' id='thumb-image-image' data-toggle='image' class='img-thumbnail'><img src='{$info['thumb']}' alt='' title=''></a><input type='hidden' name='image' id='attribute-image-image' value='{$info['image']}'></div>
-                                        </div>
-                                    </div>
+                                <div class='col-sm-5 col-md-5 col-xs-12'>" .
+                    $this->formElement(
+                        'image',
+                        'image',
+                        $info['image'],
+                        [
+                            'label' => $language->get('label_image'),
+                            'thumb' => $info['thumb']
+                        ]
+                    )
+                    . "                                    
                                 </div>
-                                <div class='col-sm-7 col-md-7 col-xs-12'>
-                                    <div class='form-group'>
-                                        <label class='control-label' for='tooltip'>{$language->get('label_tooltip')}<span data-toggle='tooltip'  title='{$language->get('help_tooltip')}'></span></label>
-                                        <textarea class='form-control' rows='5' name='tooltip' id='tooltip'
-                                        placeholder='{$language->get('placeholder_tooltip')}'>{$info['tooltip']}</textarea>
-                                    </div>
-                                </div>
+                                <div class='col-sm-7 col-md-7 col-xs-12'>" .
+                    $this->formElement(
+                        'textarea',
+                        'tooltip',
+                        $info['tooltip'],
+                        [
+                            'label' => $language->get('label_tooltip'),
+                            'tooltip' => $language->get('help_tooltip'),
+                            'placeholder' => $language->get('placeholder_tooltip')
+                        ]
+                    )
+                    . " 
                             </div>
-                            <div>
-                                <div class='form-group'><label class='col-sm-2 control-label' for='css'>{$language->get('label_icon')}<span data-toggle='tooltip' title='{$language->get('help_icon')}'></span></label>
-                                    <div class='col-sm-10'>
-                                        <div class='input-group'><span class='input-group-addon'><i class='{$info['class']}'></i></span>
-                                            <input type='text' class='form-control' name='css' id='css' placeholder='{$language->get('placeholder_icon')}' value='{$info['class']}'>
-                                        </div>
-                                    </div>
-                                </div>
+                            </div>                            
+                            <div>" .
+                    $this->formElement(
+                        'css-class',
+                        'class',
+                        $info['class'],
+                        [
+                            'label' => $language->get('label_icon'),
+                            'tooltip' => $language->get('help_icon'),
+                            'placeholder' => $language->get('placeholder_icon')
+                        ]
+                    )
+                    . "
                             </div>
-                            <div>" . $this->formElement(
-                        'text',
+                            <div>" .
+                    $this->formElement(
+                        'textarea-horizontal',
                         'url',
                         $info['url'],
                         [
                             'label' => $language->get('label_url'),
                             'tooltip' => $language->get('help_url'),
                             'placeholder' => $language->get('placeholder_url')
+                        ],
+                        [
+                            'language_id' => $language_id,
+                            'attribute_id' => $attribute_id,
+                            'attribute_row' => $attribute_row,
                         ]
-                    ) . "
+                    )
+                    . "
                             </div>
-                            <div>" . $this->formElement(
+                            <div>" .
+                    $this->formElement(
                         'select',
                         'unit_id',
                         $units,
@@ -2114,9 +2199,11 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
                             'tooltip' => $language->get('help_unit'),
                             'placeholder' => ''
                         ]
-                    ) . "
+                    )
+                    . "
                             </div>  
-                            <div>" . $this->formElement(
+                            <div>" .
+                    $this->formElement(
                         'select',
                         'status',
                         $statuses,
@@ -2125,7 +2212,8 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
                             'tooltip' => $language->get('help_status'),
                             'placeholder' => ''
                         ]
-                    ) . "
+                    )
+                    . "
                             </div>
                         </div>
                         <div class='modal-footer'>
@@ -2146,7 +2234,8 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($info, JSON_UNESCAPED_UNICODE));
     }
-    private function formElement($type, $name, $value, $attr = ['label' => '', 'tooltip' => '', 'placeholder' => ''])
+
+    private function formElement($type, $name, $value, $attr = ['label' => '', 'tooltip' => '', 'placeholder' => '', 'thumb' => ''], $param = ['language_id' => 0, 'attribute_id' => 0, 'attribute_row' => 0])
     {
 
         switch ($type) {
@@ -2155,6 +2244,37 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
                         <label class='col-sm-2 control-label' for='{$name}'>{$attr['label']}<span data-toggle='tooltip' title='{$attr['tooltip']}'></span></label>
                         <div class='col-sm-10'><select class='form-control' name='{$name}'>{$value}</select></div>
                     </div>";
+            case 'textarea':
+                return "<div class='form-group'>
+                            <label class='control-label' for='{$name}'>{$attr['label']}<span data-toggle='tooltip' title='{$attr['tooltip']}'></span></label>
+                            <textarea class='form-control' rows='5' name='{$name}' id='{$name}' placeholder='{$attr['placeholder']}'>{$value}</textarea>
+                        </div>";
+            case 'textarea-horizontal':
+                return "<div class='form-group'>
+                            <label class='control-label col-sm-2' for='{$name}'>{$attr['label']}<span data-toggle='tooltip' title='{$attr['tooltip']}'></span></label>
+                            <div class='col-sm-10'>
+                                <div class='input-group'>
+                                    <textarea class='form-control' rows='3' name='{$name}' id='{$name}'>{$value}</textarea>
+                                    <span class='input-group-addon'><button type='button' onclick='return urlCreate()' data-toggle='tooltip' title='{$attr['placeholder']}' class='btn btn-primary btn-xs'><i class='fa fa-play'></i></button></span>
+                                </div>
+                            </div>
+                        </div>";
+            case 'css-class':
+                return "<div class='form-group'>
+                            <label class='col-sm-2 control-label' for='{$name}'>{$attr['label']}<span data-toggle='tooltip' title='{$attr['tooltip']}'></span></label>
+                            <div class='col-sm-10'>
+                                <div class='input-group'><span class='input-group-addon'><i class='{$value}'></i></span>
+                                    <input type='text' class='form-control' name='{$name}' id='{$name}' placeholder='{$attr['placeholder']}' value='{$value}'>
+                                </div>
+                            </div>
+                        </div>";
+            case 'image':
+                return "<div>
+                            <div class='form-group text-center'>
+                                <label class='control-label' for='{$name}'>{$attr['label']}</label>
+                                <div><a href='' id='thumb-{$name}' data-toggle='image' class='img-thumbnail'><img src='{$attr['thumb']}' alt='' title=''></a><input type='hidden' name='{$name}' id='{$name}' value='{$value}'></div>
+                            </div>
+                        </div>";
             case 'text':
             default:
                 return "<div class='form-group'>
@@ -2165,6 +2285,130 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
                     </div>";
         }
     }
+
+    public  function urlCreate()
+    {
+        $language_id = isset($this->request->post['language_id']) ? $this->request->post['language_id'] : $this->config->get('config_language_id');
+        $attribute_id = isset($this->request->post['attribute_id']) ? $this->request->post['attribute_id'] : 0;
+        $product_id = isset($this->request->post['product_id']) ? $this->request->post['product_id'] : 0;
+        $text = isset($this->request->post['text']) ? $this->request->post['text'] : '';
+        $category_id = isset($this->request->post['categories']) ? $this->request->post['categories'] : array();
+        $main_category_id = isset($this->request->post['main_category_id']) ? $this->request->post['main_category_id'] : 0;
+        $request_info = [
+            'product_id' => $product_id,
+            'attribute_id' => $attribute_id,
+            'text' => $text,
+            'value' => $text,
+            'category_id' => $category_id,
+            'main_category_id' => $main_category_id,
+            'path' => ''
+        ];
+        $path = '';
+
+        $this->load->model($this->modelfile);
+
+        if ($attribute_id && $product_id) {
+
+            $info = $this->{$this->model}->getAttributeValueInfo($product_id, $attribute_id, $language_id);
+        }
+
+        $info = array_merge($info, $request_info);
+
+        $this->load->model('attributico/interlink');
+
+        $profile = $this->model_attributico_interlink->getRule($this->config->get($this->module . '_interlink'));
+
+        /* If URL !exist */
+        //if (!$parsedUrl) {
+        $admindUrl =  $this->url->link($profile['route'], $profile['args']);
+        $parsedUrl = str_replace('admin/', '', $admindUrl);
+        /** id - rules id
+         * title - rules title for select
+         * route - default https://v2.ocdemo.eu//index.php?route=product/category
+         * alias - filter alias (mfp or ocf or filter by default)
+         * args - string of variables parameters for parse
+         * block_separator ?
+         * attribute_value_separator
+         * value_separator
+         */
+        //}
+        $info['url'] = html_entity_decode($parsedUrl);
+        $info['alias'] = $profile['filter_alias'];
+        $path = $this->urlParse($info, $profile);
+
+        // При нажатии на кнопку надо создать URL по шаблону кастомному или для определенного фильтра
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($path, JSON_UNESCAPED_UNICODE));
+    }
+
+    private function urlParse($info, $profile)
+    {
+        $parsedUrl = $info['url'];
+
+        /* If URL includes template */
+        $pattern = "|{(.+?)}|im";
+        $matches = array();
+        preg_match_all($pattern, $parsedUrl, $matches);
+        if ($matches[1]) {
+            foreach ($matches[1] as $match) {
+                /* If Match is valid */
+                if (array_key_exists($match, $info)) {
+                    $parsedUrl = str_replace('{' . $match . '}', $this->replaceRule($match, $info, $profile), $parsedUrl);
+                }
+            }
+        }
+
+        return html_entity_decode($parsedUrl);
+    }
+
+    private function replaceRule($match, $info, $profile)
+    {
+        switch ($match) {
+            case 'attribute_id':
+                return $info['attribute_id'];
+            case 'name':
+                return str2url($info['name']);
+            case 'product_id':
+                return $info['product_id'];
+            case 'main_category_id':
+                return $info['main_category_id'];
+            case 'category_id':
+                return implode(",", $info['category_id']);
+            case 'path':
+                $this->load->model($this->modelfile);
+
+                $path_chain = $this->{$this->model}->getPath($info['category_id']);
+
+                $main_path = [];
+                foreach ($path_chain as $chain) {
+                    if (isset($info['main_category_id'])) {
+                        if ($chain['category_id_1'] === $info['main_category_id']) {
+                            $main_path = $chain;
+                        }
+                    }
+                }
+
+                $hightly_likely_chain = array_reduce($path_chain, function ($carry, $item) {
+                    if (strpos($item['path'], $carry['path']) !== false && strlen($item['path']) > strlen($carry['path'])) {
+                        return $item;
+                    } else {
+                        return $carry;
+                    }
+                }, $main_path);
+
+                return 'path=' . $hightly_likely_chain['path'];
+            case 'value':
+                $values = $this->splitValue($info['text']);
+                $valuesUrl = implode($profile['value_separator'] ? $profile['value_separator'] : ',', array_map('str2url', $values));
+                return $valuesUrl;
+            case 'alias':
+                return $profile['filter_alias'];
+            default:
+                /* No rule for this match */
+                return '{' . $match . '}';
+        }
+    }
+
     public function setAttributeValueInfo()
     {
         $data = array();
@@ -2187,7 +2431,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             $data['text'] = $text;
             $data['tooltip'] = $this->request->post['tooltip'];
             $data['image'] = $this->request->post['image'];
-            $data['class'] = $this->request->post['css'];
+            $data['class'] = $this->request->post['class']; //TODO change name to icon
             $data['url'] = $this->request->post['url'];
             $data['unit_id'] = $this->request->post['unit_id'];
             $data['status'] = $this->request->post['status'];
@@ -2230,7 +2474,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($info, JSON_UNESCAPED_UNICODE));
     }
-
+    /* AttributeForm React config */
     private function configForm($info, $language_id)
     {
         $language = $this->getLanguage($language_id);
@@ -2350,19 +2594,56 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
         if ($key[0] == 'attribute') {
             $attribute_id = $key[1];
-            $data['attribute_description'][$language_id]['name'] = $name;
+            /* $data['attribute_description'][$language_id]['name'] = $name;//TODO нахрен нужен description если для конкретного языка
             $data['attribute_description'][$language_id]['duty'] = $form_values['duty'];
-            $data['attribute_description'][$language_id]['tooltip'] = $form_values['tooltip'];
+            $data['attribute_description'][$language_id]['tooltip'] = $form_values['tooltip']; */
+            $data['name'] = $name;
+            $data['duty'] = $form_values['duty'];
+            $data['tooltip'] = $form_values['tooltip'];
             $data['image'] = $form_values['image'];
             $data['class'] = $form_values['css'];
             $data['unit_id'] = $form_values['unit_id'];
             $data['status'] = $form_values['status'];
-            $this->{$this->model}->editInfo($attribute_id, $data);
+            $this->{$this->model}->editInfo($attribute_id, $data, $language_id);
         }
 
         $acceptedTitle["acceptedTitle"] = $name;
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($acceptedTitle));
+    }
+    public function install()
+    {
+        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "category_attribute
+		(`category_id` INTEGER(11) NOT NULL,`attribute_id` INTEGER(11) NOT NULL, PRIMARY KEY (`category_id`,`attribute_id`) USING BTREE)
+        ENGINE=MyISAM ROW_FORMAT=FIXED CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'");
+
+        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "unit
+		(unit_id int(11) NOT NULL AUTO_INCREMENT, unit_group_id int(11) NOT NULL DEFAULT 0, sort_order int(3) NOT NULL DEFAULT 0, PRIMARY KEY (unit_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
+
+        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "unit_description
+		(unit_id int(11) NOT NULL, language_id int(11) NOT NULL, title varchar(255) NOT NULL DEFAULT '', unit varchar(32) NOT NULL DEFAULT '',
+        PRIMARY KEY (unit_id, language_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
+
+        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "attribute_interlink (rule_id int(11) NOT NULL AUTO_INCREMENT, name varchar(255) NOT NULL, route varchar(255) NOT NULL,
+            filter_alias varchar(255) NOT NULL, args varchar(255) NOT NULL, block_separator char(20) NOT NULL, between_separator char(20) NOT NULL, value_separator char(20) NOT NULL,
+            advance varchar(255) NOT NULL, PRIMARY KEY (rule_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci;");
+
+        foreach ($this->dbstructure as $checking_table => $checking_column) {
+            foreach ($checking_column as $column_name => $column_type)
+                if (!$this->columnCheck($checking_table, $column_name)) {
+                    $this->columnUpgrade($checking_table,  $column_name, $column_type);
+                }
+        }
+
+        $data[$this->module . '_splitter'] = '/';
+        $data[$this->module . '_cache'] = '1';
+        $data[$this->module . '_lazyload'] = '1';
+        $data[$this->module . '_children'] = 'a:5:{i:1;a:2:{i:0;s:8:"template";i:1;s:5:"value";}i:2;a:1:{i:0;s:4:"duty";}i:3;a:1:{i:0;s:4:"duty";}i:4;a:2:{i:0;s:8:"template";i:1;s:5:"value";}i:5;a:2:{i:0;s:8:"template";i:1;s:5:"value";}}';
+        $data['module_' . $this->module . '_status'] = '1';
+
+        $this->load->model('setting/setting');
+        $this->model_setting_setting->editSetting($this->module, $data);
+        $this->model_setting_setting->editSetting('module_' . $this->module, $data);
     }
 }
 class ControllerExtensionModuleAttributipro extends ControllerModuleAttributipro

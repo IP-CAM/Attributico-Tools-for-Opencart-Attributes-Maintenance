@@ -16,14 +16,13 @@ export default class ProductTree {
             autoScroll: true,
             minExpandLevel: 2,
             source: {
-                data: {
-                    'user_token': user_token,
-                    'token': token,
+                data: {                    
                     'language_id': this.lng_id,
                     'sortOrder': this.sortOrder,
                     'invert': this.diver
                 },
-                url: route + 'getProductTree'
+                url: `${route}getProductTree&user_token=${user_token}&token=${token}`,
+                type: 'POST',
             },
             loadError: (e, data) => loadError(e, data),
             dblclick: (event, data) => {

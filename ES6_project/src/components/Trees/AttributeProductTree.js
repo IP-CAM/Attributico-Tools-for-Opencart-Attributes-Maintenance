@@ -42,16 +42,15 @@ export default class AttributeProductTree {
                 var tree = $.ui.fancytree.getTree("#product_tree" + this.lng_id);
                 currentAttribute = data.node.key;
                 tree.reload({
-                    data: {
-                        'user_token': user_token,
-                        'token': token,
+                    data: {                        
                         'language_id': this.lng_id,
                         'attribute_id': data.node.key,
                         'title': data.node.title,
                         'sortOrder': $('input[id = "sortOrder_attribute_product_tree' + this.lng_id + '"]:checkbox').is(":checked"),
                         'invert': $('input[id = "diver_product_tree' + this.lng_id + '"]:checkbox').is(":checked")
                     },
-                    url: route + 'getProductTree'
+                    url: `${route}getProductTree&user_token=${user_token}&token=${token}`,
+                    type: 'POST',
                 });
             },
             lazyLoad: (event, data) => {
