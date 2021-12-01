@@ -62,26 +62,36 @@ class ModelCatalogAttributico extends Model
         return $attribute_data;
     }
 
+    /**
+     * Addition New attribute or paste copying attribute
+     * $data['new] is manage flag
+     *
+     * @param array $data
+     * $data['attribute_description'] structure example [empty,'name'=>A1ru,empty,'name'=>A1en]
+     * empty if language not present by any id   [1] name = A1ru
+     *                                           [3] name = A1en
+     * 
+     * @return int new attribute id 
+     * 
+     * Executed in a foreach loop, cache delete in controller
+     */
     public function addAttribute($data)
     {
-        /**
-         * $data['attribute_description'] structure example [empty,'name'=>A1ru,empty,'name'=>A1en]
-         *  empty if language not present by any id   [1] name = A1ru
-         *                                            [3] name = A1en
-         *
-         *  in foreach, cache delete in controller
-         **/
         $maxorder = $this->db->query("SELECT MAX(`sort_order`) AS maxorder FROM " . DB_PREFIX . "attribute");
         $this->db->query("INSERT INTO " . DB_PREFIX . "attribute SET attribute_group_id = '" . (int)$data['attribute_group_id'] . "', sort_order = '" . ((int)$maxorder->row['maxorder'] + 1) . "'");
-        // этот id будет добавлен к имени при добавлении: Новый атрибут_234, при копировании не добавляется - флаг data['new']
+        /**
+         * This id will be added to the name when creating: New attribute_234, when copying is not added - the flag data['new']
+         */
         $attribute_id = $this->db->getLastId();
 
         foreach ($data['attribute_description'] as $language_id => $value) {
             $sql = "INSERT INTO " . DB_PREFIX . "attribute_description SET attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language_id . "',
              name = '" . $this->db->escape($value['name']) . ($data['new'] ? '_' . $attribute_id : '') . "'";
-            // при копировании переносим значение duty из прежнего атрибута
+            /**
+             * We transfer the duty value from the previous attribute if copy paste
+             */
             if (!$data['new']) {
-                $duty = $this->whoisOnDuty($value['attribute_id'], ['language_id' => $language_id]);
+                $duty = $this->whoisOnDuty($data['attribute_id'], ['language_id' => $language_id]);
                 $sql .= ",duty = '" . $this->db->escape($duty) . "'";
             }
 
@@ -125,9 +135,9 @@ class ModelCatalogAttributico extends Model
         if ($language_id) {
             return $query->row;
         } else {
-           return $attribute_info;
+            return $attribute_info;
         }
-    }    
+    }
 
     private function deleteAttribute($attribute_id)
     {
@@ -150,7 +160,8 @@ class ModelCatalogAttributico extends Model
         }
     }
 
-    public function getAttributesByGroups($groups = array()) {
+    public function getAttributesByGroups($groups = array())
+    {
 
         $sql = "SELECT a.attribute_id, a.attribute_group_id, ad.name, ad.language_id FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id)";
         $sql_groups = $groups ? " WHERE a.attribute_group_id IN (" . implode(",", $groups) . ")" : "";
@@ -665,7 +676,8 @@ class ModelCatalogAttributico extends Model
         return !empty($query->row) ? $query->row['duty'] : '';
     }
 
-    public function getDuties($groups = array()) {
+    public function getDuties($groups = array())
+    {
 
         $sql = "SELECT a.attribute_id, a.attribute_group_id, ad.duty, ad.language_id FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id)";
         $sql_groups = $groups ? " WHERE a.attribute_group_id IN (" . implode(",", $groups) . ")" : "";
@@ -770,31 +782,44 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
 {
     protected $model = 'attributipro';
 
+    /**
+     * Addition New attribute or paste copying attribute
+     * $data['new] is manage flag
+     *
+     * @param array $data
+     * $data['attribute_description'] structure example [empty,'name'=>A1ru,empty,'name'=>A1en]
+     * empty if language not present by any id   [1] name = A1ru
+     *                                           [3] name = A1en
+     * 
+     * @return int new attribute id 
+     * 
+     * Executed in a foreach loop, cache delete in controller
+     */
     public function addAttribute($data)
     {
         /**
-         * $data['attribute_description'] structure example [empty,'name'=>A1ru,empty,'name'=>A1en]
-         *  empty if language not present by any id   [1] name = A1ru
-         *                                            [3] name = A1en
-         *
-         *  in foreach, cache delete in controller
-         **/
+         * Inserting a new record into the database. You can edit the Info structure later with the editInfo function
+         */
         $maxorder = $this->db->query("SELECT MAX(`sort_order`) AS maxorder FROM " . DB_PREFIX . "attribute");
         $this->db->query("INSERT INTO " . DB_PREFIX . "attribute SET attribute_group_id = '" . (int)$data['attribute_group_id'] . "', sort_order = '" . ((int)$maxorder->row['maxorder'] + 1) . "'");
-        // этот id будет добавлен к имени при добавлении: Новый атрибут_234, при копировании не добавляется - флаг data['new']
+        /**
+         * This id will be added to the name when creating: New attribute_234, when copying is not added - the flag data['new']
+         */
         $attribute_id = $this->db->getLastId();
-        //TODO При копировании перенос всей info
+
         foreach ($data['attribute_description'] as $language_id => $value) {
             $sql = "INSERT INTO " . DB_PREFIX . "attribute_description SET attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language_id . "',
              name = '" . $this->db->escape($value['name']) . ($data['new'] ? '_' . $attribute_id : '') . "'";
-            // при копировании переносим значение duty из прежнего атрибута
-            // TODO перенос tooltip
-            if (!$data['new']) {
-                $duty = $this->whoisOnDuty($value['attribute_id'], ['language_id' => $language_id]);
-                $sql .= ",duty = '" . $this->db->escape($duty) . "'";
-            }
 
             $this->db->query($sql);
+
+            /**
+             * We transfer the all Info structure from the previous attribute if copy paste
+             */
+            if (!$data['new']) {
+                $info = $this->getAttributeInfo($data['attribute_id'], $language_id);
+                $this->editInfo($attribute_id, $info, $language_id);
+            }
         }
 
         return $attribute_id;
@@ -820,8 +845,9 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
                     'name' => $result['name'],
                     'attribute_group_id' => $result['attribute_group_id'],
                     'group_name' => $result['group_name'],
-                    'sort_order' => $result['sort_order'],
                     'duty' => $result['duty'],
+                    'tooltip' => $result['tooltip'],
+                    'sort_order' => $result['sort_order'],
                     'image' => $result['image'],
                     'class' => $result['class'],
                     'unit_id' => $result['unit_id'],
@@ -832,18 +858,20 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
         }
     }
 
-    public function editInfo($attribute_id, $data)
+    public function editInfo($attribute_id, $data, $language_id = 0)
     {
         $this->cache->delete($this->model);
 
         $this->db->query("UPDATE " . DB_PREFIX . "attribute SET image = '" . $data['image'] . "', class = '" . $data['class'] . "', unit_id = '" . (int)$data['unit_id'] . "', status = '" . (int)$data['status'] . "' WHERE attribute_id = '" . (int)$attribute_id . "'");
 
-        foreach ($data['attribute_description'] as $language_id => $value) {
+        $this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET name = '" . $this->db->escape($data['name']) . "', duty = '" . $this->db->escape($data['duty']) . "', tooltip = '" . $this->db->escape($data['tooltip']) . "' WHERE attribute_id = '" . (int)$attribute_id . "' AND language_id = '" . (int)$language_id . "'");
+
+        /* foreach ($data['attribute_description'] as $language_id => $value) {
             $this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET name = '" . $this->db->escape($value['name']) . "', duty = '" . $this->db->escape($value['duty']) . "', tooltip = '" . $this->db->escape($value['tooltip']) . "' WHERE attribute_id = '" . (int)$attribute_id . "' AND language_id = '" . (int)$language_id . "'");
-        }
+        } */
     }
 
-    
+
     public function getAttributeValueInfo($product_id, $attribute_id, $language_id = 0)
     {
         $info = array();
@@ -853,12 +881,18 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
             $sql_lang = '';
         }
 
-        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_attribute opa WHERE opa.product_id='" . (int)$product_id . "' AND opa.attribute_id='" . (int)$attribute_id . "'" . $sql_lang);
+        $query = $this->db->query("SELECT opa.*, ad.name FROM " . DB_PREFIX . "product_attribute opa 
+            LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (ad.attribute_id = opa.attribute_id AND opa.language_id = ad.language_id) 
+            WHERE opa.product_id='" . (int)$product_id . "' AND opa.attribute_id='" . (int)$attribute_id . "'" . $sql_lang);
 
-        if ($language_id) {
+        if ($language_id) { 
+            /**
+             * If sql query returns empty so it is new value and we must prepare new structure
+             */
             return $query->row ? $query->row : array(
                 'product_id' => $product_id,
                 'attribute_id' => $attribute_id,
+                'name' => '',
                 'text' => "",
                 'image' => null,
                 'tooltip' => "",
@@ -872,6 +906,7 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
                 $info[$result['language_id']] = array(
                     'product_id' => $result['product_id'],
                     'attribute_id' => $result['attribute_id'],
+                    'name' => $result['name'],
                     'text' => $result['text'],
                     'image' => $result['image'],
                     'tooltip' => $result['tooltip'],
@@ -895,9 +930,21 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
             "ON DUPLICATE KEY UPDATE  product_id = '" . (int)$product_id . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language_id .
             "', text = '" . $this->db->escape($data['text']) . "', image = '" . $data['image'] . "', class = '" . $data['class'] . "', url = '" . $this->db->escape($data['url']) .
             "', unit_id = '" . (int)$data['unit_id'] . "', status = '" . (int)$data['status'] . "', tooltip = '" . $this->db->escape($data['tooltip']) . "'");
-        $this->productDateModified($product_id);
-
-        //$this->db->query("UPDATE " . DB_PREFIX . "product_attribute SET text = '" . $this->db->escape($data['text']) . "', image = '" . $data['image'] . "', class = '" . $data['class'] . "', url = '" . $this->db->escape($data['url']) . "', unit_id = '" . (int)$data['unit_id'] . "', status = '" . (int)$data['status'] . "', tooltip = '" . $this->db->escape($data['tooltip']) . "' WHERE product_id = '" . (int)$product_id . "' AND attribute_id = '" . (int)$attribute_id . "' AND language_id = '" . (int)$language_id . "'");
+        $this->productDateModified($product_id);        
     }
-
+    
+/**
+ * Search and group concat path chain for every category from array categories
+ * For example 61_78_120
+ *
+ * @param array $categories
+ * @return array of ['category_id_1, 'path']
+ */
+    public function getPath($categories)
+    {
+        $query = $this->db->query("SELECT DISTINCT `category_id` AS `category_id_1`,
+                (SELECT CONVERT(GROUP_CONCAT(`path_id` SEPARATOR '_') USING utf8mb4) FROM oc_category_path WHERE `category_id` = `category_id_1` ) AS `path`
+                FROM oc_category_path WHERE category_id IN (" . implode(",", $categories) . ")");
+        return $query->rows;
+    }
 }

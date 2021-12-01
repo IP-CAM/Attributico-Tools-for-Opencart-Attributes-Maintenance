@@ -1499,10 +1499,10 @@ class ControllerModuleAttributico extends Controller
 
     protected function getLanguage($language_id)
     {
-        //$this->extension = version_compare(VERSION, '2.3.0', '>=') ? "extension/" : "";
+        $extension = version_compare(VERSION, '2.3.0', '>=') ? "extension/" : "";
         $directory = $this->getLanguageDirectory($language_id);
         $language = new Language($directory);
-        $language->load($this->extension . $this->modulefile);
+        $language->load($extension . $this->modulefile);
         return $language;
     }
 
