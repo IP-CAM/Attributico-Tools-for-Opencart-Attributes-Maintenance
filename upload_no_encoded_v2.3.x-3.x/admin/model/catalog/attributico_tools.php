@@ -1,17 +1,21 @@
 <?php
+
+//require_once(DIR_SYSTEM . 'library/attributico/array_column.php');
+
 class ModelCatalogAttributicoTools extends Model
 {
+    protected $model = 'attributico';
 
     public function deleteEmptyValues()
     {
-        $this->cache->delete('attributico');
+        $this->cache->delete('attributipro');
         $this->db->query("DELETE FROM " . DB_PREFIX . "product_attribute WHERE TRIM(text) LIKE ''");
         return $this->db->countAffected();
     }
 
     public function defragmentation($basetable, $field)
     {
-        $this->cache->delete('attributico');
+        $this->cache->delete('attributipro');
         $schema = array();
         $this->db->query("DROP TABLE IF EXISTS " . DB_PREFIX . $basetable . "_relation");
 
@@ -68,7 +72,7 @@ class ModelCatalogAttributicoTools extends Model
     public function detached($attribute_group_id = 0, $attributes = array())
     {
         set_time_limit(600);
-        $this->cache->delete('attributico');
+        $this->cache->delete('attributipro');
         $sql_group = $attribute_group_id !== 0 ? " WHERE attribute_group_id =" . (int) $attribute_group_id : "";
         $sql_attributes = $attributes ? " AND attribute_id IN (" . implode(",", $attributes) . ")" : "";
         $all_attributes = $this->db->query("SELECT * FROM " . DB_PREFIX . "attribute" . $sql_group . $sql_attributes);
@@ -128,8 +132,8 @@ class ModelCatalogAttributicoTools extends Model
     public function deduplicate($attribute_group_id)
     {
         set_time_limit(600);
-        $this->cache->delete('attributico');
-        $splitter = !($this->config->get('attributico_splitter') == '') ? $this->config->get('attributico_splitter') : '/';
+        $this->cache->delete('attributipro');
+        $splitter = !($this->config->get('attributipro_splitter') == '') ? $this->config->get('attributipro_splitter') : '/';
         $holdkeys = $this->getHoldkeys($attribute_group_id);
         $duplicates = $this->getDuplicates($attribute_group_id);
         $proddups = $this->getProddups(array_unique(array_column($duplicates, 'attribute_id')));
@@ -175,7 +179,7 @@ class ModelCatalogAttributicoTools extends Model
     public function mergeAttribute($target_id, $source_id)
     {
         // in foreach
-        $splitter = !($this->config->get('attributico_splitter') == '') ? $this->config->get('attributico_splitter') : '/';
+        $splitter = !($this->config->get('attributipro_splitter') == '') ? $this->config->get('attributipro_splitter') : '/';
 
         $source_products = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_attribute WHERE attribute_id = '" . (int) $source_id . "'");
         foreach ($source_products->rows as $source_product) {
@@ -214,7 +218,7 @@ class ModelCatalogAttributicoTools extends Model
 
     public function createCategoryAttributes($categories = array())
     {
-        // $this->cache->delete('attributico');
+        // $this->cache->delete('attributipro');
         if ($categories) {
             // pull out category attribute from products
             $this->db->query("INSERT IGNORE INTO " . DB_PREFIX . "category_attribute(category_id, attribute_id) (SELECT DISTINCT hptc.category_id, hpa.attribute_id FROM "
@@ -228,7 +232,7 @@ class ModelCatalogAttributicoTools extends Model
     {
         // in foreach
         set_time_limit(600);
-        $method = $this->config->get('attributico_product_text');
+        $method = $this->config->get('attributipro_product_text');
         $count_affected = 0;
         $sql = '';
         /* Будут добавлены только записи с несовпадающими ключами. Поле Text не будет затронуто */
@@ -301,7 +305,7 @@ class ModelCatalogAttributicoTools extends Model
         $count_affected->value = 0;
         $count_affected->duty = 0;
 
-        $this->cache->delete('attributico');
+        $this->cache->delete('attributipro');
 
         // Attribute Group
         if ($node['group']) {
@@ -427,4 +431,115 @@ class ModelCatalogAttributicoTools extends Model
 
         return $count_affected;
     }
+
+    public function getValuesByPattern($pattern, $categories = array(), $groups = array())
+    {
+        $where = $categories ? " AND " : " WHERE ";
+        $and = $categories || $groups ? " AND " : " WHERE ";
+
+        $sql = "SELECT text, language_id, product_id, attribute_id FROM " . DB_PREFIX . "product_attribute";
+
+        $sql_categories = $categories ? " WHERE product_id IN (SELECT ptc.product_id FROM " . DB_PREFIX . "product_to_category ptc WHERE ptc.category_id IN (" . implode(",", $categories) . "))" : "";
+
+        $sql_groups = $groups ? $where . "attribute_id IN (SELECT a.attribute_id FROM " . DB_PREFIX . "attribute a WHERE a.attribute_group_id IN (" . implode(",", $groups) . "))" : "";
+
+        $query = $this->db->query($sql . $sql_categories . $sql_groups . $and . "text REGEXP '" . $pattern . "'  ORDER BY language_id");
+
+        return $query->rows;
+    }
+
+    public function updateValues($records)
+    {
+        $count_affected = 0;
+        $this->cache->delete($this->model);
+
+        foreach ($records as $data) {
+            $this->db->query("UPDATE " . DB_PREFIX . "product_attribute SET text = '" . $this->db->escape($data['text']) . "' WHERE attribute_id = '" . (int)$data['attribute_id'] . "' AND language_id = '" . (int)$data['language_id'] . "' AND product_id = '" . (int)$data['product_id'] . "'");
+
+            $count_affected += $this->db->countAffected();
+            $this->productDateModified($data['product_id']);
+        }
+
+        return $count_affected;
+    }
+
+    public function getGroups($groups = array())
+    {
+        $sql = "SELECT * FROM " . DB_PREFIX . "attribute_group_description agd";
+        $sql_groups = $groups ? " WHERE agd.attribute_group_id IN (" . implode(",", $groups) . ")" : "";
+
+        $query = $this->db->query($sql .  $sql_groups);
+
+        return $query->rows;
+    }
+
+    public function updateGroups($records)
+    {
+        $count_affected = 0;
+        $this->cache->delete($this->model);
+
+        foreach ($records as $data) {
+            $this->db->query("UPDATE " . DB_PREFIX . "attribute_group_description SET name = '" . $this->db->escape($data['name']) . "' WHERE attribute_group_id = '" . (int)$data['attribute_group_id'] . "' AND language_id = '" . (int)$data['language_id'] . "'");
+            $count_affected += $this->db->countAffected();
+        }
+
+        return $count_affected;
+    }
+
+    public function getAttributesByGroups($groups = array())
+    {
+
+        $sql = "SELECT a.attribute_id, a.attribute_group_id, ad.name, ad.language_id FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id)";
+        $sql_groups = $groups ? " WHERE a.attribute_group_id IN (" . implode(",", $groups) . ")" : "";
+
+        $query = $this->db->query($sql .  $sql_groups);
+
+        return $query->rows;
+    }
+
+    public function updateAttributes($records)
+    {
+        $count_affected = 0;
+        $this->cache->delete($this->model);
+
+        foreach ($records as $data) {
+            $this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET name = '" . $this->db->escape($data['name']) . "' WHERE attribute_id = '" . (int)$data['attribute_id'] . "' AND language_id = '" . (int)$data['language_id'] . "'");
+            $count_affected += $this->db->countAffected();
+        }
+
+        return $count_affected;
+    }
+
+    public function getDuties($groups = array())
+    {
+        $sql = "SELECT a.attribute_id, a.attribute_group_id, ad.duty, ad.language_id FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id)";
+        $sql_groups = $groups ? " WHERE a.attribute_group_id IN (" . implode(",", $groups) . ")" : "";
+
+        $query = $this->db->query($sql .  $sql_groups);
+
+        return $query->rows;
+    }
+
+    public function updateDuties($records)
+    {
+        $count_affected = 0;
+        $this->cache->delete($this->model);
+
+        foreach ($records as $data) {
+            $this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET duty = '" . $this->db->escape($data['duty']) . "' WHERE attribute_id = '" . (int)$data['attribute_id'] . "' AND language_id = '" . (int)$data['language_id'] . "'");
+            $count_affected += $this->db->countAffected();
+        }
+
+        return $count_affected;
+    }
+
+    protected function productDateModified($product_id)
+    {
+        $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
+    }
+}
+
+class ModelCatalogAttributiproTools extends ModelCatalogAttributicoTools
+{
+    protected $model = 'attributipro';
 }

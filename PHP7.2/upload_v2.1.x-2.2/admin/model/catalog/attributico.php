@@ -4,20 +4,18 @@ class ModelCatalogAttributico extends Model
 {
     protected $model = 'attributico';
 
+    /** Attribute Data Base service section **/
     /**
-     * Attribute Data Base service
+     * Universal function for gets attributes depending from incomming data
      *
-     **/
+     * @param array $data
+     * @return array of attributes
+     */
     public function getAttributes($data = array())
     {
-        if (isset($data['language_id'])) {
-            $language_id = (int)$data['language_id'];
-        } else {
-            $language_id = (int)$this->config->get('config_language_id');
-        }
+        $language_id = isset($data['language_id']) ? (int)$data['language_id'] : (int)$this->config->get('config_language_id');
 
-        $sql = "SELECT *, (SELECT agd.name FROM " . DB_PREFIX . "attribute_group_description agd WHERE agd.attribute_group_id = a.attribute_group_id AND agd.language_id = '" . $language_id . "') AS attribute_group "
-            . "FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id) WHERE ad.language_id = '" . $language_id . "'";
+        $sql = "SELECT *, (SELECT agd.name FROM " . DB_PREFIX . "attribute_group_description agd WHERE agd.attribute_group_id = a.attribute_group_id AND agd.language_id = '" . $language_id . "') AS attribute_group FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id) WHERE ad.language_id = '" . $language_id . "'";
 
         if (!empty($data['filter_name'])) {
             $sql .= " AND ad.name LIKE '" . $this->db->escape($data['filter_name']) . "%'";
@@ -49,6 +47,12 @@ class ModelCatalogAttributico extends Model
         return $query->rows;
     }
 
+    /**
+     * Returns an attribute description for displaying additional information in the product tree
+     *
+     * @param integer $attribute_id
+     * @return array
+     */
     public function getAttributeDescriptions($attribute_id)
     {
         $attribute_data = array();
@@ -91,7 +95,7 @@ class ModelCatalogAttributico extends Model
              * We transfer the duty value from the previous attribute if copy paste
              */
             if (!$data['new']) {
-                $duty = $this->whoisOnDuty($data['attribute_id'], ['language_id' => $language_id]);
+                $duty = $this->whoIsOnDuty($data['attribute_id'], $language_id);
                 $sql .= ",duty = '" . $this->db->escape($duty) . "'";
             }
 
@@ -101,7 +105,14 @@ class ModelCatalogAttributico extends Model
         return $attribute_id;
     }
 
-    public function editAttribute($attribute_id, $data)
+    /**
+     * Updates attribute name after edit by inline fansytree editor
+     *
+     * @param integer $attribute_id
+     * @param array $data
+     * @return void
+     */
+    public function editAttributeName($attribute_id, $data)
     {
         $this->cache->delete($this->model);
 
@@ -110,32 +121,23 @@ class ModelCatalogAttributico extends Model
         }
     }
 
+    /**
+     * Gets all attribute structure with attribute group and description data
+     *
+     * @param string $attribute_id
+     * @param integer $language_id
+     * @return array
+     */
     public function getAttributeInfo($attribute_id, $language_id = 0)
     {
-        $attribute_info = array();
-        if ($language_id) {
-            $sql_lang = " AND ad.language_id = '" . (int)$language_id . "'";
-        } else {
-            $sql_lang = '';
-        }
+        $sql_lang = $language_id ? " AND ad.language_id = '" . (int)$language_id . "'" : '';
 
         $query = $this->db->query("SELECT ad.language_id, a.attribute_id, ad.name, a.attribute_group_id, oagd.name AS group_name, a.sort_order, ad. duty  FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id) LEFT JOIN " . DB_PREFIX . "attribute_group_description oagd ON (a.attribute_group_id = oagd.attribute_group_id AND oagd.language_id = ad.language_id) WHERE a.attribute_id = '" . (int)$attribute_id . "'" . $sql_lang);
-
-        foreach ($query->rows as $result) {
-            $attribute_info[$result['language_id']] = array(
-                'attribute_id' => $result['attribute_id'],
-                'name' => $result['name'],
-                'attribute_group_id' => $result['attribute_group_id'],
-                'group_name' => $result['group_name'],
-                'sort_order' => $result['sort_order'],
-                'duty' => $result['duty']
-            );
-        }
 
         if ($language_id) {
             return $query->row;
         } else {
-            return $attribute_info;
+            return $this->groupByLang($query->rows);
         }
     }
 
@@ -160,42 +162,16 @@ class ModelCatalogAttributico extends Model
         }
     }
 
-    public function getAttributesByGroups($groups = array())
-    {
-
-        $sql = "SELECT a.attribute_id, a.attribute_group_id, ad.name, ad.language_id FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id)";
-        $sql_groups = $groups ? " WHERE a.attribute_group_id IN (" . implode(",", $groups) . ")" : "";
-
-        $query = $this->db->query($sql .  $sql_groups);
-
-        return $query->rows;
-    }
-
-    public function updateAttributes($records)
-    {
-        $count_affected = 0;
-        $this->cache->delete($this->model);
-
-        foreach ($records as $data) {
-            $this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET name = '" . $this->db->escape($data['name']) . "' WHERE attribute_id = '" . (int)$data['attribute_id'] . "' AND language_id = '" . (int)$data['language_id'] . "'");
-            $count_affected += $this->db->countAffected();
-        }
-
-        return $count_affected;
-    }
-
+    /** Group Data Base service section **/
     /**
-     * Group Data Base service
+     * Universal function for gets attribute groups depending from incomming data
      *
-     **/
+     * @param array $data
+     * @return array of groups
+     */
     public function getAttributeGroups($data = array())
     {
-
-        if (isset($data['language_id'])) {
-            $language_id = (int)$data['language_id'];
-        } else {
-            $language_id = (int)$this->config->get('config_language_id');
-        }
+        $language_id = isset($data['language_id']) ? (int)$data['language_id'] : (int)$this->config->get('config_language_id');
 
         $sql = "SELECT * FROM " . DB_PREFIX . "attribute_group ag LEFT JOIN " . DB_PREFIX . "attribute_group_description agd ON (ag.attribute_group_id = agd.attribute_group_id) WHERE agd.language_id = '" . $language_id . "'";
 
@@ -225,6 +201,13 @@ class ModelCatalogAttributico extends Model
         return $query->rows;
     }
 
+    /**
+     * Gets group for concrete attribute
+     *
+     * @param integer $attribute_id
+     * @param integer $language_id
+     * @return array
+     */
     public function getAttributeGroup($attribute_id, $language_id)
     {
         $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_group_description agd "
@@ -258,7 +241,6 @@ class ModelCatalogAttributico extends Model
         }
     }
 
-
     public function deleteAttributeGroup($attribute_group_id)
     {
         // in foreach
@@ -289,39 +271,21 @@ class ModelCatalogAttributico extends Model
         $this->db->query("UPDATE " . DB_PREFIX . "attribute SET attribute_group_id = '" . (int)$attribute_group_id . "' WHERE attribute_id = '" . (int)$attribute_id . "'");
     }
 
-
-    public function getGroups($groups = array())
-    {
-        $sql = "SELECT * FROM " . DB_PREFIX . "attribute_group_description agd";
-        $sql_groups = $groups ? " WHERE agd.attribute_group_id IN (" . implode(",", $groups) . ")" : "";
-
-        $query = $this->db->query($sql .  $sql_groups);
-
-        return $query->rows;
-    }
-
-    public function updateGroups($records)
-    {
-        $count_affected = 0;
-        $this->cache->delete($this->model);
-
-        foreach ($records as $data) {
-            $this->db->query("UPDATE " . DB_PREFIX . "attribute_group_description SET name = '" . $this->db->escape($data['name']) . "' WHERE attribute_group_id = '" . (int)$data['attribute_group_id'] . "' AND language_id = '" . (int)$data['language_id'] . "'");
-            $count_affected += $this->db->countAffected();
-        }
-
-        return $count_affected;
-    }
+    /** Value Data Base service section  **/
 
     /**
-     * Value Data Base service
+     * Gets languages grouped array of values for all products from category list
      *
-     **/
+     * @param integer $attribute_id
+     * @param array $categories
+     * @return array of values 
+     */
     public function getAttributeValues($attribute_id, $categories = array())
     {
         $attribute_values_data = array();
         // (BINARY text) for difference selecting lower case and upper case text recrords in DISTINCT mode
         $sql = "SELECT DISTINCT (BINARY text), text, language_id FROM " . DB_PREFIX . "product_attribute WHERE attribute_id='" . (int)$attribute_id . "'";
+        // If the array of categories is not empty, then the category  filter has been turned on
         $sql_categories = $categories ? " AND product_id IN (SELECT ptc.product_id FROM " . DB_PREFIX . "product_to_category ptc WHERE ptc.category_id IN (" . implode(",", $categories) . "))" : "";
 
         $query = $this->db->query($sql . $sql_categories . " ORDER BY language_id");
@@ -335,7 +299,6 @@ class ModelCatalogAttributico extends Model
 
     public function editAttributeTemplates($attribute_id, $data)
     {
-
         $products = $this->getProductsByText($attribute_id, $data['language_id'], $data['oldtext']);
 
         $this->cache->delete($this->model);
@@ -363,7 +326,7 @@ class ModelCatalogAttributico extends Model
                 $values = explode($splitter, $product['text']);
                 $newtext =  implode($splitter, preg_replace('/^(' . $search . ')+$/', $replace, $values));
             } else {
-                // Замена по вхлждению подстроки в строку
+                // Замена по вхождению подстроки в строку
                 $newtext = str_replace($search, $replace, $product['text']);
             }
 
@@ -402,37 +365,6 @@ class ModelCatalogAttributico extends Model
         }
     }
 
-    public function getValues($pattern, $categories = array(), $groups = array())
-    {
-        $where = $categories ? " AND " : " WHERE ";
-        $and = $categories || $groups ? " AND " : " WHERE ";
-
-        $sql = "SELECT text, language_id, product_id, attribute_id FROM " . DB_PREFIX . "product_attribute";
-
-        $sql_categories = $categories ? " WHERE product_id IN (SELECT ptc.product_id FROM " . DB_PREFIX . "product_to_category ptc WHERE ptc.category_id IN (" . implode(",", $categories) . "))" : "";
-
-        $sql_groups = $groups ? $where . "attribute_id IN (SELECT a.attribute_id FROM " . DB_PREFIX . "attribute a WHERE a.attribute_group_id IN (" . implode(",", $groups) . "))" : "";
-
-        $query = $this->db->query($sql . $sql_categories . $sql_groups . $and . "text REGEXP '" . $pattern . "'  ORDER BY language_id");
-
-        return $query->rows;
-    }
-
-    public function updateValues($records)
-    {
-        $count_affected = 0;
-        $this->cache->delete($this->model);
-
-        foreach ($records as $data) {
-            $this->db->query("UPDATE " . DB_PREFIX . "product_attribute SET text = '" . $this->db->escape($data['text']) . "' WHERE attribute_id = '" . (int)$data['attribute_id'] . "' AND language_id = '" . (int)$data['language_id'] . "' AND product_id = '" . (int)$data['product_id'] . "'");
-
-            $count_affected += $this->db->countAffected();
-            $this->productDateModified($data['product_id']);
-        }
-
-        return $count_affected;
-    }
-
     /**
      * Category and Category Attribute Data Base service
      *
@@ -464,11 +396,11 @@ class ModelCatalogAttributico extends Model
         }
     }
 
-    public function addCategoryAttributes($category_id, $data)
+    public function addCategoryAttributes($category_id, $category_attributes)
     {
         // in foreach
-        if (isset($data['category_attribute'])) {
-            foreach ($data['category_attribute'] as $attribute_id) {
+        if (isset($category_attributes)) {
+            foreach ($category_attributes as $attribute_id) {
                 $this->db->query("INSERT INTO " . DB_PREFIX . "category_attribute SET category_id = '" . (int)$category_id . "', attribute_id = '" . (int)$attribute_id . "' "
                     . "ON DUPLICATE KEY UPDATE category_id = '" . (int)$category_id . "', attribute_id = '" . (int)$attribute_id . "'");
             }
@@ -559,7 +491,7 @@ class ModelCatalogAttributico extends Model
      **/
     private function getProductsByText($attribute_id, $language_id, $text)
     {
-        $product = $this->db->query("SELECT product_id FROM " . DB_PREFIX . "product_attribute WHERE attribute_id='" . (int)$attribute_id . "' AND language_id='" . (int)$language_id . "' AND text='" . $text . "'");
+        $product = $this->db->query("SELECT product_id FROM " . DB_PREFIX . "product_attribute WHERE attribute_id='" . (int)$attribute_id . "' AND language_id='" . (int)$language_id . "' AND text='" . $this->db->escape($text) . "'"); //TODO $this->db->escape in attributico
 
         return $product->rows;
     }
@@ -601,37 +533,74 @@ class ModelCatalogAttributico extends Model
         return $query->rows;
     }
 
-    public function addCategoryAttributesToProducts($products, $data, $languages)
+    /**
+     * Adds Duty data to products depending on the method of adding
+     *
+     * @param array $products
+     * @param array $category_attributes
+     * @param array $languages
+     * @return integer
+     */
+    public function addCategoryAttributesToProducts($products, $category_attributes, $languages)
     {
         // in foreach
         set_time_limit(600);
-        $method = $this->config->get($this->model . '_product_text');
+
         $count_affected = 0;
         foreach ($products as $product) {
-            $text = $method == 'unchange' ? "'" : "', text = '' ";
-            if (isset($data['category_attribute'])) {
-                foreach ($data['category_attribute'] as $attribute_id) {
-                    foreach ($languages as $language) {
-                        if ($method == 'overwrite' || $method == 'ifempty') {
-                            $duty = $this->whoisOnDuty($attribute_id, $language);
-                            $text = $duty ? "', text = '" . $this->db->escape($duty) . "' " : "'";
-                        }
-                        if ($method == 'ifempty') {
-                            $query = $this->db->query("SELECT text FROM " . DB_PREFIX . "product_attribute WHERE product_id = '" . (int)$product['product_id'] . "' AND attribute_id = '" . (int)$attribute_id . "'  AND language_id = '" . (int)$language['language_id'] . "'");
-                            if (!empty($query->row['text'])) {
-                                $text = "'";
-                            }
-                        }
-                        $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute SET product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . $text
-                            . "ON DUPLICATE KEY UPDATE  product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . $text);
-                        $this->productDateModified($product['product_id']);
+            foreach ($category_attributes as $attribute_id) {
+                foreach ($languages as $language) {
+                    $text = $this->getDutyByMethod($product['product_id'], $attribute_id, $language['language_id']);
 
-                        $count_affected += $this->db->countAffected();
-                    }
+                    $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute SET product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . $text
+                        . "ON DUPLICATE KEY UPDATE  product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . $text);
+
+                    $this->productDateModified($product['product_id']);
+
+                    $count_affected += $this->db->countAffected();
                 }
             }
         }
         return $count_affected;
+    }
+
+    /**
+     * Forms attribute value depending on the method of placing values in the product
+     *
+     * @param integer $product_id
+     * @param integer $attribute_id
+     * @param integer $language_id
+     * @return string
+     */
+    protected function getDutyByMethod($product_id, $attribute_id, $language_id)
+    {
+        $method = $this->config->get($this->model . '_product_text');
+
+        switch ($method) {
+            case 'clean':
+                $text = "', text = '' ";
+                break;
+            case 'overwrite':
+                $duty = $this->whoIsOnDuty($attribute_id, $language_id);
+                $text = $duty ? "', text = '" . $this->db->escape($duty) . "' " : "'";
+                break;
+            case 'ifempty':
+                $query = $this->db->query("SELECT text FROM " . DB_PREFIX . "product_attribute WHERE product_id = '" . (int)$product_id . "' AND attribute_id = '" . (int)$attribute_id . "'  AND language_id = '" . (int)$language_id . "'");
+
+                if (!empty($query->row['text'])) {
+                    $text = "'";
+                } else {
+                    $duty = $this->whoIsOnDuty($attribute_id, $language_id);
+                    $text = $duty ? "', text = '" . $this->db->escape($duty) . "' " : "'";
+                }
+                break;
+            case 'unchange':
+            default:
+                $text = "'";
+                break;
+        }
+
+        return $text;
     }
 
     public function deleteCategoryAttributesFromProducts($products, $data)
@@ -659,6 +628,15 @@ class ModelCatalogAttributico extends Model
             $this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET duty = '" . $this->db->escape($value['duty']) . "' WHERE attribute_id = '" . (int)$attribute_id . "' AND language_id = '" . (int)$language_id . "'");
         }
     }
+
+    /**
+     * Gets duty value or template for concrete attribute
+     * The output array is made in compatibility mode with the output array 
+     * of the getAttributeValues function to build common lists of values
+     * 
+     * @param integer $attribute_id
+     * @return array 
+     */
     public function getDutyValues($attribute_id)
     {
         $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "attribute_description WHERE attribute_id = '" . (int)$attribute_id . "'");
@@ -669,35 +647,18 @@ class ModelCatalogAttributico extends Model
         return $attribute_values_data;
     }
 
-    public function whoisOnDuty($attribute_id, $language)
+    /**
+     * Gets duty value for concrete attribute and language
+     *
+     * @param integer $attribute_id
+     * @param integer $language_id
+     * @return string only value of duty field
+     */
+    public function whoIsOnDuty($attribute_id, $language_id)
     {
-        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "attribute_description WHERE attribute_id = '" . (int)$attribute_id . "' AND language_id = '" . (int)$language['language_id'] . "'");
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "attribute_description WHERE attribute_id = '" . (int)$attribute_id . "' AND language_id = '" . (int)$language_id . "'");
 
         return !empty($query->row) ? $query->row['duty'] : '';
-    }
-
-    public function getDuties($groups = array())
-    {
-
-        $sql = "SELECT a.attribute_id, a.attribute_group_id, ad.duty, ad.language_id FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id)";
-        $sql_groups = $groups ? " WHERE a.attribute_group_id IN (" . implode(",", $groups) . ")" : "";
-
-        $query = $this->db->query($sql .  $sql_groups);
-
-        return $query->rows;
-    }
-
-    public function updateDuties($records)
-    {
-        $count_affected = 0;
-        $this->cache->delete($this->model);
-
-        foreach ($records as $data) {
-            $this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET duty = '" . $this->db->escape($data['duty']) . "' WHERE attribute_id = '" . (int)$data['attribute_id'] . "' AND language_id = '" . (int)$data['language_id'] . "'");
-            $count_affected += $this->db->countAffected();
-        }
-
-        return $count_affected;
     }
 
     /**
@@ -776,6 +737,26 @@ class ModelCatalogAttributico extends Model
     {
         $this->db->query("UPDATE " . DB_PREFIX . "product SET date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
     }
+
+    /**
+     * Group data by languages     * 
+     * Needs row['language_id']
+     * 
+     * @param array $rows
+     * @return void
+     */
+    protected function groupByLang($rows)
+    {
+        $result = [];
+        foreach ($rows as $row) {
+            $lang_data = [];
+            foreach ($row as $key => $value) {
+                $lang_data[$key] = $value;
+            }
+            $result[$row['language_id']] = $lang_data;
+        }
+        return $result;
+    }
 }
 
 class ModelCatalogAttributipro extends ModelCatalogAttributico
@@ -798,7 +779,7 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
     public function addAttribute($data)
     {
         /**
-         * Inserting a new record into the database. You can edit the Info structure later with the editInfo function
+         * Inserting a new record into the database. You can edit the Info structure later with the updateAttributeInfo function
          */
         $maxorder = $this->db->query("SELECT MAX(`sort_order`) AS maxorder FROM " . DB_PREFIX . "attribute");
         $this->db->query("INSERT INTO " . DB_PREFIX . "attribute SET attribute_group_id = '" . (int)$data['attribute_group_id'] . "', sort_order = '" . ((int)$maxorder->row['maxorder'] + 1) . "'");
@@ -818,13 +799,23 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
              */
             if (!$data['new']) {
                 $info = $this->getAttributeInfo($data['attribute_id'], $language_id);
-                $this->editInfo($attribute_id, $info, $language_id);
+                $this->updateAttributeInfo($attribute_id, $info, $language_id);
+                $duty_info = $this->getDutyInfo($data['attribute_id'], $language_id);
+                $this->updateDutyInfo($attribute_id, $duty_info, $language_id);
             }
         }
 
         return $attribute_id;
     }
 
+    /**
+     * Gets all attribute structure with attribute group and description data
+     *  Overload bas method
+     * 
+     * @param string $attribute_id
+     * @param integer $language_id
+     * @return array
+     */
     public function getAttributeInfo($attribute_id, $language_id = 0)
     {
         $attribute_info = array();
@@ -834,44 +825,41 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
             $sql_lang = '';
         }
 
-        $query = $this->db->query("SELECT ad.language_id, a.attribute_id, ad.name, a.attribute_group_id, oagd.name AS group_name, a.sort_order, ad.duty, a.image, ad.tooltip, a.class, a.unit_id, a.status FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id) LEFT JOIN " . DB_PREFIX . "attribute_group_description oagd ON (a.attribute_group_id = oagd.attribute_group_id AND oagd.language_id = ad.language_id) WHERE a.attribute_id = '" . (int)$attribute_id . "'" . $sql_lang);
+        $query = $this->db->query("SELECT ad.language_id, a.attribute_id, ad.name, a.attribute_group_id, oagd.name AS group_name, a.sort_order, a.image, a.icon, a.unit_id, a.status, ad.tooltip, ad.duty FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id) LEFT JOIN " . DB_PREFIX . "attribute_group_description oagd ON (a.attribute_group_id = oagd.attribute_group_id AND oagd.language_id = ad.language_id) WHERE a.attribute_id = '" . (int)$attribute_id . "'" . $sql_lang);
 
         if ($language_id) {
             return $query->row;
         } else {
-            foreach ($query->rows as $result) {
-                $attribute_info[$result['language_id']] = array(
-                    'attribute_id' => $result['attribute_id'],
-                    'name' => $result['name'],
-                    'attribute_group_id' => $result['attribute_group_id'],
-                    'group_name' => $result['group_name'],
-                    'duty' => $result['duty'],
-                    'tooltip' => $result['tooltip'],
-                    'sort_order' => $result['sort_order'],
-                    'image' => $result['image'],
-                    'class' => $result['class'],
-                    'unit_id' => $result['unit_id'],
-                    'status' => $result['status']
-                );
-            }
-            return $attribute_info;
+            return $this->groupByLang($query->rows);
         }
     }
 
-    public function editInfo($attribute_id, $data, $language_id = 0)
+    /**
+     * Update only attribute parameters with only duty field
+     * If you need update all duty parameters use updateDutyInfo
+     *
+     * @param int $attribute_id
+     * @param array $data
+     * @param integer $language_id
+     * @return void
+     */
+    public function updateAttributeInfo($attribute_id, $data, $language_id)
     {
         $this->cache->delete($this->model);
 
-        $this->db->query("UPDATE " . DB_PREFIX . "attribute SET image = '" . $data['image'] . "', class = '" . $data['class'] . "', unit_id = '" . (int)$data['unit_id'] . "', status = '" . (int)$data['status'] . "' WHERE attribute_id = '" . (int)$attribute_id . "'");
+        $this->db->query("UPDATE " . DB_PREFIX . "attribute SET image = '" . $data['image'] . "', icon = '" . $data['icon'] . "', unit_id = '" . (int)$data['unit_id'] . "', status = '" . (int)$data['status'] . "' WHERE attribute_id = '" . (int)$attribute_id . "'");
 
         $this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET name = '" . $this->db->escape($data['name']) . "', duty = '" . $this->db->escape($data['duty']) . "', tooltip = '" . $this->db->escape($data['tooltip']) . "' WHERE attribute_id = '" . (int)$attribute_id . "' AND language_id = '" . (int)$language_id . "'");
-
-        /* foreach ($data['attribute_description'] as $language_id => $value) {
-            $this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET name = '" . $this->db->escape($value['name']) . "', duty = '" . $this->db->escape($value['duty']) . "', tooltip = '" . $this->db->escape($value['tooltip']) . "' WHERE attribute_id = '" . (int)$attribute_id . "' AND language_id = '" . (int)$language_id . "'");
-        } */
     }
 
-
+    /**
+     * Gets all attribute value info structure for concrete product
+     *
+     * @param integer $product_id
+     * @param integer $attribute_id
+     * @param integer $language_id
+     * @return array  never returns empty
+     */
     public function getAttributeValueInfo($product_id, $attribute_id, $language_id = 0)
     {
         $info = array();
@@ -885,7 +873,7 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
             LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (ad.attribute_id = opa.attribute_id AND opa.language_id = ad.language_id) 
             WHERE opa.product_id='" . (int)$product_id . "' AND opa.attribute_id='" . (int)$attribute_id . "'" . $sql_lang);
 
-        if ($language_id) { 
+        if ($language_id) {
             /**
              * If sql query returns empty so it is new value and we must prepare new structure
              */
@@ -896,27 +884,13 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
                 'text' => "",
                 'image' => null,
                 'tooltip' => "",
-                'class' => "",
+                'icon' => "",
                 'url' => "",
                 'unit_id' => 0,
                 'status' => 0
             );
         } else {
-            foreach ($query->rows as $result) {
-                $info[$result['language_id']] = array(
-                    'product_id' => $result['product_id'],
-                    'attribute_id' => $result['attribute_id'],
-                    'name' => $result['name'],
-                    'text' => $result['text'],
-                    'image' => $result['image'],
-                    'tooltip' => $result['tooltip'],
-                    'class' => $result['class'],
-                    'url' => $result['url'],
-                    'unit_id' => $result['unit_id'],
-                    'status' => $result['status']
-                );
-            }
-            return $info;
+            return $this->groupByLang($query->rows);
         }
     }
 
@@ -925,21 +899,142 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
         $this->cache->delete($this->model);
 
         $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute SET product_id = '" . (int)$product_id . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language_id .
-            "', text = '" . $this->db->escape($data['text']) . "', image = '" . $data['image'] . "', class = '" . $data['class'] . "', url = '" . $this->db->escape($data['url']) .
+            "', text = '" . $this->db->escape($data['text']) . "', image = '" . $data['image'] . "', icon = '" . $data['icon'] . "', url = '" . $this->db->escape($data['url']) .
             "', unit_id = '" . (int)$data['unit_id'] . "', status = '" . (int)$data['status'] . "', tooltip = '" . $this->db->escape($data['tooltip']) . "'" .
             "ON DUPLICATE KEY UPDATE  product_id = '" . (int)$product_id . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language_id .
-            "', text = '" . $this->db->escape($data['text']) . "', image = '" . $data['image'] . "', class = '" . $data['class'] . "', url = '" . $this->db->escape($data['url']) .
+            "', text = '" . $this->db->escape($data['text']) . "', image = '" . $data['image'] . "', icon = '" . $data['icon'] . "', url = '" . $this->db->escape($data['url']) .
             "', unit_id = '" . (int)$data['unit_id'] . "', status = '" . (int)$data['status'] . "', tooltip = '" . $this->db->escape($data['tooltip']) . "'");
-        $this->productDateModified($product_id);        
+        $this->productDateModified($product_id);
     }
-    
-/**
- * Search and group concat path chain for every category from array categories
- * For example 61_78_120
- *
- * @param array $categories
- * @return array of ['category_id_1, 'path']
- */
+
+    /**
+     * Updates language-independent options
+     * Will be used for apply for all languages operation
+     *
+     * @param int $product_id
+     * @param int $attribute_id
+     * @param array $data
+     * @return void
+     */
+    public function updateValueAllLanguages($product_id, $attribute_id, $data)
+    {
+        $this->cache->delete($this->model);
+
+        $this->db->query("UPDATE " . DB_PREFIX . "product_attribute SET image = '" . $data['image'] . "', icon = '" . $data['icon'] . "', unit_id = '" . (int)$data['unit_id'] . "', status = '" . (int)$data['status'] . "', url = '" . $data['url'] . "' WHERE product_id = '" . (int)$product_id . "' AND attribute_id = '" . (int)$attribute_id . "'");
+
+        $this->productDateModified($product_id);
+    }
+
+    /**
+     * Get all duty parameters
+     *
+     * @param integer $attribute_id
+     * @param integer $language_id
+     * @return array single array of parameters or multi array when $keys = language_id 
+     */
+    public function getDutyInfo($attribute_id, $language_id = 0)
+    {
+        $sql_lang = $language_id ? " AND ad.language_id = '" . (int)$language_id . "'" : '';
+
+        $query = $this->db->query("SELECT ad.*, a.attribute_id FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id)  WHERE a.attribute_id = '" . (int)$attribute_id . "'" . $sql_lang);
+
+        return $language_id ? $query->row : $this->groupByLang($query->rows);
+    }
+
+    /**
+     * Update all duty parameters in attribute_description table
+     * If you need to update attribute parameters use updateAttributeInfo
+     *
+     * @param integer $attribute_id
+     * @param array $data
+     * @param integer $language_id
+     * @return void
+     */
+    public function updateDutyInfo($attribute_id, $data, $language_id = 0)
+    {
+        $this->cache->delete($this->model);
+
+        $this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET duty = '" . $this->db->escape($data['duty']) . "', duty_tooltip = '" . $this->db->escape($data['duty_tooltip']) . "', duty_image = '" . $this->db->escape($data['duty_image']) . "', duty_icon = '" . $this->db->escape($data['duty_icon']) . "', duty_unit_id = '" . (int)$data['duty_unit_id'] . "', duty_status = '" . (int)$data['duty_status'] . "' WHERE attribute_id = '" . (int)$attribute_id . "' AND language_id = '" . (int)$language_id . "'");
+    }
+
+    /**
+     * Updates language-independent options
+     * Will be used for apply for all languages operation
+     *
+     * @param int $attribute_id
+     * @param array $data
+     * @return void
+     */
+    public function updateDutyAllLanguages($attribute_id, $data)
+    {
+        $this->cache->delete($this->model);
+
+        $this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET duty_image = '" . $data['duty_image'] . "', duty_icon = '" . $data['duty_icon'] . "', duty_unit_id = '" . (int)$data['duty_unit_id'] . "', duty_status = '" . (int)$data['duty_status'] . "' WHERE attribute_id = '" . (int)$attribute_id . "'");
+    }
+
+    /**
+     * Forms attribute value depending on the method of placing values in the product
+     * Overload base method
+     * 
+     * @param integer $product_id
+     * @param integer $attribute_id
+     * @param integer $language_id
+     * @return string
+     */
+    protected function getDutyByMethod($product_id, $attribute_id, $language_id)
+    {
+        $method = $this->config->get($this->model . '_product_text');
+
+        switch ($method) {
+            case 'clean':
+                $text = "', text = '', image = '', icon = '', url = '', unit_id = '0', status = '0', tooltip = ''";
+                break;
+            case 'overwrite':
+                $duty = $this->getDutyInfo($attribute_id, $language_id);
+                // Overwrite if duty options not empty exclude unit and status
+                $text = $duty['duty'] ? ", text = '" . $this->db->escape($duty['duty']) . "'" : '';
+                $image = $duty['duty_image'] ? ", image = '" . $duty['duty_image'] . "'" : '';
+                $icon = $duty['duty_icon'] ? ", icon = '" . $duty['duty_icon'] . "'" : '';
+                //TODO url not exist in duty because not enough data for create it in duty form
+                //$url = $duty['duty_url'] ? ", url = '" . $this->db->escape($duty['duty_url']) . "'" : '';
+                $unit_id =  ", unit_id = '" . (int)$duty['duty_unit_id'] . "'";
+                $status =  ", status = '" . (int)$duty['duty_status'] . "'";
+                $tooltip = $duty['duty_tooltip'] ? ", tooltip = '" . $this->db->escape($duty['duty_tooltip']) . "'" : '';
+
+                $text = $duty['duty'] ? "'" . $text . $image . $icon . $unit_id . $status . $tooltip : "'";
+                break;
+            case 'ifempty':
+                $value = $this->getAttributeValueInfo($product_id, $attribute_id, $language_id);
+
+                $duty = $this->getDutyInfo($attribute_id, $language_id);
+
+                $text = !$value['text'] ? ", text = '" . $this->db->escape($duty['duty']) . "'" : '';
+                $image = !$value['image'] ? ", image = '" . $duty['duty_image'] . "'" : '';
+                $icon = !$value['icon'] ? ", icon = '" . $duty['duty_icon'] . "'" : '';
+                //TODO url not exist in duty because not enough data for create it in duty form
+                //$url = !$value['url'] ? ", url = '" . $this->db->escape($duty['duty_url']) . "'" : '';
+                $unit_id = !$value['unit_id'] ? ", unit_id = '" . (int)$duty['duty_unit_id'] . "'" : '';
+                $status = !$value['status'] ? ", status = '" . (int)$duty['duty_status'] . "'" : '';
+                $tooltip = !$value['tooltip'] ? ", tooltip = '" . $this->db->escape($duty['duty_tooltip']) . "'" : '';
+
+                $text = $duty['duty'] ? "'" . $text . $image . $icon . $unit_id . $status . $tooltip : "'";
+                break;
+            case 'unchange':
+            default:
+                $text = "'";
+                break;
+        }
+
+        return $text;
+    }
+
+    /**
+     * Search and group concat path chain for every category from array categories
+     * For example 61_78_120
+     *
+     * @param array $categories
+     * @return array of ['category_id_1, 'path']
+     */
     public function getPath($categories)
     {
         $query = $this->db->query("SELECT DISTINCT `category_id` AS `category_id_1`,
