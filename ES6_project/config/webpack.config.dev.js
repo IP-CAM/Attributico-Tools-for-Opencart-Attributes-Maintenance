@@ -1,4 +1,4 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+//const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
@@ -42,7 +42,7 @@ module.exports = {
     devtool: 'source-map',
     optimization: optimization,
     resolve: {
-        extensions: ['.js', '.jsx', '.jsm', ".ts", ".tsx"],
+        extensions: ['.js', '.jsx', '.jsm', '.ts', '.tsx'],
         alias: {
             styles: path.resolve(__dirname, '../src/styles'),
             /* 'react-dom': path.resolve(path.join(__dirname, './node_modules/@hot-loader/react-dom')),
@@ -52,20 +52,14 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.(scss|css)$/,
+                test: /\.css$/,
                 use: [
-                    /* MiniCssExtractPlugin.loader, */                    
-                    "style-loader"                        
-                    ,
-                    {
-                        loader: 'css-loader',
-                        options: {
-                            modules: true,
-                        }
-                    },                    
+                    { loader: 'style-loader' },
+                    /*  MiniCssExtractPlugin.loader, */
+                    { loader: 'css-loader?url=false', options: { modules: true, sourceMap: true } },
                     {
                         loader: 'postcss-loader',
-                        options: {
+                        /* options: {
                             postcssOptions: {
                                 plugins: [
                                     [
@@ -76,30 +70,36 @@ module.exports = {
                                     ],
                                 ],
                             },
-                        },
+                        }, */
                     },
-                    {
-                        loader: 'resolve-url-loader'
-                    },
-                    {
-                        loader: 'sass-loader'
-                    }
+                    /* { loader: 'resolve-url-loader', options: { sourceMap: true, removeCR: true } }, */
                 ]
+            },
+            {
+                test: /\.s[ac]ss$/i,
+                use: [
+                    // Creates `style` nodes from JS strings
+                    { loader: 'style-loader' },
+                    // Translates CSS into CommonJS
+                    { loader: 'css-loader', options: { sourceMap: true } },
+                    // Compiles Sass to CSS
+                    { loader: 'sass-loader', options: { sourceMap: true } },
+                ],
             },
             {
                 test: /.jsx?$/,
                 exclude: /node_modules/,
                 loader: 'babel-loader',
-                query: {
+                options: {
                     'plugins': [
                         ['@babel/plugin-proposal-decorators', { 'legacy': true }],
-                        ['@babel/plugin-proposal-class-properties', { 'loose': true }],
-                        ["@babel/plugin-proposal-private-methods", { "loose": true }]
-                    ]
+                        ['@babel/plugin-proposal-class-properties', { 'loose': false }]
+                    ],
+                    compact: true    // or false during development
                 }
             },
             {
-                test: /\.(jpg|png)$/,
+                test: /\.(jpg|png|gif)$/,
                 use: 'file-loader'
             },
             {
@@ -107,9 +107,15 @@ module.exports = {
                 use: 'ts-loader',
                 exclude: /node_modules/,
             },
+            {
+                test: /\.svg$/,
+                use: ['raw-loader']
+            },
+            { test: /\.(png|woff|woff2|eot|ttf|svg)$/, use: ['url-loader?limit=100000'] }
         ]
     },
     plugins: [
+        /* new MiniCssExtractPlugin(), */
         new webpack.DefinePlugin({
             PRODUCTION: JSON.stringify(false),
             VERSION: JSON.stringify('1.2.0'),
