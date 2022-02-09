@@ -1,5 +1,4 @@
 <?php
-
 class ModelCatalogAttributico extends Model
 {
     protected $model = 'attributico';
