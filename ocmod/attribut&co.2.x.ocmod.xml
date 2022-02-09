@@ -4,7 +4,7 @@
     <code>attributico</code>
     <version>3.2.1(oc v2.x)</version>
     <author>comtronics@mail.ru</author>
-    <link>http://www.servenus.com</link>
+    <link>http://attributico.su</link>
     
     <file path="admin/controller/common/menu.php">
         <operation error="skip">
@@ -250,9 +250,7 @@
                             'attribute_row': attribute_row,
                             'view_mode': localStorage.getItem('display_attribute'),
                             'categories': $('input[id=\'filter-category\']').is(":checked") ? getSelectedCategories() : [],                            
-                            'filter_values': localStorage.getItem('filter-values')//TODO in v3 
-                            //'duty': $('input[id=\'filter-duty\']').is(":checked") ? 'true' : ''
-
+                            'filter_values': localStorage.getItem('filter-values')
                         },
                         url: 'index.php?route=' + extension + 'module/attributico/getValuesList',
                         dataType: 'json',
