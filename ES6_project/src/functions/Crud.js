@@ -2,7 +2,7 @@ import { getSelectedKeys, getSelectedTitles, deSelectNodes, deSelectCategories }
 import { copyNode, deleteNode, dndAddNode, dndReplaceCategory, updateNode } from '../actions';
 import { moveNode } from './Move';
 
-export function addNewAttribute(activeNode, activeKey, lng_id) {
+export function addNewAttribute (activeNode, activeKey, lngId) {
     /* This function for previously insert New record in DataBase and  editing this in tree after */
     let node = activeNode,
         parentLevel = (activeKey === 'attribute') ? 2 : 1;
@@ -15,18 +15,18 @@ export function addNewAttribute(activeNode, activeKey, lng_id) {
             'user_token': user_token,
             'token': token,
             'key': node.key,
-            'language_id': lng_id,
-            'tree': '1' // TODO  уточнить смысл передачи параметра            
+            'language_id': lngId,
+            'tree': '1' //TODO  уточнить смысл передачи параметра
         },
         url: route + 'addAttribute',
         success: function (newNode) {
-            // Здесь dispatch не нужен, т.к. сработает SaveAfterEdit            
-            node.editCreateNode("child", newNode);
+            // Здесь dispatch не нужен, т.к. сработает SaveAfterEdit
+            node.editCreateNode('child', newNode);
         }
     });
 }
 
-export function deleteAttribute(node, store) {
+export function deleteAttribute (node, store) {
     let level = node.getLevel();
     if (level === 2 || level === 3 || level === 5) {
         $.ajax({
@@ -38,19 +38,19 @@ export function deleteAttribute(node, store) {
             url: `${route}deleteAttributes&user_token=${user_token}&token=${token}`,
             type: 'POST',
             success: function () {
-                let affectedNodes = []
-                let removeVisibleNodes = true
+                let affectedNodes = [];
+                let removeVisibleNodes = true;
                 // let cloneNode = Object.assign({}, node); none deep-clone
                 // Deep-clone object
                 // let cloneNode = jQuery.extend(true, {}, node)
                 if (node.isTemplate() || node.isValue()) {
                     affectedNodes.push(node.getParentAttribute())
-                    // Не удаляем видимые узлы, т.к. родительский перезагрузится и их там может уже не быть                    
+                    // Не удаляем видимые узлы, т.к. родительский перезагрузится и их там может уже не быть
                     removeVisibleNodes = false
                 } else if (node.isAttribute()) {
                     affectedNodes.push(node.getParentGroup())
                 } else {
-                    // Delete Group  
+                    // Delete Group
                     affectedNodes = null
                 }
                 // Надо до remove иначе node может уже не быть придется работать с клоном. У клона нет siblings.
@@ -72,9 +72,9 @@ export function deleteAttribute(node, store) {
     }
 }
 
-export function deleteDuty(node, store) {
+export function deleteDuty (node, store) {
     $.ajax({
-        data: {            
+        data: {
             'key': node.key,
             'language_id': node.getLanguageId(),
             'name': '',
@@ -89,10 +89,10 @@ export function deleteDuty(node, store) {
     });
 }
 
-export function cloneDuty(node, store) {
+export function cloneDuty (node, store) {
     if (node.title === '' && !confirm('Warning! This node is empty. All cloned nodes will become empty. Are you sure?')) return
     $.ajax({
-        data: {            
+        data: {
             'key': node.key,
             'language_id': node.getLanguageId(),
             'name': node.title,
@@ -103,7 +103,7 @@ export function cloneDuty(node, store) {
         success: function () {
             // при удалении надо перезагрузить дерево т.к. поле не удаестя сделать пустым при edit
             store.dispatch(updateNode(node, [node.getParentGroup()]));
-            $(node.span).removeClass("pending");
+            $(node.span).removeClass('pending');
         }
     });
 }
@@ -111,30 +111,30 @@ export function cloneDuty(node, store) {
 // sourceNode = data.otherNode это узел источника
 // Синхронизировать деревья атрибутов надо, т.к. могли добавиться или удалиться значения после add/delete
 //TODO multistore see backend
-export function addAttributeToCategory(sourceNode, targetNode, clipboard, remove, store) {
+export function addAttributeToCategory (sourceNode, targetNode, clipboard, remove, store) {
     $.ajax({
         data: {
             'attributes': clipboard ? getSelectedKeys(clipboard) : [sourceNode.key],
             'category_id': targetNode.key,
             'categories': selCategories ? getSelectedKeys(selCategories) : []
-        },        
+        },
         url: `${route}addCategoryAttributes&user_token=${user_token}&token=${token}`,
         type: 'POST'
     }).done(function () {
         // Это либо смена категории либо копипаст из CategoryAttributeTree
         if (!remove) {
-            deSelectCategories();            
-            // Надо перезагружать остальные деревья, чтоб подхватить новые значения и шаблоны            
-            store.dispatch(dndAddNode(sourceNode, targetNode, clipboard ? clipboard : [sourceNode]));
-            deSelectNodes();
+            deSelectCategories()
+            // Надо перезагружать остальные деревья, чтоб подхватить новые значения и шаблоны
+            store.dispatch(dndAddNode(sourceNode, targetNode, clipboard ? clipboard : [sourceNode]))
+            deSelectNodes()
         } else {
-            deSelectCategories(); // чтобы не удалялось в отмеченных категориях
-            deleteAttributesFromCategory(sourceNode, targetNode, clipboard, store);
+            deSelectCategories() // чтобы не удалялось в отмеченных категориях
+            deleteAttributesFromCategory(sourceNode, targetNode, clipboard, store)
         }
     });
 }
 //TODO multistore see backend
-export function deleteAttributesFromCategory(sourceNode, targetNode, clipboard, store) {
+export function deleteAttributesFromCategory (sourceNode, targetNode, clipboard, store) {
     let category_id = sourceNode.getParent().key;
 
     $.ajax({
@@ -142,22 +142,22 @@ export function deleteAttributesFromCategory(sourceNode, targetNode, clipboard, 
             'attributes': clipboard ? getSelectedKeys(clipboard) : [sourceNode.key],
             'category_id': category_id,
             'categories': selCategories ? getSelectedKeys(selCategories) : []
-        },       
+        },
         url: `${route}deleteAttributesFromCategory&user_token=${user_token}&token=${token}`,
         type: 'POST',
         success: function () {
             // Если targetNode == null, то это просто операция удаления
-            store.dispatch(dndReplaceCategory(sourceNode, targetNode, clipboard ? clipboard : [sourceNode]));
+            store.dispatch(dndReplaceCategory(sourceNode, targetNode, clipboard ? clipboard : [sourceNode]))
         }
     });
-    deSelectNodes();
+    deSelectNodes()
 }
 
-export function copyPaste(action, actionNode, store) {
+export function copyPaste (action, actionNode, store) {
     let activeTree = actionNode.tree;
     // Селектор нужен т.к. источником узлов могут служить разные деревья. В селекторе убираем цифры.
     let TREE_SELECTOR = '[name ^=' + activeTree.$div[0].id.replace(/[0-9]/g, '') + ']';
-    let lng_id = parseInt(activeTree.$div[0].id.replace(/\D+/ig, ''));
+    let lngId = parseInt(activeTree.$div[0].id.replace(/\D+/ig, ''));
     let direct = 'after';
     let ctrlKey = false;
     let parentNode;
@@ -168,8 +168,8 @@ export function copyPaste(action, actionNode, store) {
 
     // actionNode в операциях cut & copy играет роль sourceNode, а в операции paste targetNode
     switch (action) {
-        case "cut":
-        case "copy":
+        case 'cut':
+        case 'copy':
             pasteMode = action;
             // selNodes надо переписать в буфер обмена, т.к. при нажатии без ctrl сработет deselectNodes()
             // заполняем буфер обмена clipboard выделенными узлами для каждого языка
@@ -180,108 +180,108 @@ export function copyPaste(action, actionNode, store) {
             // однако для функций addAttribute... нужна структура типа :
             // [[empty,A1ru,empty,A1en],[empty,A2ru,empty,A2en],...[empty,A100ru,empty,A100en]]
             $(TREE_SELECTOR).each(function (indx, selector) {
-                let tree = $.ui.fancytree.getTree("#" + selector.id);
-                let lng_id = parseInt(selector.id.replace(/\D+/ig, ''));
+                let tree = $.ui.fancytree.getTree('#' + selector.id);
+                let lngId = parseInt(selector.id.replace(/\D+/ig, ''));
 
-                clipboardNodes[lng_id] = [];
-                clipboardTitles[lng_id] = [];
+                clipboardNodes[lngId] = []
+                clipboardTitles[lngId] = []
 // @ts-ignore
                 if (selNodes) {
                     selNodes.forEach(node => {
                         let selNode = tree.getNodeByKey(node.key);
                         if (selNode !== null) {
-                            clipboardNodes[lng_id].push(selNode);
-                            clipboardTitles[lng_id].push(selNode.title);
+                            clipboardNodes[lngId].push(selNode)
+                            clipboardTitles[lngId].push(selNode.title)
                         }
                     });
                 } else {
                     let selNode = tree.getNodeByKey(actionNode.key);
                     if (selNode !== null) {
-                        clipboardNodes[lng_id].push(selNode);
-                        clipboardTitles[lng_id].push(selNode.title);
+                        clipboardNodes[lngId].push(selNode)
+                        clipboardTitles[lngId].push(selNode.title)
                     }
                 }
             });
             break;
-        case "paste":
+        case 'paste':
             direct = 'after';
             ctrlKey = false;
 
-            if (clipboardNodes.length == 0) {
-                alert("Clipboard is empty.");
+            if (clipboardNodes.length === 0) {
+                alert('Clipboard is empty.')
                 break;
             }
 
-            if (pasteMode == "cut") {
+            if (pasteMode === 'cut') {
                 // Cut mode: check for recursion and remove source 
                 parentNode = actionNode.getParentGroup() || actionNode.getParentCategory();
-                sourceNode = clipboardNodes[lng_id][0];
-                targetNode = actionNode;
-                targetLevel = actionNode.getLevel();
-                sourceLevel = sourceNode.getLevel();
+                sourceNode = clipboardNodes[lngId][0]
+                targetNode = actionNode
+                targetLevel = actionNode.getLevel()
+                sourceLevel = sourceNode.getLevel()
 
                 if (parentNode.isCategory()) {
-                    addAttributeToCategory(sourceNode, parentNode, clipboardNodes[lng_id], true, store);
+                    addAttributeToCategory(sourceNode, parentNode, clipboardNodes[lngId], true, store);
                 } else {
                     if (targetLevel !== sourceLevel) {
-                        direct = 'over';
+                        direct = 'over'
                     }
                     // embargo on levels mixing
                     if (targetLevel === 1 || targetLevel > sourceLevel) {
                         alert('Merging nodes of different levels is impossible.')
                     } else {
-                        // clipboardNodes[lng_id] - список узлов не важно для какого языка
-                        moveNode(sourceNode, targetNode, clipboardNodes[lng_id], ctrlKey, direct, store)
+                        // clipboardNodes[lngId] - список узлов не важно для какого языка
+                        moveNode(sourceNode, targetNode, clipboardNodes[lngId], ctrlKey, direct, store)
                     }
                 }
             } else {
-                pasteNodes(actionNode, lng_id, store);
+                pasteNodes(actionNode, lngId, store)
             }
 
-            clipboardNodes = [];
-            clipboardTitles = [];
-            pasteMode = null;
+            clipboardNodes = []
+            clipboardTitles = []
+            pasteMode = null
             break;
-        case "merge":
-            direct = 'over';
-            ctrlKey = true;
+        case 'merge':
+            direct = 'over'
+            ctrlKey = true
 
-            if (clipboardNodes.length == 0) {
-                alert("Clipboard is empty.");
+            if (clipboardNodes.length === 0) {
+                alert('Clipboard is empty.')
                 break;
             }
 
-            if (pasteMode == "cut") {
-                sourceNode = clipboardNodes[lng_id][0];
-                targetLevel = actionNode.getLevel();
-                sourceLevel = sourceNode.getLevel();
+            if (pasteMode === 'cut') {
+                sourceNode = clipboardNodes[lngId][0]
+                targetLevel = actionNode.getLevel()
+                sourceLevel = sourceNode.getLevel()
                 if (targetLevel === sourceLevel) {
-                    moveNode(sourceNode, actionNode, clipboardNodes[lng_id], ctrlKey, direct, store)
+                    moveNode(sourceNode, actionNode, clipboardNodes[lngId], ctrlKey, direct, store)
                 } else {
                     alert('Merging nodes of different levels is impossible.')
                 }
             }
 
-            clipboardNodes = [];
-            clipboardTitles = [];
-            pasteMode = null;
+            clipboardNodes = []
+            clipboardTitles = []
+            pasteMode = null
             break;
         default:
-            alert("Unhandled clipboard action '" + action + "'");
+            alert("Unhandled clipboard action '" + action + "'")
     }
 }
 
-export function pasteNodes(targetNode, lng_id, store) {
+export function pasteNodes (targetNode, lngId, store) {
     let parentNode = targetNode.getParentGroup() || targetNode.getParentCategory();
-    let sourceNode = clipboardNodes[lng_id][0];
+    let sourceNode = clipboardNodes[lngId][0];
 
     if (parentNode.isGroup()) {
         $.ajax({
             data: {
                 'target': parentNode.key,
                 'titles': clipboardTitles,
-                'attributes': getSelectedKeys(clipboardNodes[lng_id]),
-            },           
+                'attributes': getSelectedKeys(clipboardNodes[lngId]),
+            },
             url: `${route}addAttributes&user_token=${user_token}&token=${token}`,
             type: 'POST',
             success: function () {
@@ -290,6 +290,6 @@ export function pasteNodes(targetNode, lng_id, store) {
         });
     }
     if (parentNode.isCategory()) {
-        addAttributeToCategory(sourceNode, parentNode, clipboardNodes[lng_id], false, store);
+        addAttributeToCategory(sourceNode, parentNode, clipboardNodes[lngId], false, store)
     }
 }
