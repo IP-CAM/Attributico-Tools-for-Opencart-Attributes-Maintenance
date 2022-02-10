@@ -392,7 +392,7 @@ class ControllerModuleAttributico extends Controller
         $attribute_row = isset($this->request->get['attribute_row']) ? $this->request->get['attribute_row'] : 0;
         $view_mode = isset($this->request->get['view_mode']) ? $this->request->get['view_mode'] : 'template';
         $categories = isset($this->request->get['categories']) ? $this->request->get['categories'] : array();
-        $filter_values = $this->requestParam('post', 'filter_values', 'all');
+        $filter_values = $this->requestParam('get', 'filter_values', 'all');
         $language_id = isset($this->request->get['language_id']) ? (int) $this->request->get['language_id'] : '';
 
         $languages = $this->getLanguages();
@@ -1891,7 +1891,7 @@ class ControllerModuleAttributico extends Controller
                 // Pattern and replace cleaning
                 $matches = preg_filter('/(?!_)[\w\d\s\[\]\'\"\-]/mu', '', ' ' . $search);
                 /* $pattern =  '[' . preg_quote($matches, '/') . ']'; */
-                $pattern =  $this->db->escape('[\\' .$matches . ']');
+                $pattern =  $this->db->escape('[' . quotemeta($matches) . ']');
                 $splitter = preg_filter('/(?!_)[\w\d\s\[\]\'\"\-]/mu', '', ' ' . $replace);
 
                 if ($matches && $splitter) {

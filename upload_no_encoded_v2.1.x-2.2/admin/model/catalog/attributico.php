@@ -1,5 +1,4 @@
 <?php
-
 class ModelCatalogAttributico extends Model
 {
     protected $model = 'attributico';
@@ -491,7 +490,7 @@ class ModelCatalogAttributico extends Model
      **/
     private function getProductsByText($attribute_id, $language_id, $text)
     {
-        $product = $this->db->query("SELECT product_id FROM " . DB_PREFIX . "product_attribute WHERE attribute_id='" . (int)$attribute_id . "' AND language_id='" . (int)$language_id . "' AND text='" . $this->db->escape($text) . "'"); //TODO $this->db->escape in attributico
+        $product = $this->db->query("SELECT product_id FROM " . DB_PREFIX . "product_attribute WHERE attribute_id='" . (int)$attribute_id . "' AND language_id='" . (int)$language_id . "' AND text='" . $this->db->escape($text) . "'"); 
 
         return $product->rows;
     }
