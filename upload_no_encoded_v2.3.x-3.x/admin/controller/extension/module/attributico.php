@@ -59,7 +59,8 @@ class ControllerModuleAttributico extends Controller
             $this->data = array_merge($this->data, $this->load->language($this->extension . $this->modulefile));
             $ssl = true;
         } else {
-            $this->language->load($this->modulefile);
+            //$this->language->load($this->modulefile);
+            $this->data = array_merge($this->data, $this->language->load($this->modulefile));
             $ssl = 'SSL';
         }
 
