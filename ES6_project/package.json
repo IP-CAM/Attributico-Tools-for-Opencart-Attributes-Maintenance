@@ -8,7 +8,7 @@
   "dependencies": {
     "@babel/runtime": "^7.12.1",
     "jquery": "^3.5.1",
-    "jquery-ui": "^1.12.1",
+    "jquery-ui": "^1.13.2",
     "jquery.fancytree": "^2.37.0",
     "redux": "^4.0.5",
     "ui-contextmenu": "^1.18.1"
