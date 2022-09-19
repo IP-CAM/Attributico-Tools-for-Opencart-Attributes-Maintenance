@@ -255,7 +255,7 @@ class ControllerModuleAttributico extends Controller
         $this->assignData($this->module . '_lazyload', 0);
         $this->assignData($this->module . '_cache', 0);
         $this->assignData($this->module . '_multistore', 0);
-        $this->assignData($this->module . '_replace_mode', 'substr');
+        $this->assignData($this->module . '_value_compare_mode', 'substr');
     }
 
     protected function out()

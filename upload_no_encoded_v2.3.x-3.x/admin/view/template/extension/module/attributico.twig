@@ -356,10 +356,10 @@
                                             <div class="form-group">
                                                 <div class="radio">
                                                     <label class="control-label">
-                                                        {% if attributico_replace_mode == 'substr' %}  
-                                                            <input type="radio" name="attributico_replace_mode" value="substr" checked="checked"/>
+                                                        {% if attributico_value_compare_mode == 'substr' %}  
+                                                            <input type="radio" name="attributico_value_compare_mode" value="substr" checked="checked"/>
                                                         {% else %} 
-                                                            <input type="radio" name="attributico_replace_mode" value="substr"/>
+                                                            <input type="radio" name="attributico_value_compare_mode" value="substr"/>
                                                         {% endif %} 
                                                         <span data-toggle="tooltip" title="{{help_replace_substr}}">{{text_replace_substr}}
                                                         </span>                                                        
@@ -367,10 +367,10 @@
                                                 </div>                
                                                 <div class="radio">
                                                     <label class="control-label">
-                                                        {% if attributico_replace_mode == 'match' %}          
-                                                            <input type="radio" name="attributico_replace_mode" value="match" checked="checked"/>
+                                                        {% if attributico_value_compare_mode == 'match' %}          
+                                                            <input type="radio" name="attributico_value_compare_mode" value="match" checked="checked"/>
                                                         {% else %}
-                                                            <input type="radio" name="attributico_replace_mode" value="match"/>
+                                                            <input type="radio" name="attributico_value_compare_mode" value="match"/>
                                                         {% endif %}
                                                         <span data-toggle="tooltip" title="{{help_replace_match}}">{{text_replace_match}}
                                                         </span>                              

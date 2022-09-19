@@ -2,13 +2,14 @@
 
 @include_once(DIR_SYSTEM . 'license/sllic.lic');
 require_once(DIR_SYSTEM . 'library/attributico/attributico.php');
-require_once(DIR_SYSTEM . 'library/attributico/interlink.php');
+//require_once(DIR_SYSTEM . 'library/attributico/interlink.php');
 
 class ControllerModuleAttributico extends Controller
 {
-    const MODULE_VERSION =  'v3.2.1';
+    const MODULE_VERSION =  'v3.2.2';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
+    const DEFAULT_THUMBNAIL_SIZE = 50;
     protected $data = array();
     protected $error = array();
     private $debug_mode = false;
@@ -241,21 +242,21 @@ class ControllerModuleAttributico extends Controller
             $this->data['filter_settings'] = $default_settings;
         }
 
-        $this->assignData($this->module . '_splitter', '/');
-        $this->assignData($this->module . '_sortorder', 0);
-        $this->assignData($this->module . '_smart_scroll', 0);
-        $this->assignData($this->module . '_multiselect', 0);
-        $this->assignData($this->module . '_empty', 0);
-        $this->assignData($this->module . '_autoadd', 0);
-        $this->assignData($this->module . '_autodel', 0);
-        $this->assignData($this->module . '_autoadd_subcategory', 0);
-        $this->assignData($this->module . '_autodel_subcategory', 0);
-        $this->assignData($this->module . '_product_text', 'unchange');
-        $this->assignData($this->module . '_about_blank', 0);
-        $this->assignData($this->module . '_lazyload', 0);
-        $this->assignData($this->module . '_cache', 0);
-        $this->assignData($this->module . '_multistore', 0);
-        $this->assignData($this->module . '_replace_mode', 'substr');
+        $this->dataPostOrConfig($this->module . '_splitter', '/');
+        $this->dataPostOrConfig($this->module . '_sortorder', 0);
+        $this->dataPostOrConfig($this->module . '_smart_scroll', 0);
+        $this->dataPostOrConfig($this->module . '_multiselect', 0);
+        $this->dataPostOrConfig($this->module . '_empty', 0);
+        $this->dataPostOrConfig($this->module . '_autoadd', 0);
+        $this->dataPostOrConfig($this->module . '_autodel', 0);
+        $this->dataPostOrConfig($this->module . '_autoadd_subcategory', 0);
+        $this->dataPostOrConfig($this->module . '_autodel_subcategory', 0);
+        $this->dataPostOrConfig($this->module . '_product_text', 'unchange');
+        $this->dataPostOrConfig($this->module . '_about_blank', 0);
+        $this->dataPostOrConfig($this->module . '_lazyload', 0);
+        $this->dataPostOrConfig($this->module . '_cache', 0);
+        $this->dataPostOrConfig($this->module . '_multistore', 0);
+        $this->dataPostOrConfig($this->module . '_value_compare_mode', 'substr');
     }
 
     protected function out()
@@ -301,7 +302,7 @@ class ControllerModuleAttributico extends Controller
         return !$this->error;
     }
 
-    protected function assignData($key, $default_value)
+    protected function dataPostOrConfig($key, $default_value)
     {
         if (isset($this->request->post[$key])) {
             $this->data[$key] = $this->request->post[$key];
@@ -321,12 +322,34 @@ class ControllerModuleAttributico extends Controller
      * @param void $default
      * @return void or boolean if $default is boolean
      */
-    protected function requestParam($request_type, $param, $default)
+    protected function issetRequestParam($request_type, $param, $default)
     {
         if (is_bool($default) === true) {
             return isset($this->request->{$request_type}[$param]) ? filter_var($this->request->{$request_type}[$param], FILTER_VALIDATE_BOOLEAN) : $default;
-        } else {
+        } else if (is_array($default)) {
+            return isset($this->request->{$request_type}[$param]) ? explode('_', $this->request->{$request_type}[$param]) : $default;
+        } else if (is_string($default) && $default === '') {
+            return isset($this->request->{$request_type}[$param]) ? htmlspecialchars_decode($this->request->{$request_type}[$param]) : $default;
+        } else  {
             return isset($this->request->{$request_type}[$param]) ? $this->request->{$request_type}[$param] : $default;
+        }
+    }
+
+    /**
+     * Get and return value from Config
+     * or default value if parameter is undefined
+     *     
+     * @param string $param key in Config
+     * @param void $default
+     * @param bool $strict - empty compare
+     * @return void 
+     */
+    protected function configGet($param, $default, $strict = false)
+    {
+        if ($strict) {
+            return !($this->config->get($param) == '') ? $this->config->get($param) : $default;
+        } else {
+            return $this->config->get($param) ? $this->config->get($param) : $default;
         }
     }
 
@@ -389,12 +412,12 @@ class ControllerModuleAttributico extends Controller
     public function getValuesList()
     {
         $json = array();
-        $attribute_id = isset($this->request->get['attribute_id']) ? (int) $this->request->get['attribute_id'] : 0;
-        $attribute_row = isset($this->request->get['attribute_row']) ? $this->request->get['attribute_row'] : 0;
-        $view_mode = isset($this->request->get['view_mode']) ? $this->request->get['view_mode'] : 'template';
-        $categories = isset($this->request->get['categories']) ? $this->request->get['categories'] : array();
-        $filter_values = $this->requestParam('get', 'filter_values', 'all');
-        $language_id = isset($this->request->get['language_id']) ? (int) $this->request->get['language_id'] : '';
+        $attribute_id = $this->issetRequestParam('get', 'attribute_id', 0);
+        $attribute_row =$this->issetRequestParam('get', 'attribute_row', 0);
+        $view_mode = $this->issetRequestParam('get', 'view_mode', 'template');
+        $categories = $this->issetRequestParam('get', 'categories', array());
+        $filter_values = $this->issetRequestParam('get', 'filter_values', 'all');
+        $language_id = $this->issetRequestParam('get', 'language_id', '');
 
         $languages = $this->getLanguages();
 
@@ -948,10 +971,12 @@ class ControllerModuleAttributico extends Controller
     //------------------------------------------------ProductTree-------------------------------------------------------
     public function getProductTree()
     {
-        $language_id = isset($this->request->post['language_id']) ? $this->request->post['language_id'] : $this->config->get('config_language_id');
-        $key = isset($this->request->post['attribute_id']) ? explode("_", $this->request->post['attribute_id']) : array('0', '0');
-        $title = isset($this->request->post['title']) ? htmlspecialchars_decode($this->request->post['title']) : '';
-        $invert = isset($this->request->post['invert']) ? filter_var($this->request->post['invert'], FILTER_VALIDATE_BOOLEAN) : false;
+        $language_id = $this->issetRequestParam('post', 'language_id', $this->config->get('config_language_id'));
+        $key = $this->issetRequestParam('post', 'attribute_id', array('0', '0'));
+        $title = $this->issetRequestParam('post', 'title', '');
+        $invert = $this->issetRequestParam('post', 'invert', false);
+        $value_compare_mode = $this->configGet($this->module . '_value_compare_mode', 'substr');
+        $splitter = $this->configGet($this->module . '_splitter', '/', true);
 
         if (($key[0] == 'template' || $key[0] == 'value' || $key[0] == 'duty') && $invert) {
             $invert = false;
@@ -1008,7 +1033,7 @@ class ControllerModuleAttributico extends Controller
                                 }
                                 break;
                             case 'value':
-                                if (strpos($product['text'], $title) !== false) {
+                                if (compareValue($title, $product['text'], $value_compare_mode, $splitter)) {
                                     $productNode->addSibling($product_item);
                                 }
                                 break;
@@ -1024,7 +1049,7 @@ class ControllerModuleAttributico extends Controller
                                 }
                                 break;
                             case 'value':
-                                if (strpos($product['text'], $title) === false) {
+                                if (!compareValue($title, $product['text'], $value_compare_mode, $splitter)) {
                                     $productNode->addSibling($product_item);
                                 }
                                 break;
@@ -1237,7 +1262,7 @@ class ControllerModuleAttributico extends Controller
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($node_data));
     }
-    
+
     /**
      * Paste Attributes functions
      * TODO: rename function
@@ -2036,7 +2061,7 @@ class ControllerExtensionModuleAttributico extends ControllerModuleAttributico
 }
 class ControllerModuleAttributipro extends ControllerModuleAttributico
 {
-    const MODULE_VERSION =  'v0.1.8';
+    const MODULE_VERSION =  'v0.2.6';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
     protected $dbstructure = array(
@@ -2114,6 +2139,16 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
         $this->out();
     }
+    
+    public function imageResize () {
+        $image = $this->issetRequestParam('get', 'image', null);
+        $size = $this->issetRequestParam('get', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
+
+        $thumb = $this->getThumbnail($image, $size);
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($thumb, JSON_UNESCAPED_UNICODE));
+    }
 
     /**
      * Gets images thumb and resize it by size
@@ -2122,7 +2157,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
      * @param integer $size
      * @return string url for thumb
      */
-    private function getThumbnail($image, $size = 20)
+    private function getThumbnail($image, $size = 50)
     {
         /**
          * Resize image for form view
@@ -2174,15 +2209,15 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
     public function getAttributeValueForm()
     {
-        $language_id = $this->requestParam('post', 'language_id', $this->config->get('config_language_id'));
-        $attribute_id = $this->requestParam('post', 'attribute_id', 0);
-        $product_id = $this->requestParam('post', 'product_id', 0);
-        $attribute_row = $this->requestParam('post', 'attribute_row', 0);
-        $size =  $this->requestParam('post', 'size', 100);
-        $text = $this->requestParam('post', 'text', '');
-        $view_mode = $this->requestParam('post', 'view_mode', 'template');
-        $filter_values = $this->requestParam('post', 'filter_values', 'all');
-        $categories = $this->requestParam('post', 'categories', array());
+        $language_id = $this->issetRequestParam('post', 'language_id', $this->config->get('config_language_id'));
+        $attribute_id = $this->issetRequestParam('post', 'attribute_id', 0);
+        $product_id = $this->issetRequestParam('post', 'product_id', 0);
+        $attribute_row = $this->issetRequestParam('post', 'attribute_row', 0);
+        $size =  $this->issetRequestParam('post', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
+        $text = $this->issetRequestParam('post', 'text', '');
+        $view_mode = $this->issetRequestParam('post', 'view_mode', 'template');
+        $filter_values = $this->issetRequestParam('post', 'filter_values', 'all');
+        $categories = $this->issetRequestParam('post', 'categories', array());
         $form = [];
 
         $this->load->model($this->modelfile);
@@ -2390,11 +2425,11 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
     public function setAttributeValueInfo()
     {
         $form_values = $this->request->post;
-        $language_id = $this->requestParam('post', 'language_id', $this->config->get('config_language_id'));
-        $this->requestParam('post', 'attribute_row', 0);
-        $attribute_row = $this->requestParam('post', 'attribute_row', 0);
-        $attribute_id = $this->requestParam('post', 'attribute_id', 0);
-        $product_id = $this->requestParam('post', 'product_id', 0);
+        $language_id = $this->issetRequestParam('post', 'language_id', $this->config->get('config_language_id'));
+        $this->issetRequestParam('post', 'attribute_row', 0);
+        $attribute_row = $this->issetRequestParam('post', 'attribute_row', 0);
+        $attribute_id = $this->issetRequestParam('post', 'attribute_id', 0);
+        $product_id = $this->issetRequestParam('post', 'product_id', 0);
         $text = isset($this->request->post['text']) ? htmlspecialchars_decode($this->request->post['text']) : '';
 
         $json = ['acceptedText' => $text, 'language_id' => $language_id, 'attribute_row' => $attribute_row];
@@ -2422,9 +2457,9 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
     public function getAttributeForm()
     {
-        $language_id = $this->requestParam('get', 'language_id', $this->config->get('config_language_id'));
-        $attribute_id = $this->requestParam('get', 'attribute_id', 0);
-        $size = $this->requestParam('get', 'size', 50);
+        $language_id = $this->issetRequestParam('get', 'language_id', $this->config->get('config_language_id'));
+        $attribute_id = $this->issetRequestParam('get', 'attribute_id', 0);
+        $size = $this->issetRequestParam('get', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
         $form = [];
 
         $this->load->model($this->modelfile);
@@ -2477,27 +2512,15 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
                     'placeholder' => $language->get('placeholder_duty')
                 ],
                 [
-                    //'width' => '7',
-                    //'rows' =>  '5',
                     'type' => 'editor',
                     'name' => 'tooltip',
                     'label' => $language->get('label_tooltip'),
                     'value' => html_entity_decode($info['tooltip']),
                     'defaultValue' => '',
                     'tooltip' => $language->get('help_tooltip'),
-                    'placeholder' => $language->get('placeholder_tooltip')
-                ], 
-                /* [
-                    //'width' => '7',
-                    //'rows' =>  '5',
-                    'type' => 'summernote',
-                    'name' => 'tooltip',
-                    'label' => $language->get('label_tooltip'),
-                    'value' => html_entity_decode($info['tooltip']),
-                    'defaultValue' => '',
-                    'tooltip' => $language->get('help_tooltip'),
-                    'placeholder' => $language->get('placeholder_tooltip')
-                ],               */               
+                    'placeholder' => $language->get('placeholder_tooltip'),
+                    'data' => ['language' => substr($this->getLanguageDirectory($language_id), 0, 2)]
+                ],
                 [
                     'rowname' => 'images',
                     'cols' => [
@@ -2508,6 +2531,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
                             'label' => $language->get('label_image'),
                             'value' => $info['image'],
                             'thumb' => $info['thumb'],
+                            'placeholder' => $this->getThumbnail('no_image.png', $this::DEFAULT_THUMBNAIL_SIZE),
                             'validationProps' => []
                         ],
                         [
@@ -2522,7 +2546,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
                             'validationProps' => []
                         ],
                     ]
-                ],                
+                ],
                 [
                     'type' => 'select',
                     'name' => 'unit_id',
@@ -2550,10 +2574,10 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
     public function updateAttributeInfo()
     {
-        $language_id = $this->requestParam('post', 'language_id', $this->config->get('config_language_id'));
+        $language_id = $this->issetRequestParam('post', 'language_id', $this->config->get('config_language_id'));
         $key = isset($this->request->post['key']) ? explode("_", $this->request->post['key']) : array('0', '0');
-        //$oldname = $this->requestParam('post', 'oldname', '');
-        $form_values = $this->requestParam('post', 'values', array());
+        //$oldname = $this->issetRequestParam('post', 'oldname', '');
+        $form_values = $this->issetRequestParam('post', 'values', array());
         $name = htmlspecialchars_decode($form_values['attribute']);
 
         $this->load->model($this->modelfile);
@@ -2578,9 +2602,9 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
     public function getDutyForm()
     {
-        $language_id = $this->requestParam('get', 'language_id', $this->config->get('config_language_id'));
-        $attribute_id = $this->requestParam('get', 'attribute_id', 0);
-        $size = $this->requestParam('get', 'size', 100);
+        $language_id = $this->issetRequestParam('get', 'language_id', $this->config->get('config_language_id'));
+        $attribute_id = $this->issetRequestParam('get', 'attribute_id', 0);
+        $size = $this->issetRequestParam('get', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
         $form = [];
 
         $this->load->model($this->modelfile);
@@ -2614,15 +2638,6 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             'title' => $language->get('form_title'),
             'idForm' => '_dutyform',
             'elements' => [
-
-                /* [
-                    'type' => 'dropdown',
-                    'name' => 'duty1',
-                    'label' => $language->get('entry_duty'),
-                    'value' => $info['duty'],
-                    'tooltip' => $language->get('help_duty'),
-                    'placeholder' => $language->get('placeholder_duty')
-                ],                 */
                 [
                     'type' => 'autocomplete',
                     'name' => 'duty',
@@ -2631,14 +2646,15 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
                     'tooltip' => $language->get('help_duty'),
                     'placeholder' => $language->get('placeholder_duty')
                 ],
-                /* [
-                    'type' => 'asyncselect',
-                    'name' => 'duty3',
-                    'label' => $language->get('entry_duty'),
-                    'value' => $info['duty'],
-                    'tooltip' => $language->get('help_duty'),
-                    'placeholder' => $language->get('placeholder_duty')
-                ],                 */
+                [
+                    'type' => 'editor',
+                    'name' => 'duty_tooltip',
+                    'label' => $language->get('label_tooltip'),
+                    'value' => html_entity_decode($info['duty_tooltip']),
+                    'tooltip' => $language->get('help_tooltip'),
+                    'placeholder' => $language->get('placeholder_tooltip'),
+                    'data' => ['language' => substr($this->getLanguageDirectory($language_id), 0, 2)]
+                ],
                 [
                     'rowname' => 'images',
                     'cols' => [
@@ -2649,28 +2665,21 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
                             'label' => $language->get('label_image'),
                             'value' => $info['duty_image'],
                             'thumb' => $info['thumb'],
+                            'placeholder' => $this->getThumbnail('no_image.png', $this::DEFAULT_THUMBNAIL_SIZE),
                             'validationProps' => []
                         ],
                         [
                             'width' => '7',
-                            'rows' =>  '5',
-                            'type' => 'textarea',
-                            'name' => 'duty_tooltip',
-                            'label' => $language->get('label_tooltip'),
-                            'value' => $info['duty_tooltip'],
-                            'tooltip' => $language->get('help_tooltip'),
-                            'placeholder' => $language->get('placeholder_tooltip')
-                        ]
+                            'type' => 'icon',
+                            'inline' => false,
+                            'name' => 'duty_icon',
+                            'label' => $language->get('label_icon'),
+                            'value' => $info['duty_icon'],
+                            'tooltip' => $language->get('help_icon'),
+                            'placeholder' => $language->get('placeholder_icon'),
+                            'validationProps' => []
+                        ],
                     ]
-                ],
-                [
-                    'type' => 'icon',
-                    'name' => 'duty_icon',
-                    'label' => $language->get('label_icon'),
-                    'value' => $info['duty_icon'],
-                    'tooltip' => $language->get('help_icon'),
-                    'placeholder' => $language->get('placeholder_icon'),
-                    'validationProps' => []
                 ],
                 [
                     'type' => 'select',
@@ -2709,10 +2718,10 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
      */
     public function updateDutyInfo()
     {
-        $language_id = $this->requestParam('post', 'language_id', $this->config->get('config_language_id'));
+        $language_id = $this->issetRequestParam('post', 'language_id', $this->config->get('config_language_id'));
         $key = isset($this->request->post['key']) ? explode("_", $this->request->post['key']) : array('0', '0');
-        //$oldname = $this->requestParam('post', 'oldname', '');
-        $form_values = $this->requestParam('post', 'values', array());
+        //$oldname = $this->issetRequestParam('post', 'oldname', '');
+        $form_values = $this->issetRequestParam('post', 'values', array());
         $duty =  htmlspecialchars_decode($form_values['duty']);
 
         $this->load->model($this->modelfile);
@@ -2749,9 +2758,9 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
      */
     public function updateDuty()
     {
-        $language_id = $this->requestParam('post', 'language_id', $this->config->get('config_language_id'));
+        $language_id = $this->issetRequestParam('post', 'language_id', $this->config->get('config_language_id'));
         $key = isset($this->request->post['key']) ? explode("_", $this->request->post['key']) : array('0', '0');
-        $clone = $this->requestParam('post', 'clone', false);
+        $clone = $this->issetRequestParam('post', 'clone', false);
 
         $this->load->model($this->modelfile);
         $languages = $this->getLanguages();

@@ -372,10 +372,10 @@
                                             <div class="form-group">
                                                 <div class="radio">
                                                     <label class="control-label">
-                                                        <?php if ($attributico_replace_mode == 'substr') { ?>
-                                                            <input type="radio" name="attributico_replace_mode" value="substr" checked="checked" />
+                                                        <?php if ($attributico_value_compare_mode == 'substr') { ?>
+                                                            <input type="radio" name="attributico_value_compare_mode" value="substr" checked="checked" />
                                                         <?php } else { ?>
-                                                            <input type="radio" name="attributico_replace_mode" value="substr" />
+                                                            <input type="radio" name="attributico_value_compare_mode" value="substr" />
                                                         <?php } ?>
                                                         <span data-toggle="tooltip" title="<?php echo $help_replace_substr; ?>"><?php echo $text_replace_substr; ?>
                                                         </span>
@@ -383,10 +383,10 @@
                                                 </div>
                                                 <div class="radio">
                                                     <label class="control-label">
-                                                        <?php if ($attributico_replace_mode == 'match') { ?>
-                                                            <input type="radio" name="attributico_replace_mode" value="match" checked="checked" />
+                                                        <?php if ($attributico_value_compare_mode == 'match') { ?>
+                                                            <input type="radio" name="attributico_value_compare_mode" value="match" checked="checked" />
                                                         <?php } else { ?>
-                                                            <input type="radio" name="attributico_replace_mode" value="match" />
+                                                            <input type="radio" name="attributico_value_compare_mode" value="match" />
                                                         <?php } ?>
                                                         <span data-toggle="tooltip" title="<?php echo $help_replace_match; ?>"><?php echo $text_replace_match; ?>
                                                         </span>

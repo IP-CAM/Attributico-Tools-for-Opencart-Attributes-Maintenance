@@ -132,3 +132,14 @@ function splitValue($value, $splitter)
 
     return $value_list;
 }
+
+function compareValue ($value, $template, $mode = 'substr', $splitter) {
+    $value_list = splitValue($template, $splitter);
+    if ($mode === 'substr') {
+        return (strpos($template, $value) !== false);
+    }
+    if ($mode === 'match') {
+        return in_array(strtolower($value), array_map('strtolower', $value_list));
+    }
+    return false;
+}
