@@ -111,6 +111,30 @@ if (!function_exists('mb_lcfirst') && function_exists('mb_substr')) {
 }
 
 /**
+ * All templates of this attribute will be separated using a splitter and transferred to a plane array of values
+ *
+ * @param array $templates
+ * @return array
+ */
+function splitTemplate($templates, $splitter)
+{
+    $all_elements = array();
+    foreach ($templates as $template) {
+        $elements = explode($splitter, $template['text']);
+
+        foreach ($elements as $element) {
+            if ($element != "") {
+                $all_elements[] = trim($element);
+            }
+        }
+    }
+    $value_list = array_unique($all_elements);
+    array_multisort($value_list);
+
+    return $value_list;
+}
+
+/**
  * Only one template string will be separated using a splitter and transferred to a plane array of values
  *
  * @param string $value
@@ -133,7 +157,8 @@ function splitValue($value, $splitter)
     return $value_list;
 }
 
-function compareValue ($value, $template, $mode = 'substr', $splitter) {
+function compareValue($value, $template, $mode = 'substr', $splitter)
+{
     $value_list = splitValue($template, $splitter);
     if ($mode === 'substr') {
         return (strpos($template, $value) !== false);

@@ -242,21 +242,21 @@ class ControllerModuleAttributico extends Controller
             $this->data['filter_settings'] = $default_settings;
         }
 
-        $this->dataPostOrConfig($this->module . '_splitter', '/');
-        $this->dataPostOrConfig($this->module . '_sortorder', 0);
-        $this->dataPostOrConfig($this->module . '_smart_scroll', 0);
-        $this->dataPostOrConfig($this->module . '_multiselect', 0);
-        $this->dataPostOrConfig($this->module . '_empty', 0);
-        $this->dataPostOrConfig($this->module . '_autoadd', 0);
-        $this->dataPostOrConfig($this->module . '_autodel', 0);
-        $this->dataPostOrConfig($this->module . '_autoadd_subcategory', 0);
-        $this->dataPostOrConfig($this->module . '_autodel_subcategory', 0);
-        $this->dataPostOrConfig($this->module . '_product_text', 'unchange');
-        $this->dataPostOrConfig($this->module . '_about_blank', 0);
-        $this->dataPostOrConfig($this->module . '_lazyload', 0);
-        $this->dataPostOrConfig($this->module . '_cache', 0);
-        $this->dataPostOrConfig($this->module . '_multistore', 0);
-        $this->dataPostOrConfig($this->module . '_value_compare_mode', 'substr');
+        $this->assignData($this->module . '_splitter', '/');
+        $this->assignData($this->module . '_sortorder', 0);
+        $this->assignData($this->module . '_smart_scroll', 0);
+        $this->assignData($this->module . '_multiselect', 0);
+        $this->assignData($this->module . '_empty', 0);
+        $this->assignData($this->module . '_autoadd', 0);
+        $this->assignData($this->module . '_autodel', 0);
+        $this->assignData($this->module . '_autoadd_subcategory', 0);
+        $this->assignData($this->module . '_autodel_subcategory', 0);
+        $this->assignData($this->module . '_product_text', 'unchange');
+        $this->assignData($this->module . '_about_blank', 0);
+        $this->assignData($this->module . '_lazyload', 0);
+        $this->assignData($this->module . '_cache', 0);
+        $this->assignData($this->module . '_multistore', 0);
+        $this->assignData($this->module . '_value_compare_mode', 'substr');
     }
 
     protected function out()
@@ -302,7 +302,16 @@ class ControllerModuleAttributico extends Controller
         return !$this->error;
     }
 
-    protected function dataPostOrConfig($key, $default_value)
+    /**
+     * Get and return value from Post or Config
+     * or default value if Config value is undefined    
+     *     
+     * @param string $param key in Config or Post request
+     * @param void $default_value     
+     * @return void 
+     */
+
+    protected function assignData($key, $default_value)
     {
         if (isset($this->request->post[$key])) {
             $this->data[$key] = $this->request->post[$key];
@@ -313,7 +322,7 @@ class ControllerModuleAttributico extends Controller
         }
     }
 
-    /**
+    /**issetRequest
      * Get and return value of GET or POST request parameter
      * or default value if parameter is undefined
      *
@@ -322,7 +331,7 @@ class ControllerModuleAttributico extends Controller
      * @param void $default
      * @return void or boolean if $default is boolean
      */
-    protected function issetRequestParam($request_type, $param, $default)
+    protected function issetRequest($request_type, $param, $default)
     {
         if (is_bool($default) === true) {
             return isset($this->request->{$request_type}[$param]) ? filter_var($this->request->{$request_type}[$param], FILTER_VALIDATE_BOOLEAN) : $default;
@@ -330,18 +339,19 @@ class ControllerModuleAttributico extends Controller
             return isset($this->request->{$request_type}[$param]) ? explode('_', $this->request->{$request_type}[$param]) : $default;
         } else if (is_string($default) && $default === '') {
             return isset($this->request->{$request_type}[$param]) ? htmlspecialchars_decode($this->request->{$request_type}[$param]) : $default;
-        } else  {
+        } else {
             return isset($this->request->{$request_type}[$param]) ? $this->request->{$request_type}[$param] : $default;
         }
     }
 
     /**
      * Get and return value from Config
-     * or default value if parameter is undefined
+     * or default value if Config value is undefined
+     * In strict check for empty
      *     
      * @param string $param key in Config
      * @param void $default
-     * @param bool $strict - empty compare
+     * @param bool $strict
      * @return void 
      */
     protected function configGet($param, $default, $strict = false)
@@ -412,12 +422,12 @@ class ControllerModuleAttributico extends Controller
     public function getValuesList()
     {
         $json = array();
-        $attribute_id = $this->issetRequestParam('get', 'attribute_id', 0);
-        $attribute_row =$this->issetRequestParam('get', 'attribute_row', 0);
-        $view_mode = $this->issetRequestParam('get', 'view_mode', 'template');
-        $categories = $this->issetRequestParam('get', 'categories', array());
-        $filter_values = $this->issetRequestParam('get', 'filter_values', 'all');
-        $language_id = $this->issetRequestParam('get', 'language_id', '');
+        $attribute_id = $this->issetRequest('get', 'attribute_id', 0);
+        $attribute_row = $this->issetRequest('get', 'attribute_row', 0);
+        $view_mode = $this->issetRequest('get', 'view_mode', 'template');
+        $categories = $this->issetRequest('get', 'categories', array());
+        $filter_values = $this->issetRequest('get', 'filter_values', 'all');
+        $language_id = $this->issetRequest('get', 'language_id', '');
 
         $languages = $this->getLanguages();
 
@@ -483,6 +493,7 @@ class ControllerModuleAttributico extends Controller
 
     protected function makeValuesSelect($values, $view_mode, $attribute_id, $language_id, $attribute_row = '')
     {
+        $splitter = $this->configGet($this->module . '_splitter', '/', true);
         $select = "<select name='attribute_select_{$attribute_id}' class='form-control attribute_select' attribute_id='{$attribute_id}' language_id='{$language_id}' attribute_row ='{$attribute_row}' style='display:block;'>";
         $options = array();
 
@@ -493,7 +504,7 @@ class ControllerModuleAttributico extends Controller
             $select .= $this->makeOptionList($options, '0', $this->language->get('text_select'));
             $select .= "</select>";
         } else {
-            $value_list = $this->splitTemplate($values);
+            $value_list = splitTemplate($values, $splitter);
             foreach ($value_list as $value) {
                 $options[] = ['key' => '', 'value' => $value, 'title' => $value];
             }
@@ -502,6 +513,7 @@ class ControllerModuleAttributico extends Controller
         }
         return $select;
     }
+    
     /**
      * makeOptionList function making options for select tag
      *
@@ -524,34 +536,7 @@ class ControllerModuleAttributico extends Controller
             }
         }
         return $option_list;
-    }
-
-    /**
-     * All templates of this attribute will be separated using a splitter and transferred to a plane array of values
-     *
-     * @param array $templates
-     * @return array
-     */
-    protected function splitTemplate($templates)
-    {
-        $splitter = !($this->config->get($this->module . '_splitter') == '') ? $this->config->get($this->module . '_splitter') : '/';
-
-        $all_elements = array();
-        foreach ($templates as $template) {
-            $elements = explode($splitter, $template['text']);
-
-            foreach ($elements as $element) {
-                if ($element != "") {
-                    $all_elements[] = trim($element);
-                }
-            }
-        }
-
-        $value_list = array_unique($all_elements);
-        array_multisort($value_list);
-
-        return $value_list;
-    }
+    }   
 
     /** Fuction for product form integration */
     public function getAttributeDuty()
@@ -733,6 +718,7 @@ class ControllerModuleAttributico extends Controller
 
     private function getAttributeValuesNodes($attribute_id, $language_id, $mode = 'template', $duty = "")
     {
+        $splitter = $this->configGet($this->module . '_splitter', '/', true);
         if (!isset($this->avcahe[$attribute_id])) {
             $this->avcahe[$attribute_id] = $this->{$this->model}->getAttributeValues($attribute_id);
         }
@@ -752,7 +738,7 @@ class ControllerModuleAttributico extends Controller
                     }
                 }
             } else if ($mode == 'values') {
-                $values = $this->splitTemplate($attribute_values[$language_id]);
+                $values = splitTemplate($attribute_values[$language_id], $splitter);
                 foreach ($values as $index => $value) {
                     $nodeValues->addSibling(new Node(array("title" => $value, "key" => "value_" . (string) $attribute_id . "_" . $index, "unselectable" => false)));
                 }
@@ -971,10 +957,10 @@ class ControllerModuleAttributico extends Controller
     //------------------------------------------------ProductTree-------------------------------------------------------
     public function getProductTree()
     {
-        $language_id = $this->issetRequestParam('post', 'language_id', $this->config->get('config_language_id'));
-        $key = $this->issetRequestParam('post', 'attribute_id', array('0', '0'));
-        $title = $this->issetRequestParam('post', 'title', '');
-        $invert = $this->issetRequestParam('post', 'invert', false);
+        $language_id = $this->issetRequest('post', 'language_id', $this->config->get('config_language_id'));
+        $key = $this->issetRequest('post', 'attribute_id', array('0', '0'));
+        $title = $this->issetRequest('post', 'title', '');
+        $invert = $this->issetRequest('post', 'invert', false);
         $value_compare_mode = $this->configGet($this->module . '_value_compare_mode', 'substr');
         $splitter = $this->configGet($this->module . '_splitter', '/', true);
 
@@ -1100,7 +1086,7 @@ class ControllerModuleAttributico extends Controller
         $language_id = isset($this->request->post['language_id']) ? $this->request->post['language_id'] : $this->config->get('config_language_id');
         $name = isset($this->request->post['name']) ? htmlspecialchars_decode($this->request->post['name']) : '';
         $key = isset($this->request->post['key']) ? explode("_", $this->request->post['key']) : array('0', '0');
-        $splitter = !($this->config->get($this->module . '_splitter') == '') ? $this->config->get($this->module . '_splitter') : '/';
+        $splitter = $this->configGet($this->module . '_splitter', '/', true);
         //$clone = isset($this->request->post['clone']) ? filter_var($this->request->post['clone'], FILTER_VALIDATE_BOOLEAN) : false;
         $oldname = isset($this->request->post['oldname']) ? htmlspecialchars_decode($this->request->post['oldname']) : '';
 
@@ -2139,10 +2125,11 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
         $this->out();
     }
-    
-    public function imageResize () {
-        $image = $this->issetRequestParam('get', 'image', null);
-        $size = $this->issetRequestParam('get', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
+
+    public function imageResize()
+    {
+        $image = $this->issetRequest('get', 'image', null);
+        $size = $this->issetRequest('get', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
 
         $thumb = $this->getThumbnail($image, $size);
 
@@ -2209,15 +2196,15 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
     public function getAttributeValueForm()
     {
-        $language_id = $this->issetRequestParam('post', 'language_id', $this->config->get('config_language_id'));
-        $attribute_id = $this->issetRequestParam('post', 'attribute_id', 0);
-        $product_id = $this->issetRequestParam('post', 'product_id', 0);
-        $attribute_row = $this->issetRequestParam('post', 'attribute_row', 0);
-        $size =  $this->issetRequestParam('post', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
-        $text = $this->issetRequestParam('post', 'text', '');
-        $view_mode = $this->issetRequestParam('post', 'view_mode', 'template');
-        $filter_values = $this->issetRequestParam('post', 'filter_values', 'all');
-        $categories = $this->issetRequestParam('post', 'categories', array());
+        $language_id = $this->issetRequest('post', 'language_id', $this->config->get('config_language_id'));
+        $attribute_id = $this->issetRequest('post', 'attribute_id', 0);
+        $product_id = $this->issetRequest('post', 'product_id', 0);
+        $attribute_row = $this->issetRequest('post', 'attribute_row', 0);
+        $size =  $this->issetRequest('post', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
+        $text = $this->issetRequest('post', 'text', '');
+        $view_mode = $this->issetRequest('post', 'view_mode', 'template');
+        $filter_values = $this->issetRequest('post', 'filter_values', 'all');
+        $categories = $this->issetRequest('post', 'categories', array());
         $form = [];
 
         $this->load->model($this->modelfile);
@@ -2425,11 +2412,11 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
     public function setAttributeValueInfo()
     {
         $form_values = $this->request->post;
-        $language_id = $this->issetRequestParam('post', 'language_id', $this->config->get('config_language_id'));
-        $this->issetRequestParam('post', 'attribute_row', 0);
-        $attribute_row = $this->issetRequestParam('post', 'attribute_row', 0);
-        $attribute_id = $this->issetRequestParam('post', 'attribute_id', 0);
-        $product_id = $this->issetRequestParam('post', 'product_id', 0);
+        $language_id = $this->issetRequest('post', 'language_id', $this->config->get('config_language_id'));
+        $this->issetRequest('post', 'attribute_row', 0);
+        $attribute_row = $this->issetRequest('post', 'attribute_row', 0);
+        $attribute_id = $this->issetRequest('post', 'attribute_id', 0);
+        $product_id = $this->issetRequest('post', 'product_id', 0);
         $text = isset($this->request->post['text']) ? htmlspecialchars_decode($this->request->post['text']) : '';
 
         $json = ['acceptedText' => $text, 'language_id' => $language_id, 'attribute_row' => $attribute_row];
@@ -2457,9 +2444,9 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
     public function getAttributeForm()
     {
-        $language_id = $this->issetRequestParam('get', 'language_id', $this->config->get('config_language_id'));
-        $attribute_id = $this->issetRequestParam('get', 'attribute_id', 0);
-        $size = $this->issetRequestParam('get', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
+        $language_id = $this->issetRequest('get', 'language_id', $this->config->get('config_language_id'));
+        $attribute_id = $this->issetRequest('get', 'attribute_id', 0);
+        $size = $this->issetRequest('get', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
         $form = [];
 
         $this->load->model($this->modelfile);
@@ -2574,10 +2561,10 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
     public function updateAttributeInfo()
     {
-        $language_id = $this->issetRequestParam('post', 'language_id', $this->config->get('config_language_id'));
+        $language_id = $this->issetRequest('post', 'language_id', $this->config->get('config_language_id'));
         $key = isset($this->request->post['key']) ? explode("_", $this->request->post['key']) : array('0', '0');
-        //$oldname = $this->issetRequestParam('post', 'oldname', '');
-        $form_values = $this->issetRequestParam('post', 'values', array());
+        //$oldname = $this->issetRequest('post', 'oldname', '');
+        $form_values = $this->issetRequest('post', 'values', array());
         $name = htmlspecialchars_decode($form_values['attribute']);
 
         $this->load->model($this->modelfile);
@@ -2602,9 +2589,9 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
     public function getDutyForm()
     {
-        $language_id = $this->issetRequestParam('get', 'language_id', $this->config->get('config_language_id'));
-        $attribute_id = $this->issetRequestParam('get', 'attribute_id', 0);
-        $size = $this->issetRequestParam('get', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
+        $language_id = $this->issetRequest('get', 'language_id', $this->config->get('config_language_id'));
+        $attribute_id = $this->issetRequest('get', 'attribute_id', 0);
+        $size = $this->issetRequest('get', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
         $form = [];
 
         $this->load->model($this->modelfile);
@@ -2718,10 +2705,10 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
      */
     public function updateDutyInfo()
     {
-        $language_id = $this->issetRequestParam('post', 'language_id', $this->config->get('config_language_id'));
+        $language_id = $this->issetRequest('post', 'language_id', $this->config->get('config_language_id'));
         $key = isset($this->request->post['key']) ? explode("_", $this->request->post['key']) : array('0', '0');
-        //$oldname = $this->issetRequestParam('post', 'oldname', '');
-        $form_values = $this->issetRequestParam('post', 'values', array());
+        //$oldname = $this->issetRequest('post', 'oldname', '');
+        $form_values = $this->issetRequest('post', 'values', array());
         $duty =  htmlspecialchars_decode($form_values['duty']);
 
         $this->load->model($this->modelfile);
@@ -2758,9 +2745,9 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
      */
     public function updateDuty()
     {
-        $language_id = $this->issetRequestParam('post', 'language_id', $this->config->get('config_language_id'));
+        $language_id = $this->issetRequest('post', 'language_id', $this->config->get('config_language_id'));
         $key = isset($this->request->post['key']) ? explode("_", $this->request->post['key']) : array('0', '0');
-        $clone = $this->issetRequestParam('post', 'clone', false);
+        $clone = $this->issetRequest('post', 'clone', false);
 
         $this->load->model($this->modelfile);
         $languages = $this->getLanguages();
