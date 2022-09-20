@@ -75,7 +75,7 @@
                                         <li><a href="#tab-ct" data-toggle="tab"><?php echo $settings_category ?></a></li>
                                         <li><a href="#tab-inherit" data-toggle="tab"><?php echo $settings_inherit ?></a></li>
                                         <li><a href="#tab-method" data-toggle="tab"><?php echo $settings_algorithm ?></a></li>
-                                        <li><a href="#tab-replace" data-toggle="tab"><?php echo $settings_replace ?></a></li>
+                                        <li><a href="#tab-compare" data-toggle="tab"><?php echo $settings_compare ?></a></li>
                                     </ul>
                                 </div>
                                 <div class="col-sm-9">
@@ -367,28 +367,28 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="tab-pane" id="tab-replace">
-                                            <legend><?php echo $settings_replace ?></legend>
+                                        <div class="tab-pane" id="tab-compare">
+                                            <legend><?php echo $settings_compare ?></legend>
                                             <div class="form-group">
                                                 <div class="radio">
                                                     <label class="control-label">
-                                                        <?php if ($attributico_replace_mode == 'substr') { ?>
-                                                            <input type="radio" name="attributico_replace_mode" value="substr" checked="checked" />
+                                                        <?php if ($attributico_value_compare_mode == 'substr') { ?>
+                                                            <input type="radio" name="attributico_value_compare_mode" value="substr" checked="checked" />
                                                         <?php } else { ?>
-                                                            <input type="radio" name="attributico_replace_mode" value="substr" />
+                                                            <input type="radio" name="attributico_value_compare_mode" value="substr" />
                                                         <?php } ?>
-                                                        <span data-toggle="tooltip" title="<?php echo $help_replace_substr; ?>"><?php echo $text_replace_substr; ?>
+                                                        <span data-toggle="tooltip" title="<?php echo $help_compare_substr; ?>"><?php echo $text_compare_substr; ?>
                                                         </span>
                                                     </label>
                                                 </div>
                                                 <div class="radio">
                                                     <label class="control-label">
-                                                        <?php if ($attributico_replace_mode == 'match') { ?>
-                                                            <input type="radio" name="attributico_replace_mode" value="match" checked="checked" />
+                                                        <?php if ($attributico_value_compare_mode == 'match') { ?>
+                                                            <input type="radio" name="attributico_value_compare_mode" value="match" checked="checked" />
                                                         <?php } else { ?>
-                                                            <input type="radio" name="attributico_replace_mode" value="match" />
+                                                            <input type="radio" name="attributico_value_compare_mode" value="match" />
                                                         <?php } ?>
-                                                        <span data-toggle="tooltip" title="<?php echo $help_replace_match; ?>"><?php echo $text_replace_match; ?>
+                                                        <span data-toggle="tooltip" title="<?php echo $help_compare_match; ?>"><?php echo $text_compare_match; ?>
                                                         </span>
                                                     </label>
                                                 </div>

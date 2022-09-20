@@ -15,8 +15,8 @@ $_['text_clear'] = 'Clear';
 $_['text_keep'] = 'Keep';
 $_['text_duty'] = 'Replace with duty';
 $_['text_duty_only'] = 'Only in empty';
-$_['text_replace_substr'] = 'By occurrence of a substring';
-$_['text_replace_match'] = 'By exact match';
+$_['text_compare_substr'] = 'By occurrence of a substring';
+$_['text_compare_match'] = 'By exact match';
 
 // Filter
 $_['text_autoCollapse'] = 'autoCollapse';
@@ -226,8 +226,8 @@ $_['help_categories_options'] = $_['help_filter_required'] . 'If you only need t
 $_['help_replace_options'] = $_['help_filter_required'] . 'If groups or categories are not marked, then search and replace will be applied to all products.';
 $_['help_multistore'] = 'Show categories for all stories';
 $_['help_clone_options'] = 'You can undo the clone of Groups, Attributes or Attribute values by uncheckmark from the corresponding item.';
-$_['help_replace_substr'] = 'Find and replace all occurrences of the edited sample in the value names.';
-$_['help_replace_match'] = 'Find and replace the names of values that exactly match the sample being edited.';
+$_['help_compare_substr'] = 'Search for all occurrences of the selected sample in the value names.';
+$_['help_compare_match'] = 'Search for value names that exactly match the selected sample.';
 $_['help_tools_filter'] = 'Select the items to which you want to apply this action.';
 $_['help_splitter_search'] = 'Enter one or more splitters to search for. Invalid splitters will be ignored.';
 $_['help_splitter_replace'] = 'Enter a splitter to replace. The first valid splitter will be applied.';
@@ -305,7 +305,7 @@ $_['settings_category'] = 'Adding / removing attributes in category';
 $_['settings_algorithm'] = 'Adding an attribute value to the product';
 $_['settings_inherit'] = 'Inheritance';
 $_['settings_children'] = 'Trees settings';
-$_['settings_replace'] = 'Values update';
+$_['settings_compare'] = 'Comparison of values';
 
 // tools
 $_['button_play']  = 'Start task';

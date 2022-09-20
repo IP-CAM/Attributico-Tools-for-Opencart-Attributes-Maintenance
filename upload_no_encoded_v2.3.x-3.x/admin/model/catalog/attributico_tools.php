@@ -1,7 +1,5 @@
 <?php
 
-//require_once(DIR_SYSTEM . 'library/attributico/array_column.php');
-
 class ModelCatalogAttributicoTools extends Model
 {
     protected $model = 'attributico';

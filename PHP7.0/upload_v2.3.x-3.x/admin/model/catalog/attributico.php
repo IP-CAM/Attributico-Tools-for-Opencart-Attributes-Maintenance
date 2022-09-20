@@ -311,7 +311,7 @@ class ModelCatalogAttributico extends Model
     public function editAttributeValues($attribute_id, $data)
     {
         $splitter = !($this->config->get($this->model . '_splitter') == '') ? $this->config->get($this->model . '_splitter') : '/';
-        $replace_mode = $this->config->get($this->model . '_replace_mode') ? $this->config->get($this->model . '_replace_mode') : 'substr';
+        $value_compare_mode = $this->config->get($this->model . '_value_compare_mode') ? $this->config->get($this->model . '_value_compare_mode') : 'substr';
         $search = htmlspecialchars_decode($data['oldtext']);
         $replace = htmlspecialchars_decode($data['newtext']);
 
@@ -320,7 +320,7 @@ class ModelCatalogAttributico extends Model
         $this->cache->delete($this->model);
 
         foreach ($products as $product) {
-            if ($replace_mode === 'match') {
+            if ($value_compare_mode === 'match') {
                 // Замена по точному совпадению значения
                 $values = explode($splitter, $product['text']);
                 $newtext =  implode($splitter, preg_replace('/^(' . $search . ')+$/', $replace, $values));
