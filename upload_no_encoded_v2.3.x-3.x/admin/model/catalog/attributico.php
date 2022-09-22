@@ -312,22 +312,16 @@ class ModelCatalogAttributico extends Model
     {
         $splitter = !($this->config->get($this->model . '_splitter') == '') ? $this->config->get($this->model . '_splitter') : '/';
         $value_compare_mode = $this->config->get($this->model . '_value_compare_mode') ? $this->config->get($this->model . '_value_compare_mode') : 'substr';
-        $search = htmlspecialchars_decode($data['oldtext']);
-        $replace = htmlspecialchars_decode($data['newtext']);
+        /* $search = htmlspecialchars_decode($data['oldtext']);
+        $replace = htmlspecialchars_decode($data['newtext']); */
 
         $products = $this->getProductsByAttributeId($attribute_id, $data['language_id']);
 
         $this->cache->delete($this->model);
 
         foreach ($products as $product) {
-            if ($value_compare_mode === 'match') {
-                // Замена по точному совпадению значения
-                $values = explode($splitter, $product['text']);
-                $newtext =  implode($splitter, preg_replace('/^(' . $search . ')+$/', $replace, $values));
-            } else {
-                // Замена по вхождению подстроки в строку
-                $newtext = str_replace($search, $replace, $product['text']);
-            }
+            // Заменить старое значение на новое в строке шаблона ($product['text']) по точному совпадению или по вхождению 
+            $newtext = replaceValue($data['oldtext'], $data['newtext'], $product['text'], $value_compare_mode, $splitter);
 
             $this->db->query("UPDATE " . DB_PREFIX . "product_attribute SET text = '" . $this->db->escape($newtext) . "' WHERE attribute_id = '" . (int)$attribute_id . "' AND language_id = '" . (int)$data['language_id'] . "' AND product_id = '" . (int)$product['product_id'] . "'");
             $this->productDateModified($product['product_id']);
