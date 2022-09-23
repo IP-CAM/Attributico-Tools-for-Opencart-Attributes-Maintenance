@@ -43,8 +43,7 @@ window.pasteMode = null;
 
 // document ready actions
 $(function(){
-    let t0 = performance.now();
-    const moduleversion = 'v3.2.2'
+    let t0 = performance.now();   
 
     $('.fancyfilter').each(buildFilter);
     $('.dialog-options').each(buildDialog);
@@ -64,7 +63,7 @@ $(function(){
         ajaxFinished += 1;
         if (ajaxFinished == totalAjax) { //here you know that all tasks are finish
             let t1 = performance.now();
-            console.log("Call to initTrees took " + (t1 - t0) + " milliseconds." + ' Attributico.js_' + moduleversion );
+            console.log("Call to initTrees took " + (t1 - t0) + " milliseconds. " + module_version );
         }
     });  
     

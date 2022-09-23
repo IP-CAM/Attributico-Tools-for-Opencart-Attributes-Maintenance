@@ -2,7 +2,7 @@
 
 @include_once(DIR_SYSTEM . 'license/sllic.lic');
 require_once(DIR_SYSTEM . 'library/attributico/attributico.php');
-//require_once(DIR_SYSTEM . 'library/attributico/interlink.php');
+require_once(DIR_SYSTEM . 'library/attributico/interlink.php');
 
 class ControllerModuleAttributico extends Controller
 {
@@ -261,6 +261,8 @@ class ControllerModuleAttributico extends Controller
 
     protected function out()
     {
+        $this->data['module_version'] = $this->module . '_' . $this::MODULE_VERSION;
+
         if (version_compare(VERSION, '2.0.1', '>=')) {
             $this->data['header'] = $this->load->controller('common/header');
             $this->data['column_left'] = $this->load->controller('common/column_left');
@@ -277,6 +279,7 @@ class ControllerModuleAttributico extends Controller
             $this->response->setOutput($this->render());
         }
     }
+    
     public function index()
     {
 
@@ -335,13 +338,15 @@ class ControllerModuleAttributico extends Controller
     {
         if (is_bool($default) === true) {
             return isset($this->request->{$request_type}[$param]) ? filter_var($this->request->{$request_type}[$param], FILTER_VALIDATE_BOOLEAN) : $default;
-        } else if (is_array($default)) {
-            return isset($this->request->{$request_type}[$param]) ? explode('_', $this->request->{$request_type}[$param]) : $default;
-        } else if (is_string($default) && $default === '') {
+        } 
+        if (is_array($default)) {
+            return isset($this->request->{$request_type}[$param]) ? (is_string($this->request->{$request_type}[$param]) ? explode('_', $this->request->{$request_type}[$param]) : $this->request->{$request_type}[$param]) : $default ;
+        } 
+        if (is_string($default) && $default === '') {
             return isset($this->request->{$request_type}[$param]) ? htmlspecialchars_decode($this->request->{$request_type}[$param]) : $default;
-        } else {
-            return isset($this->request->{$request_type}[$param]) ? $this->request->{$request_type}[$param] : $default;
         }
+
+            return isset($this->request->{$request_type}[$param]) ? $this->request->{$request_type}[$param] : $default;       
     }
 
     /**
@@ -1589,7 +1594,7 @@ class ControllerModuleAttributico extends Controller
         return $language;
     }
 
-    private function getLanguageDirectory($language_id)
+    protected function getLanguageDirectory($language_id)
     {
         $this->load->model('localisation/language');
         $languages = $this->model_localisation_language->getLanguages();
@@ -2047,7 +2052,7 @@ class ControllerExtensionModuleAttributico extends ControllerModuleAttributico
 }
 class ControllerModuleAttributipro extends ControllerModuleAttributico
 {
-    const MODULE_VERSION =  'v0.2.6';
+    const MODULE_VERSION =  'v0.2.8';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
     protected $dbstructure = array(
@@ -2204,7 +2209,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
         $text = $this->issetRequest('post', 'text', '');
         $view_mode = $this->issetRequest('post', 'view_mode', 'template');
         $filter_values = $this->issetRequest('post', 'filter_values', 'all');
-        $categories = $this->issetRequest('post', 'categories', array());
+        $categories = $this->issetRequest('post', 'categories', array()); 
         $form = [];
 
         $this->load->model($this->modelfile);
