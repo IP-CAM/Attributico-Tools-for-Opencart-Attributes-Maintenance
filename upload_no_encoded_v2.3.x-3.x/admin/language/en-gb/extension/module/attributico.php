@@ -306,6 +306,7 @@ $_['settings_algorithm'] = 'Adding an attribute value to the product';
 $_['settings_inherit'] = 'Inheritance';
 $_['settings_children'] = 'Trees settings';
 $_['settings_compare'] = 'Comparison of values';
+$_['settings_url'] = 'URL Settings';
 
 // tools
 $_['button_play']  = 'Start task';
@@ -366,4 +367,8 @@ $_['status_on'] = 'Enabled';
 $_['status_off'] = 'Disabled';
 $_['label_url'] = 'SEO URL';
 $_['help_url'] = 'You can enter a link to the filter landing page or any page for linking. If you leave it empty, the link will be formed automatically.';
-$_['placeholder_url'] = 'Enter the link to the desired page';
+$_['placeholder_url'] = 'Generate a link';
+$_['label_profile'] = 'Profile';
+$_['help_profile'] = 'Rules for forming links to landing pages or interlinking.';
+$_['label_apply_for'] = 'Apply for all languages';
+$_['help_apply_for'] = 'Image, icon, units of measurement and status will be applied for all languages.';
