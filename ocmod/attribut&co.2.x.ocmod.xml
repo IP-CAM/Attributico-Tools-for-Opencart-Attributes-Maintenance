@@ -95,7 +95,7 @@
                             $sortOrder = $this->config->get('attributico_sortorder') == '1' ? true : false;
                             $filter_data = array(
                                 'category_id' => (int) $this->request->get['category_id'],
-                                'sort' => $sortOrder ? 'attribute_group, a.sort_order' : ''
+                                'sort' => $sortOrder ? 'sort_attribute_group, a.sort_order' : ''
                             );
                             $attributes = $this->model_catalog_attributico->getCategoryAttributes($filter_data);
                 } else {
