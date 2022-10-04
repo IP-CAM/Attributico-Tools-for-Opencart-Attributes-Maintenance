@@ -98,7 +98,7 @@ export function cloneDuty (node, store) {
             'name': node.title,
             'clone': true
         },
-        url: `${route}editAttribute&user_token=${user_token}&token=${token}`,
+        url: `${route}updateDuty&user_token=${user_token}&token=${token}`,
         type: 'POST',
         success: function () {
             // при удалении надо перезагрузить дерево т.к. поле не удаестя сделать пустым при edit
