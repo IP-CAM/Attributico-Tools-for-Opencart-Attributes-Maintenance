@@ -521,7 +521,7 @@ class ModelCatalogAttributico extends Model
     {        
         $query = $this->db->query("SELECT language_id, name FROM " . DB_PREFIX . "category_description WHERE category_id = '" . (int)$category_id . "'");
 
-        return $this->groupListByLang($query->rows, 'name', 'name');
+        return $this->groupByLang($query->rows);
     }
 
     /**
