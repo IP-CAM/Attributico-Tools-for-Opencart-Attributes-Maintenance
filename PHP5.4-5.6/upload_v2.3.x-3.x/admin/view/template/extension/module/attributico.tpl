@@ -1149,6 +1149,7 @@
     const edit = '<?php echo $edit; ?>'; //TODO deprecated для v1.5 другая функция входа в товар   
     const textConfirm = <?php echo json_encode($text_confirm) ?>;
     const FILTERSETTINGS = <?php echo json_encode($filter_settings) ?>;
+    const module_version = '<?php echo $module_version; ?>';
 
     let filterLabels = [];
     let contextmenuConfig = [];

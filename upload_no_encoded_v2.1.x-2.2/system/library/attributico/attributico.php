@@ -157,14 +157,30 @@ function splitValue($value, $splitter)
     return $value_list;
 }
 
-function compareValue($value, $template, $mode = 'substr', $splitter)
+function compareValue($value, $template, $value_compare_mode = 'substr', $splitter)
 {
     $value_list = splitValue($template, $splitter);
-    if ($mode === 'substr') {
+    if ($value_compare_mode === 'substr') {
         return (strpos($template, $value) !== false);
     }
-    if ($mode === 'match') {
+    if ($value_compare_mode === 'match') {
         return in_array(strtolower($value), array_map('strtolower', $value_list));
     }
     return false;
+}
+
+function replaceValue($old_value, $new_value, $template, $value_compare_mode, $splitter) {
+    $search = htmlspecialchars_decode($old_value);
+    $replace = htmlspecialchars_decode($new_value);
+
+    if ($value_compare_mode === 'match') {
+        // Замена по точному совпадению значения
+        $haystack = explode($splitter, $template);
+        $newtext =  implode($splitter, preg_replace('/^(' . $search . ')+$/', $replace, $haystack));
+    } else {
+        // Замена по вхождению подстроки в строку
+        $newtext = str_replace($search, $replace, $template);
+    }    
+
+    return $newtext;
 }

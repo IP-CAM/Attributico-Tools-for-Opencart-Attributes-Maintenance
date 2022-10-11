@@ -6,7 +6,7 @@ require_once(DIR_SYSTEM . 'library/attributico/attributico.php');
 
 class ControllerModuleAttributico extends Controller
 {
-    const MODULE_VERSION =  'v3.2.2';
+    const MODULE_VERSION =  'v3.2.3';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
     const DEFAULT_THUMBNAIL_SIZE = 50;
@@ -24,9 +24,22 @@ class ControllerModuleAttributico extends Controller
     );
     protected $dbstructure = array(
         'attribute_description' => array(
-            'duty' => "TEXT NOT NULL",
+            'attribute_id' => 'int(11) NOT NULL',
+            'language_id' => 'int(11) NOT NULL',
+            'name' => 'varchar(64) NOT NULL',
+            'duty' => "text NOT NULL",
         ),
     );
+    // For version 4 Attributico
+    /* protected $dbstructure = array(        
+        'attribute_description_pro' => array(
+            'attribute_id' => 'int(11) NOT NULL',
+            'language_id' => 'int(11) NOT NULL',
+            'name' => 'varchar(64) NOT NULL',            
+            'duty' => "text NOT NULL",            
+            'duty_status' => "tinyint(1) NOT NULL DEFAULT 1"
+        )
+    ); */
     protected $module = 'attributico';
     protected $modulefile = 'module/attributico';
     protected $modelfile = 'catalog/attributico';
@@ -78,12 +91,7 @@ class ControllerModuleAttributico extends Controller
         $this->data['extension'] = $this->extension;
         $this->data['route'] = 'index.php?route=' . $this->extension . $this->modulefile . '/';
         $this->data['edit'] = $edit;
-
-        /*  $coworking = $this->db->query("SELECT extension_id FROM " . DB_PREFIX . "extension WHERE `type`='module' AND  `code`='' . $this->module");
-    $this->coworking = $coworking->row['extension_id'];
-    $coworking = $this->db->query("SELECT status FROM " . DB_PREFIX . "modification WHERE `code`='' . $this->module");
-    $this->coworking = $coworking->row['status']; */
-
+        
         $this->data['heading_title'] = $this->data['heading_title'] . ' ' . $this::MODULE_VERSION;
 
         $this->load->model('setting/setting');
@@ -261,6 +269,8 @@ class ControllerModuleAttributico extends Controller
 
     protected function out()
     {
+        $this->data['module_version'] = $this->module . '_' . $this::MODULE_VERSION;
+
         if (version_compare(VERSION, '2.0.1', '>=')) {
             $this->data['header'] = $this->load->controller('common/header');
             $this->data['column_left'] = $this->load->controller('common/column_left');
@@ -335,13 +345,15 @@ class ControllerModuleAttributico extends Controller
     {
         if (is_bool($default) === true) {
             return isset($this->request->{$request_type}[$param]) ? filter_var($this->request->{$request_type}[$param], FILTER_VALIDATE_BOOLEAN) : $default;
-        } else if (is_array($default)) {
-            return isset($this->request->{$request_type}[$param]) ? explode('_', $this->request->{$request_type}[$param]) : $default;
-        } else if (is_string($default) && $default === '') {
-            return isset($this->request->{$request_type}[$param]) ? htmlspecialchars_decode($this->request->{$request_type}[$param]) : $default;
-        } else {
-            return isset($this->request->{$request_type}[$param]) ? $this->request->{$request_type}[$param] : $default;
         }
+        if (is_array($default)) {
+            return isset($this->request->{$request_type}[$param]) ? (is_string($this->request->{$request_type}[$param]) ? explode('_', $this->request->{$request_type}[$param]) : $this->request->{$request_type}[$param]) : $default;
+        }
+        if (is_string($default) && $default === '') {
+            return isset($this->request->{$request_type}[$param]) ? htmlspecialchars_decode($this->request->{$request_type}[$param]) : $default;
+        }
+
+        return isset($this->request->{$request_type}[$param]) ? $this->request->{$request_type}[$param] : $default;
     }
 
     /**
@@ -513,7 +525,7 @@ class ControllerModuleAttributico extends Controller
         }
         return $select;
     }
-    
+
     /**
      * makeOptionList function making options for select tag
      *
@@ -536,7 +548,7 @@ class ControllerModuleAttributico extends Controller
             }
         }
         return $option_list;
-    }   
+    }
 
     /** Fuction for product form integration */
     public function getAttributeDuty()
@@ -553,7 +565,7 @@ class ControllerModuleAttributico extends Controller
 
             if ($method == 'overwrite' || $method == 'ifempty')
                 foreach ($languages as $language) {
-                    $json[$language['language_id']][] = $this->{$this->model}->whoIsOnDuty($attribute_id, $language);
+                    $json[$language['language_id']][] = $this->{$this->model}->getDutyInfo($attribute_id, $language)['duty'];
                 }
             if ($method == 'clean')
                 foreach ($languages as $language) {
@@ -1589,7 +1601,7 @@ class ControllerModuleAttributico extends Controller
         return $language;
     }
 
-    private function getLanguageDirectory($language_id)
+    protected function getLanguageDirectory($language_id)
     {
         $this->load->model('localisation/language');
         $languages = $this->model_localisation_language->getLanguages();
@@ -1639,7 +1651,7 @@ class ControllerModuleAttributico extends Controller
                 $json[] = array(
                     'attribute_id' => $result['attribute_id'],
                     'name' => strip_tags(html_entity_decode($result['name'], ENT_QUOTES, 'UTF-8')),
-                    'attribute_group' => $result['attribute_group']
+                    'attribute_group' => $result['group_name']
                 );
             }
         }
@@ -1661,6 +1673,25 @@ class ControllerModuleAttributico extends Controller
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "category_attribute
 		(`category_id` INTEGER(11) NOT NULL,`attribute_id` INTEGER(11) NOT NULL, PRIMARY KEY (`category_id`,`attribute_id`) USING BTREE)
         ENGINE=MyISAM ROW_FORMAT=FIXED CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'");
+        // For version 4 attributico
+        /* $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "attribute_description_pro (
+            attribute_id int(11) NOT NULL,
+            language_id int(11) NOT NULL,
+            name varchar(64) NOT NULL,           
+            duty text NOT NULL,            
+            duty_status tinyint(1) NOT NULL DEFAULT 1,            
+            PRIMARY KEY (attribute_id, language_id)
+          )
+          ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
+
+        $query = $this->columnCheck('attribute_description', 'duty') ? "INSERT INTO " . DB_PREFIX . "attribute_description_pro (attribute_id, language_id, name, duty) 
+          SELECT ad.attribute_id, ad.language_id, ad.name, ad.duty FROM " . DB_PREFIX . "attribute_description ad
+          ON DUPLICATE KEY UPDATE attribute_id=ad.attribute_id, language_id=ad.language_id, name=ad.name, duty=ad.duty" : "INSERT INTO " . DB_PREFIX . "attribute_description_pro (attribute_id, language_id, name) 
+          SELECT ad.attribute_id, ad.language_id, ad.name FROM " . DB_PREFIX . "attribute_description ad
+          ON DUPLICATE KEY UPDATE attribute_id=ad.attribute_id, language_id=ad.language_id, name=ad.name";
+
+        $this->db->query($query); */
+
         foreach ($this->dbstructure as $checking_table => $checking_column) {
             foreach ($checking_column as $column_name => $column_type)
                 if (!$this->columnCheck($checking_table, $column_name)) {
@@ -1688,10 +1719,20 @@ class ControllerModuleAttributico extends Controller
         $this->cache->delete($this->module);
     }
 
+    public function columnsCheck($table, $checking_columns)
+    {
+        $query = $this->db->query("SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='" . DB_DATABASE . "' AND TABLE_NAME='" . DB_PREFIX . $table . "' ");
+        $existing_columns = [];
+        foreach ($query->rows as $column) {
+            $existing_columns[$column['COLUMN_NAME']] = $column['COLUMN_TYPE'] . ($column['IS_NULLABLE'] === 'NO' ? ' NOT NULL' : ' DEFAULT NULL') . ($column['COLUMN_DEFAULT'] ? ' DEFAULT ' . $column['COLUMN_DEFAULT'] : '') . ($column['EXTRA'] ? ' ' . $column['EXTRA'] : '');
+        };
+        $result = array_diff_assoc($checking_columns, $existing_columns);
+        return (empty($result));
+    }
+
     public function columnCheck($table, $column)
     {
         $query = $this->db->query("SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='" . DB_DATABASE . "' AND TABLE_NAME='" . DB_PREFIX . $table . "' AND COLUMN_NAME='" . $column . "'");
-
         return (!empty($query->row));
     }
 
@@ -1709,14 +1750,17 @@ class ControllerModuleAttributico extends Controller
 
     private function dbStructureCheck()
     {
-        foreach ($this->dbstructure as $checking_table => $checking_column) {
+        foreach ($this->dbstructure as $checking_table => $checking_columns) {
             if (!$this->tableCheck($checking_table)) {
                 return false;
             }
-            foreach ($checking_column as $column_name => $column_type)
+            if (!$this->columnsCheck($checking_table, $checking_columns)) {
+                return false;
+            }
+            /* foreach ($checking_column as $column_name => $column_type)
                 if (!$this->columnCheck($checking_table, $column_name)) {
                     return false;
-                }
+                } */
         }
 
         return true;
@@ -2047,46 +2091,57 @@ class ControllerExtensionModuleAttributico extends ControllerModuleAttributico
 }
 class ControllerModuleAttributipro extends ControllerModuleAttributico
 {
-    const MODULE_VERSION =  'v0.2.6';
+    const MODULE_VERSION =  'v0.3.0';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
     protected $dbstructure = array(
-        'attribute' => array(
-            'image ' => "varchar(255) DEFAULT NULL",
+        'attribute_pro' => array(
+            'attribute_id' => 'int(11) NOT NULL auto_increment',
+            'attribute_group_id' => 'int(11) NOT NULL',
+            'sort_order' => 'int(3) NOT NULL',
+            'image' => "varchar(255) DEFAULT NULL",
             'icon' => "varchar(255) NOT NULL",
             'unit_id' => "int(11) NOT NULL",
             'status' => "tinyint(1) NOT NULL DEFAULT 1",
-            'url' => "TEXT NOT NULL",
+            'url' => "text NOT NULL",
         ),
-        'attribute_description' => array(
-            'tooltip' => "TEXT NOT NULL",
-            'duty' => "TEXT NOT NULL",
-            'duty_tooltip' => "TEXT NOT NULL",
-            'duty_image ' => "varchar(255) DEFAULT NULL",
+        'attribute_description_pro' => array(
+            'attribute_id' => 'int(11) NOT NULL',
+            'language_id' => 'int(11) NOT NULL',
+            'name' => 'varchar(64) NOT NULL',
+            'tooltip' => "text NOT NULL",
+            'duty' => "text NOT NULL",
+            'duty_tooltip' => "text NOT NULL",
+            'duty_image' => "varchar(255) DEFAULT NULL",
             'duty_icon' => "varchar(255) NOT NULL",
             'duty_unit_id' => "int(11) NOT NULL",
-            'duty_status' => "tinyint(1) NOT NULL DEFAULT 1",
-            'duty_url' => "TEXT NOT NULL"
+            'duty_status' => "tinyint(1) NOT NULL DEFAULT 1"
         ),
-        'product_attribute' => array(
-            'tooltip' => "TEXT NOT NULL",
-            'image ' => "varchar(255) DEFAULT NULL",
-            'icon' => "varchar(255) NOT NULL",
-            'unit_id' => "int(11) NOT NULL",
-            'status' => "tinyint(1) NOT NULL DEFAULT 1",
-            'url' => "TEXT NOT NULL",
+        'product_attribute_pro' => array(
+            'product_id' => 'int(11) NOT NULL',
+            'attribute_id' => 'int(11) NOT NULL',
+            'language_id' => 'int(11) NOT NULL',
+            'text' => 'text NOT NULL',
+            'tooltip' => 'text NOT NULL',
+            'image' => 'varchar(255) DEFAULT NULL',
+            'icon' => 'varchar(255) NOT NULL',
+            'unit_id' => 'int(11) NOT NULL',
+            'status' => 'tinyint(1) NOT NULL DEFAULT 1',
+            'url' => 'text NOT NULL',
         ),
         'unit' => array(
-            /* 'unit_id' => "int(11) NOT NULL AUTO_INCREMENT",
-            'unit_group_id' => "int(11) NOT NULL DEFAULT 0",
-            'sort_order' => "int(3) NOT NULL DEFAULT 0", */),
+            'unit_id' => "int(11) NOT NULL auto_increment",
+            'unit_group_id' => "int(11) NOT NULL",
+            'sort_order' => "int(3) NOT NULL",
+        ),
         'unit_description' => array(
-            /* 'unit_id' => "int(11) NOT NULL",
+            'unit_id' => "int(11) NOT NULL",
             'language_id' => "int(11) NOT NULL",
-            'title' => "varchar(255) NOT NULL DEFAULT ''",
-            'unit' => "varchar(32) NOT NULL DEFAULT ''", */),
+            'title' => "varchar(255) NOT NULL",
+            'unit' => "varchar(32) NOT NULL",
+        ),
         'attribute_interlink' => array(
-            /* 'rule_id'  => "int(11) NOT NULL AUTO_INCREMENT",
+            'rule_id'  => "int(11) NOT NULL auto_increment",
             'name' =>  "varchar(255) NOT NULL",
             'route' =>  "varchar(255) NOT NULL",
             'filter_alias' =>  "varchar(255) NOT NULL",
@@ -2094,7 +2149,8 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             'block_separator' =>  "char(20) NOT NULL",
             'between_separator' =>  "char(20) NOT NULL",
             'value_separator'  => "char(20) NOT NULL",
-            'advance'  => "varchar(255) NOT NULL", */),
+            'advance'  => "varchar(255) NOT NULL",
+        ),
     );
     protected $module = 'attributipro';
     protected $modulefile = 'module/attributipro';
@@ -2770,18 +2826,78 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
     public function install()
     {
+        // Extension of the existing DB structure
+        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "attribute_pro (
+            attribute_id int(11) NOT NULL auto_increment,
+            attribute_group_id int(11) NOT NULL,
+            sort_order int(3) NOT NULL,
+            image varchar(255) DEFAULT NULL,
+            icon varchar(255) NOT NULL,
+            unit_id int(11) NOT NULL,
+            status tinyint(1) NOT NULL DEFAULT 1,
+            url text NOT NULL,            
+            PRIMARY KEY (attribute_id)
+          )
+          ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
+
+        $this->db->query("INSERT INTO " . DB_PREFIX . "attribute_pro (attribute_id, attribute_group_id, sort_order) 
+        SELECT a.attribute_id, a.attribute_group_id, a.sort_order FROM " . DB_PREFIX . "attribute  a
+        ON DUPLICATE KEY UPDATE attribute_id=a.attribute_id, attribute_group_id=a.attribute_group_id, sort_order=a.sort_order");
+
+        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "attribute_description_pro (
+            attribute_id int(11) NOT NULL,
+            language_id int(11) NOT NULL,
+            name varchar(64) NOT NULL,
+            tooltip text NOT NULL,
+            duty text NOT NULL,
+            duty_tooltip text NOT NULL,
+            duty_image varchar(255) DEFAULT NULL,
+            duty_icon varchar(255) NOT NULL,
+            duty_unit_id int(11) NOT NULL,
+            duty_status tinyint(1) NOT NULL DEFAULT 1,            
+            PRIMARY KEY (attribute_id, language_id)
+          )
+          ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
+
+        $query = $this->columnCheck('attribute_description', 'duty') ? "INSERT INTO " . DB_PREFIX . "attribute_description_pro (attribute_id, language_id, name, duty) 
+          SELECT ad.attribute_id, ad.language_id, ad.name, ad.duty FROM " . DB_PREFIX . "attribute_description ad
+          ON DUPLICATE KEY UPDATE attribute_id=ad.attribute_id, language_id=ad.language_id, name=ad.name, duty=ad.duty" : "INSERT INTO " . DB_PREFIX . "attribute_description_pro (attribute_id, language_id, name) 
+          SELECT ad.attribute_id, ad.language_id, ad.name FROM " . DB_PREFIX . "attribute_description ad
+          ON DUPLICATE KEY UPDATE attribute_id=ad.attribute_id, language_id=ad.language_id, name=ad.name";
+
+        $this->db->query($query);
+
+        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "product_attribute_pro (
+            product_id int(11) NOT NULL,
+            attribute_id int(11) NOT NULL,
+            language_id int(11) NOT NULL,
+            text text NOT NULL,
+            tooltip text NOT NULL,
+            image varchar(255) DEFAULT NULL,
+            icon varchar(255) NOT NULL,
+            unit_id int(11) NOT NULL,
+            status tinyint(1) NOT NULL DEFAULT 1,
+            url text NOT NULL,
+            PRIMARY KEY (product_id, attribute_id, language_id)
+          )
+          ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
+
+        $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute_pro (product_id, attribute_id, language_id, text) 
+            SELECT pa.product_id, pa.attribute_id, pa.language_id, pa.text FROM " . DB_PREFIX . "product_attribute pa
+            ON DUPLICATE KEY UPDATE product_id=pa.product_id, attribute_id=pa.attribute_id, language_id=pa.language_id, text=pa.text");
+
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "category_attribute
 		(`category_id` INTEGER(11) NOT NULL,`attribute_id` INTEGER(11) NOT NULL, PRIMARY KEY (`category_id`,`attribute_id`) USING BTREE)
         ENGINE=MyISAM ROW_FORMAT=FIXED CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'");
 
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "unit
-		(unit_id int(11) NOT NULL AUTO_INCREMENT, unit_group_id int(11) NOT NULL DEFAULT 0, sort_order int(3) NOT NULL DEFAULT 0, PRIMARY KEY (unit_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
+		(unit_id int(11) NOT NULL auto_increment, unit_group_id int(11) NOT NULL, sort_order int(3) DEFAULT 0, PRIMARY KEY (unit_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
 
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "unit_description
 		(unit_id int(11) NOT NULL, language_id int(11) NOT NULL, title varchar(255) NOT NULL DEFAULT '', unit varchar(32) NOT NULL DEFAULT '',
         PRIMARY KEY (unit_id, language_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
 
-        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "attribute_interlink (rule_id int(11) NOT NULL AUTO_INCREMENT, name varchar(255) NOT NULL, route varchar(255) NOT NULL, filter_alias varchar(255) NOT NULL, args varchar(255) NOT NULL, block_separator char(20) NOT NULL, between_separator char(20) NOT NULL, value_separator char(20) NOT NULL, advance varchar(255) NOT NULL, PRIMARY KEY (rule_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci;");
+        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "attribute_interlink (rule_id int(11) NOT NULL auto_increment, name varchar(255) NOT NULL, route varchar(255) NOT NULL, filter_alias varchar(255) NOT NULL, args varchar(255) NOT NULL, block_separator char(20) NOT NULL, between_separator char(20) NOT NULL, value_separator char(20) NOT NULL, advance varchar(255) NOT NULL, PRIMARY KEY (rule_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci;");
 
         foreach ($this->dbstructure as $checking_table => $checking_column) {
             foreach ($checking_column as $column_name => $column_type)
