@@ -24,9 +24,9 @@ class ControllerModuleAttributico extends Controller
     );
     protected $dbstructure = array(
         'attribute_description' => array(
-            'attribute_id' => 'int(11) NOT NULL',
+            /* 'attribute_id' => 'int(11) NOT NULL',
             'language_id' => 'int(11) NOT NULL',
-            'name' => 'varchar(64) NOT NULL',
+            'name' => 'varchar(64) NOT NULL', */
             'duty' => "text NOT NULL",
         ),
     );
