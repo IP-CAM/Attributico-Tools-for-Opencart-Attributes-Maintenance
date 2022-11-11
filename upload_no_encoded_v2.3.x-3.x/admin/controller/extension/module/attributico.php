@@ -541,7 +541,7 @@ class ControllerModuleAttributico extends Controller
         foreach ($options as $option) {
             $selected = $option['value'] === $default_value ? 'selected' : '';
             $key = isset($option['key']) ? $option['key'] : '';
-            $value = isset($option['value']) ? $option['value'] : '';
+            $value = isset($option['value']) ? htmlspecialchars($option['value'], ENT_QUOTES) : '';
             $title = isset($option['title']) ? $option['title'] : $value;
             if ($title) {
                 $option_list .= "<option key='{$key}' value='{$value}' {$selected} style='{$style}'>{$title}</option>";
