@@ -12,7 +12,7 @@ class ModelCatalogAttributico extends Model
      */
     public function getAttributes($filter = array())
     {
-        $language_id = isset($filter['language_id']) ? (int)$filter['language_id'] : (int)$this->config->get('config_language_id');       
+        $language_id = isset($filter['language_id']) ? (int)$filter['language_id'] : (int)$this->config->get('config_language_id');
 
         $sql = $this->selectQueryBuild() . " WHERE ad.language_id = '" . (int)$language_id . "'";
 
@@ -52,8 +52,9 @@ class ModelCatalogAttributico extends Model
      * @param int $language_id
      * @return string
      **/
-    protected function selectQueryBuild() {
-        return "SELECT a.attribute_id, ad.name, ad.language_id, a.attribute_group_id, oagd.name AS group_name, a.sort_order, ad.duty FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id) LEFT JOIN " . DB_PREFIX . "attribute_group_description oagd ON (a.attribute_group_id = oagd.attribute_group_id AND oagd.language_id = ad.language_id) ";        
+    protected function selectQueryBuild()
+    {
+        return "SELECT a.attribute_id, ad.name, ad.language_id, a.attribute_group_id, oagd.name AS group_name, a.sort_order, ad.duty FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id) LEFT JOIN " . DB_PREFIX . "attribute_group_description oagd ON (a.attribute_group_id = oagd.attribute_group_id AND oagd.language_id = ad.language_id) ";
     }
 
     /**
@@ -63,8 +64,8 @@ class ModelCatalogAttributico extends Model
      * @return array
      */
     public function getAttributeDescriptions($attribute_id)
-    {   
-        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "attribute_description WHERE attribute_id = '" . (int)$attribute_id . "'");        
+    {
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "attribute_description WHERE attribute_id = '" . (int)$attribute_id . "'");
 
         return $this->groupByLang($query->rows);
     }
@@ -284,15 +285,14 @@ class ModelCatalogAttributico extends Model
      * @return array of values 
      */
     public function getAttributeValues($attribute_id, $categories = array()) //TODO Выборка значений без учета языка и с учетом языка
-    {        
+    {
         // (BINARY text) for difference selecting lower case and upper case text recrords in DISTINCT mode
         $sql = "SELECT DISTINCT (BINARY text), text, language_id FROM " . DB_PREFIX . "product_attribute WHERE attribute_id='" . (int)$attribute_id . "'";
         // If the array of categories is not empty, then the category  filter has been turned on
         $sql_categories = $categories ? " AND product_id IN (SELECT ptc.product_id FROM " . DB_PREFIX . "product_to_category ptc WHERE ptc.category_id IN (" . implode(",", $categories) . "))" : "";
 
         $query = $this->db->query($sql . $sql_categories . " ORDER BY language_id");
-        //	$query = $this->db->query("SELECT DISTINCT(text), language_id FROM " . DB_PREFIX . "product_attribute WHERE attribute_id=" . (int) $attribute_id . " ORDER BY CAST(text AS DECIMAL)");        
-        
+        //	$query = $this->db->query("SELECT DISTINCT(text), language_id FROM " . DB_PREFIX . "product_attribute WHERE attribute_id=" . (int) $attribute_id . " ORDER BY CAST(text AS DECIMAL)");
         return $this->groupListByLang($query->rows, 'text', 'text');
     }
 
@@ -456,17 +456,17 @@ class ModelCatalogAttributico extends Model
         return $category_id;
     }
 
-    public function deleteAttributesFromCategory($category_id, $data)
+    public function deleteAttributesFromCategory($category_id, $category_attributes)
     {
         // in foreach
-        if (isset($data['category_attribute'])) {
-            foreach ($data['category_attribute'] as $attribute_id) {
+        if (isset($category_attributes)) {
+            foreach ($category_attributes as $attribute_id) {
                 $this->db->query("DELETE FROM " . DB_PREFIX . "category_attribute WHERE category_id = '" . (int)$category_id . "' AND attribute_id = '" . (int)$attribute_id . "'");
             }
         }
     }
 
-    public function getCategoryAttributes($data = array())//TODO Get duty?
+    public function getCategoryAttributes($data = array()) //TODO Get duty?
     {
         if (isset($data['language_id'])) {
             $language_id = (int)$data['language_id'];
@@ -518,7 +518,7 @@ class ModelCatalogAttributico extends Model
     }
 
     public function getCategoryDescriptions($category_id)
-    {        
+    {
         $query = $this->db->query("SELECT language_id, name FROM " . DB_PREFIX . "category_description WHERE category_id = '" . (int)$category_id . "'");
 
         return $this->groupByLang($query->rows);
@@ -642,12 +642,12 @@ class ModelCatalogAttributico extends Model
         return ['text' => $text];
     }
 
-    public function deleteCategoryAttributesFromProducts($products, $data)
+    public function deleteCategoryAttributesFromProducts($products, $attributes)
     {
         // in foreach
         foreach ($products as $product) {
-            if (isset($data['category_attribute'])) {
-                foreach ($data['category_attribute'] as $attribute_id) {
+            if (isset($attributes)) {
+                foreach ($attributes as $attribute_id) {
                     $this->db->query($this->deleteQueryBuild('product_attribute') . " WHERE master.product_id = '" . (int)$product['product_id'] . "' AND master.attribute_id = '" . (int)$attribute_id . "'");
                     $this->productDateModified($product['product_id']);
                 }
@@ -656,17 +656,91 @@ class ModelCatalogAttributico extends Model
     }
 
     /**
+     * V4 product Data Base service
+     *
+     **/
+    /**
+     * Gets all product"s attributes with value structure for concrete product (attribute table)
+     * 
+     *
+     * @param integer $product_id     
+     * @param integer $language_id
+     * @return object
+     */
+    public function getProductAttributeInfo($product_id)
+    {
+
+        $query = $this->db->query("SELECT opa.product_id, pd.name AS product_name, opa.attribute_id, oag.sort_order AS group_order, a.sort_order, opa.language_id, lg.code, opa.text, ad.name, oagd.name AS group_name, CONCAT('language/', lg.code, '/', lg.code, '.png') AS flag
+        FROM " . DB_PREFIX . "product_attribute opa 
+        LEFT JOIN " . DB_PREFIX . "product_description pd ON (pd.product_id = opa.product_id AND pd.language_id = opa.language_id)
+        LEFT JOIN " . DB_PREFIX . "attribute a ON (a.attribute_id = opa.attribute_id)
+        LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (ad.attribute_id = opa.attribute_id AND opa.language_id = ad.language_id)
+        LEFT JOIN " . DB_PREFIX . "attribute_group oag ON (oag.attribute_group_id = a.attribute_group_id) 
+        LEFT JOIN " . DB_PREFIX . "attribute_group_description oagd ON (oagd.attribute_group_id = a.attribute_group_id AND oagd.language_id = ad.language_id)
+        LEFT JOIN " . DB_PREFIX . "language lg ON (opa.language_id = lg.language_id)
+        WHERE opa.product_id='" . (int)$product_id . "' ORDER BY group_order, a.sort_order, opa.attribute_id");
+
+        $info = [];
+
+        foreach ($query->rows as $row) {
+            $filterBy = $row['attribute_id'];
+            $values =  groupByLang(array_filter($query->rows, function ($var) use ($filterBy) {
+                return ($var["attribute_id"] === $filterBy);
+            }));
+
+            $product_attribute = new \stdClass();
+            if ($row['language_id'] === $this->config->get('config_language_id')) {
+                $product_attribute->product_id = (int) $row['product_id'];
+                $product_attribute->product_name = htmlspecialchars_decode($row['product_name'], ENT_QUOTES);
+                $product_attribute->attribute_id = (int) $row['attribute_id'];
+                $product_attribute->group_order = (int) $row['group_order'];
+                $product_attribute->sort_order = (int) $row['sort_order'];
+                $product_attribute->name = htmlspecialchars_decode($row['name'], ENT_QUOTES);
+                $product_attribute->group_name = $row['group_name'];
+                
+                $product_attribute->values = [];
+                foreach ($values as $value) {
+                    $value_info = new \stdClass();
+                    $value_info->language_id = (int) $value['language_id'];
+                    $value_info->code = $value['code'];
+                    $value_info->flag = $value['flag'];
+                    $value_info->text = htmlspecialchars_decode($value['text'], ENT_QUOTES);
+                    $product_attribute->values[] = $value_info;
+                }
+                /* $product_attribute->values = groupByLang(array_columns($values, ['language_id', 'code', 'flag', 'text'])); */
+
+                $info[] = $product_attribute;
+            }
+        }
+        return $info;
+    }
+
+    public function getProductCategories($product_id, $language_id = 0) {
+		$sql_lang = $language_id ? " AND cd.language_id = '" . (int)$language_id . "'" : '';
+
+		$query = $this->db->query("SELECT ptc.*, cd.name, cd.language_id FROM " . DB_PREFIX . "product_to_category ptc LEFT JOIN " . DB_PREFIX . "category_description cd ON (ptc.category_id = cd.category_id) WHERE product_id = '" . (int)$product_id . "'" . $sql_lang);		
+
+		return $query->rows;
+	}
+
+    public function deleteProductCategory($product_id, $category_id) {
+        $this->db->query("DELETE FROM " . DB_PREFIX . "product_to_category WHERE product_id = '" . (int)$product_id . "' AND category_id = '" . (int)$category_id . "'");
+
+        return $this->db->countAffected();
+    }
+
+    /**
      * Duty Data Base service
      *
      **/
-     /**
+    /**
      * Save result after edit by inline fancytree editor
      * 
      * @param int $attribute_id
      * @param array $data
      * @return void
      */
-    public function editDuty($attribute_id, $data) 
+    public function editDuty($attribute_id, $data)
     {
         $this->cache->delete($this->model);
 
@@ -686,7 +760,7 @@ class ModelCatalogAttributico extends Model
     public function getDutyValues($attribute_id) //TODO pro
     {
         $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "attribute_description WHERE attribute_id = '" . (int)$attribute_id . "'");
-       
+
         return $this->groupListByLang($query->rows, 'text', 'duty');
     }
 
@@ -828,13 +902,13 @@ class ModelCatalogAttributico extends Model
      */
     protected function groupListByLang($rows, $output_key, $input_key)
     {
-        $result = [];        
+        $result = [];
         foreach ($rows as $row) {
             $result[$row['language_id']][] = array($output_key => $row[$input_key]);
         }
         return $result;
     }
-// End of ModelCatalogAttributico
+    // End of ModelCatalogAttributico
 }
 
 class ModelCatalogAttributipro extends ModelCatalogAttributico
@@ -848,7 +922,8 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
      * @param int $language_id
      * @return string
      **/
-    protected function selectQueryBuild() {
+    protected function selectQueryBuild()
+    {
         return "SELECT a.attribute_id, ad.name, ad.language_id, a.attribute_group_id, oagd.name AS group_name, a.sort_order, a2.image, a2.icon, a2.unit_id, a2.status, ad2.tooltip, ad2.duty FROM " . DB_PREFIX . "attribute a LEFT JOIN " . DB_PREFIX . "attribute_pro a2 ON (a.attribute_id = a2.attribute_id) LEFT JOIN " . DB_PREFIX . "attribute_description ad ON (a.attribute_id = ad.attribute_id) LEFT JOIN " . DB_PREFIX . "attribute_description_pro ad2 ON (ad2.attribute_id = ad.attribute_id AND ad2.language_id = ad.language_id) LEFT JOIN " . DB_PREFIX . "attribute_group_description oagd ON (a.attribute_group_id = oagd.attribute_group_id AND oagd.language_id = ad.language_id) ";
     }
 
@@ -887,7 +962,7 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
 
             $sql = "INSERT INTO " . DB_PREFIX . "attribute_description_pro SET attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language_id . "', name = '" . $this->db->escape($value['name']) . ($data['new'] ? '_' . $attribute_id : '') . "'";
 
-             $this->db->query($sql);
+            $this->db->query($sql);
 
             /**
              * We transfer the all Info structure from the previous attribute if copy paste
@@ -901,7 +976,7 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
         }
 
         return $attribute_id;
-    }    
+    }
 
     /**
      * Update only attribute parameters with only duty field
@@ -917,14 +992,14 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
         $this->cache->delete($this->model);
 
         $this->db->query("UPDATE " . DB_PREFIX . "attribute_pro SET image = '" . $data['image'] . "', icon = '" . $data['icon'] . "', unit_id = '" . (int)$data['unit_id'] . "', status = '" . (int)$data['status'] . "' WHERE attribute_id = '" . (int)$attribute_id . "'");
-        
+
         $this->db->query("UPDATE " . DB_PREFIX . "attribute_description SET name = '" . $this->db->escape($data['name']) . "' WHERE attribute_id = '" . (int)$attribute_id . "' AND language_id = '" . (int)$language_id . "'");
-        
+
         $this->db->query("UPDATE " . DB_PREFIX . "attribute_description_pro SET name = '" . $this->db->escape($data['name']) . "', duty = '" . $this->db->escape($data['duty']) . "', tooltip = '" . $this->db->escape($data['tooltip']) . "' WHERE attribute_id = '" . (int)$attribute_id . "' AND language_id = '" . (int)$language_id . "'");
     }
 
     /**
-     * Gets all attribute value info structure for concrete product
+     * Gets all attribute value info structure for concrete product (value form)
      *
      * @param integer $product_id
      * @param integer $attribute_id
@@ -933,7 +1008,6 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
      */
     public function getAttributeValueInfo($product_id, $attribute_id, $language_id = 0)
     {
-        $info = array();
         if ($language_id) {
             $sql_lang = " AND opa.language_id = '" . (int)$language_id . "'";
         } else {
@@ -965,7 +1039,7 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
             return $this->groupByLang($query->rows);
         }
     }
-    
+
     /**
      * Save all attribute value info structure for concrete product after submit Value form
      *
@@ -1002,7 +1076,7 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
      * @param array $data
      * @return void
      */
-    public function updateValueAllLanguages($product_id, $attribute_id, $data) 
+    public function updateValueAllLanguages($product_id, $attribute_id, $data)
     {
         $this->cache->delete($this->model);
 
@@ -1063,10 +1137,10 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
      * @param integer $attribute_id
      * @return array 
      */
-    public function getDutyValues($attribute_id) 
+    public function getDutyValues($attribute_id)
     {
         $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "attribute_description_pro WHERE attribute_id = '" . (int)$attribute_id . "'");
-       
+
         return $this->groupListByLang($query->rows, 'text', 'duty');
     }
     /**

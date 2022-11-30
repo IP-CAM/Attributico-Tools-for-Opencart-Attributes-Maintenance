@@ -2,7 +2,7 @@
 <modification>
     <name>Attributico</name>
     <code>attributico</code>
-    <version>3.2.3(oc v2.x)</version>
+    <version>3.2.4(oc v2.x)</version>
     <author>comtronics@mail.ru</author>
     <link>http://attributico.su</link>
     
@@ -183,12 +183,12 @@
                                         var row = attribute_row;
                                         addAttribute(attribute['attribute_id']); 
                                         $('input[name="product_attribute[' + row + '][name]"]').val(attribute['name']); 
-                                        $('input[name="product_attribute[' + row + '][attribute_id]"]').val(attribute['attribute_id']);
+                                        $('input[name="product_attribute[' + row + '][attribute_id]"]').val(String(attribute['attribute_id']);
                                         $('#group-name' + row).remove()
                                         $('input[name=\'product_attribute[' + row + '][name]\']').parent().prepend('<label id=group-name' + row + '>' + attribute['group_name'] + '</label>')
-                                        makeValuesList(attribute['attribute_id'], row);
-                                        addAttributeDuty(attribute['attribute_id'], row);
-                                        product_attribute_id.push(attribute['attribute_id']);
+                                        makeValuesList(String(attribute['attribute_id'], row);
+                                        addAttributeDuty(String(attribute['attribute_id'], row);
+                                        product_attribute_id.push(String(attribute['attribute_id']);
                                     }
                                 });
                             }
@@ -204,15 +204,15 @@
                             'category_id': category_id,
                             'categories': getSelectedCategories()
                         },
-                        url: 'index.php?route=' + extension + 'module/attributico/getCategoryAttributes',
+                        url: 'index.php?route=' + extension + 'module/attributico/removeCategoryAttributes',
                         dataType: 'json',
                         success: function (json) {
                             if (confirm(remove_category_attribute)) {
                                 json.forEach( attribute => {                                  
                                   $('[id ^= attribute-row]').each((row, tr) => {                                                                       
-                                    if ($(tr).find('[name *= attribute_id]').val() === attribute['attribute_id']) {                                      
+                                    if ($(tr).find('[name *= attribute_id]').val() === String(attribute['attribute_id']) {                                      
                                       $(tr).remove()                                      
-                                      product_attribute_id = product_attribute_id.filter( item => item !== attribute['attribute_id']);
+                                      product_attribute_id = product_attribute_id.filter( item => item !== String(attribute['attribute_id']);
                                       attribute_row--
                                     }                                    
                                   })                                   
