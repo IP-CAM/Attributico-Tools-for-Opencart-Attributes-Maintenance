@@ -179,16 +179,16 @@
                         success: function (json) {
                             if (add_category_attribute) {
                                 $.each(json, (key, attribute) => {
-                                    if (!in_array(attribute['attribute_id'], product_attribute_id)) {
+                                    if (!in_array(String(attribute['attribute_id']), product_attribute_id)) {
                                         var row = attribute_row;
-                                        addAttribute(attribute['attribute_id']); 
+                                        addAttribute(String(attribute['attribute_id'])); 
                                         $('input[name="product_attribute[' + row + '][name]"]').val(attribute['name']); 
-                                        $('input[name="product_attribute[' + row + '][attribute_id]"]').val(String(attribute['attribute_id']);
+                                        $('input[name="product_attribute[' + row + '][attribute_id]"]').val(String(attribute['attribute_id']));
                                         $('#group-name' + row).remove()
                                         $('input[name=\'product_attribute[' + row + '][name]\']').parent().prepend('<label id=group-name' + row + '>' + attribute['group_name'] + '</label>')
-                                        makeValuesList(String(attribute['attribute_id'], row);
-                                        addAttributeDuty(String(attribute['attribute_id'], row);
-                                        product_attribute_id.push(String(attribute['attribute_id']);
+                                        makeValuesList(String(attribute['attribute_id']), row);
+                                        addAttributeDuty(String(attribute['attribute_id']), row);
+                                        product_attribute_id.push(String(attribute['attribute_id']));
                                     }
                                 });
                             }
@@ -210,9 +210,9 @@
                             if (confirm(remove_category_attribute)) {
                                 json.forEach( attribute => {                                  
                                   $('[id ^= attribute-row]').each((row, tr) => {                                                                       
-                                    if ($(tr).find('[name *= attribute_id]').val() === String(attribute['attribute_id']) {                                      
+                                    if ($(tr).find('[name *= attribute_id]').val() === String(attribute['attribute_id'])) {                                      
                                       $(tr).remove()                                      
-                                      product_attribute_id = product_attribute_id.filter( item => item !== String(attribute['attribute_id']);
+                                      product_attribute_id = product_attribute_id.filter( item => item !== String(attribute['attribute_id']));
                                       attribute_row--
                                     }                                    
                                   })                                   
