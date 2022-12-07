@@ -509,12 +509,16 @@ class ModelCatalogAttributico extends Model
 
     public function getCategoryAttributesId($category_id)
     {
-        $data = array();
         $query = $this->db->query("SELECT attribute_id FROM " . DB_PREFIX . "category_attribute WHERE category_id = '" . (int)$category_id . "'");
-        foreach ($query->rows as $attribute) {
-            $data['category_attribute'][] = $attribute['attribute_id'];
-        }
-        return $data;
+
+        return $query->rows;
+    }
+
+    public function getCategoriesAttributesId($categories)
+    {
+        $query = $this->db->query("SELECT DISTINCT attribute_id FROM " . DB_PREFIX . "category_attribute WHERE category_id IN (" . implode(",", $categories) . ") ORDER BY `attribute_id` asc");
+
+        return array_column($query->rows, 'attribute_id');
     }
 
     public function getCategoryDescriptions($category_id)
@@ -580,7 +584,7 @@ class ModelCatalogAttributico extends Model
      * @param array $languages
      * @return integer
      */
-    public function addCategoryAttributesToProducts($products, $category_attributes, $languages)
+    public function addAttributesToProducts($products, $category_attributes, $languages, $insert_mode = '')
     {
         // in foreach
         set_time_limit(600);
@@ -589,7 +593,7 @@ class ModelCatalogAttributico extends Model
         foreach ($products as $product) {
             foreach ($category_attributes as $attribute_id) {
                 foreach ($languages as $language) {
-                    $duty = $this->getDutyByMethod($product['product_id'], $attribute_id, $language['language_id']);
+                    $duty = $this->getDutyByMethod($product['product_id'], $attribute_id, $language['language_id'], $insert_mode);
 
                     $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute SET product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . $duty['text']
                         . " ON DUPLICATE KEY UPDATE  product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . $duty['text']);
@@ -611,9 +615,9 @@ class ModelCatalogAttributico extends Model
      * @param integer $language_id
      * @return array
      */
-    protected function getDutyByMethod($product_id, $attribute_id, $language_id)
+    protected function getDutyByMethod($product_id, $attribute_id, $language_id, $insert_mode = '')
     {
-        $method = $this->config->get($this->model . '_product_text');
+        $method = $insert_mode ? $insert_mode : $this->config->get($this->model . '_product_text');
 
         switch ($method) {
             case 'clean':
@@ -642,17 +646,21 @@ class ModelCatalogAttributico extends Model
         return ['text' => $text];
     }
 
-    public function deleteCategoryAttributesFromProducts($products, $attributes)
+    public function deleteAttributesFromProducts($products, $attributes)
     {
         // in foreach
+        $count_affected = 0;
         foreach ($products as $product) {
             if (isset($attributes)) {
                 foreach ($attributes as $attribute_id) {
+                    //$query = $this->deleteQueryBuild('product_attribute') . " WHERE master.product_id = '" . (int)$product['product_id'] . "' AND master.attribute_id = '" . (int)$attribute_id . "'";
                     $this->db->query($this->deleteQueryBuild('product_attribute') . " WHERE master.product_id = '" . (int)$product['product_id'] . "' AND master.attribute_id = '" . (int)$attribute_id . "'");
                     $this->productDateModified($product['product_id']);
+                    $count_affected += $this->db->countAffected();
                 }
             }
         }
+        return $count_affected;
     }
 
     /**
@@ -697,7 +705,7 @@ class ModelCatalogAttributico extends Model
                 $product_attribute->sort_order = (int) $row['sort_order'];
                 $product_attribute->name = htmlspecialchars_decode($row['name'], ENT_QUOTES);
                 $product_attribute->group_name = $row['group_name'];
-                
+
                 $product_attribute->values = [];
                 foreach ($values as $value) {
                     $value_info = new \stdClass();
@@ -715,17 +723,27 @@ class ModelCatalogAttributico extends Model
         return $info;
     }
 
-    public function getProductCategories($product_id, $language_id = 0) {
-		$sql_lang = $language_id ? " AND cd.language_id = '" . (int)$language_id . "'" : '';
+    public function getProductCategories($product_id, $language_id = 0)
+    {
+        $sql_lang = $language_id ? " AND cd.language_id = '" . (int)$language_id . "'" : '';
 
-		$query = $this->db->query("SELECT ptc.*, cd.name, cd.language_id FROM " . DB_PREFIX . "product_to_category ptc LEFT JOIN " . DB_PREFIX . "category_description cd ON (ptc.category_id = cd.category_id) WHERE product_id = '" . (int)$product_id . "'" . $sql_lang);		
+        $query = $this->db->query("SELECT ptc.*, cd.name, cd.language_id FROM " . DB_PREFIX . "product_to_category ptc LEFT JOIN " . DB_PREFIX . "category_description cd ON (ptc.category_id = cd.category_id) WHERE product_id = '" . (int)$product_id . "'" . $sql_lang);
 
-		return $query->rows;
-	}
+        return $query->rows;
+    }
 
-    public function deleteProductCategory($product_id, $category_id) {
+    public function deleteProductCategory($product_id, $category_id)
+    {
+
         $this->db->query("DELETE FROM " . DB_PREFIX . "product_to_category WHERE product_id = '" . (int)$product_id . "' AND category_id = '" . (int)$category_id . "'");
 
+        return $this->db->countAffected();
+    }
+
+    public function updateProductCategory($product_id, $category_id, $main)
+    {
+        $this->db->query("INSERT INTO " . DB_PREFIX . "product_to_category SET category_id = '" . (int)$category_id . "', product_id = '" . (int)$product_id . "', main_category = '" . (int)$main . "' "
+            . "ON DUPLICATE KEY UPDATE category_id = '" . (int)$category_id . "', product_id = '" . (int)$product_id . "', main_category = '" . (int)$main . "' ");
         return $this->db->countAffected();
     }
 
@@ -1095,13 +1113,13 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
     {
         $join = "";
         if ($table === 'product_attribute') {
-            $join = " JOIN " . DB_PREFIX . "product_attribute_pro slave ON (slave.product_id=master.product_id AND slave.attribute_id=master.attribute_id AND slave.language_id=master.language_id)";
+            $join = " LEFT JOIN " . DB_PREFIX . "product_attribute_pro slave ON (slave.product_id=master.product_id AND slave.attribute_id=master.attribute_id AND slave.language_id=master.language_id)";
         }
         if ($table === 'attribute') {
-            $join = " JOIN " . DB_PREFIX . "attribute_pro slave ON (slave.attribute_id=master.attribute_id)";
+            $join = " LEFT JOIN " . DB_PREFIX . "attribute_pro slave ON (slave.attribute_id=master.attribute_id)";
         }
         if ($table === 'attribute_description') {
-            $join = " JOIN " . DB_PREFIX . "attribute_description_pro slave ON (slave.attribute_id=master.attribute_id)";
+            $join = " LEFT JOIN " . DB_PREFIX . "attribute_description_pro slave ON (slave.attribute_id=master.attribute_id)";
         }
 
         return "DELETE master, slave FROM " . DB_PREFIX . $table . " master" . $join;
@@ -1200,7 +1218,7 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
      * @param array $languages
      * @return integer
      */
-    public function addCategoryAttributesToProducts($products, $category_attributes, $languages) //TODO add duplicate "text" ?
+    public function addAttributesToProducts($products, $category_attributes, $languages, $insert_mode = '') //TODO add duplicate "text" ?
     {
         // in foreach
         set_time_limit(600);
@@ -1209,16 +1227,16 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
         foreach ($products as $product) {
             foreach ($category_attributes as $attribute_id) {
                 foreach ($languages as $language) {
-                    $duty = $this->getDutyByMethod($product['product_id'], $attribute_id, $language['language_id']);
+                    $duty = $this->getDutyByMethod($product['product_id'], $attribute_id, $language['language_id'], $insert_mode);
 
-                    $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute SET product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . $duty['text']
-                        . " ON DUPLICATE KEY UPDATE  product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . $duty['text']);
-                    $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute_pro SET product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id']  . $duty['text'] . $duty['info']
-                        . " ON DUPLICATE KEY UPDATE  product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . $duty['text'] . $duty['info']);
+                    $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute SET product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . "'" . $duty['text']
+                        . " ON DUPLICATE KEY UPDATE  product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . "'" . $duty['text']);
+                    $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute_pro SET product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . "'" . $duty['text'] . $duty['info']
+                        . " ON DUPLICATE KEY UPDATE  product_id = '" . (int)$product['product_id'] . "', attribute_id = '" . (int)$attribute_id . "', language_id = '" . (int)$language['language_id'] . "'" . $duty['text'] . $duty['info']);
 
                     $this->productDateModified($product['product_id']);
 
-                    $count_affected += $this->db->countAffected() / 2;
+                    $count_affected += $this->db->countAffected();
                 }
             }
         }
@@ -1234,19 +1252,19 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
      * @param integer $language_id
      * @return array
      */
-    protected function getDutyByMethod($product_id, $attribute_id, $language_id)
+    protected function getDutyByMethod($product_id, $attribute_id, $language_id, $insert_mode = '')
     {
         $method = $this->config->get($this->model . '_product_text');
 
         switch ($method) {
             case 'clean':
-                $text = "', text = '' ";
-                $info = "', image = '', icon = '', url = '', unit_id = '0', status = '0', tooltip = ''";
+                $text = ", text = '' ";
+                $info = ", image = '', icon = '', url = '', unit_id = '0', status = '0', tooltip = ''";
                 break;
             case 'overwrite':
                 $duty = $this->getDutyInfo($attribute_id, $language_id);
                 // Overwrite if duty options not empty exclude unit and status
-                $text = $duty['duty'] ? "', text = '" . $this->db->escape($duty['duty']) . "'" : "'";
+                $text = $duty['duty'] ? ", text = '" . $this->db->escape($duty['duty']) . "'" : '';
                 $image = $duty['duty_image'] ? ", image = '" . $duty['duty_image'] . "'" : '';
                 $icon = $duty['duty_icon'] ? ", icon = '" . $duty['duty_icon'] . "'" : '';
                 //TODO url not exist in duty because not enough data for create it in duty form
@@ -1255,13 +1273,13 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
                 $status =  ", status = '" . (int)$duty['duty_status'] . "'";
                 $tooltip = $duty['duty_tooltip'] ? ", tooltip = '" . $this->db->escape($duty['duty_tooltip']) . "'" : '';
 
-                $info = $duty['duty'] ? "'" . $image . $icon . $unit_id . $status . $tooltip : "'";
+                $info =   $image . $icon . $unit_id . $status . $tooltip;
                 break;
             case 'ifempty':
                 $value = $this->getAttributeValueInfo($product_id, $attribute_id, $language_id);
                 $duty = $this->getDutyInfo($attribute_id, $language_id);
 
-                $text = !$value['text'] ? "', text = '" . $this->db->escape($duty['duty']) . "'" : "'";
+                $text = !$value['text'] ? ", text = '" . $this->db->escape($duty['duty']) . "'" : '';
                 $image = !$value['image'] ? ", image = '" . $duty['duty_image'] . "'" : '';
                 $icon = !$value['icon'] ? ", icon = '" . $duty['duty_icon'] . "'" : '';
                 //TODO url not exist in duty because not enough data for create it in duty form
@@ -1270,12 +1288,12 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
                 $status = !$value['status'] ? ", status = '" . (int)$duty['duty_status'] . "'" : '';
                 $tooltip = !$value['tooltip'] ? ", tooltip = '" . $this->db->escape($duty['duty_tooltip']) . "'" : '';
 
-                $info = $duty['duty'] ? "'" . $image . $icon . $unit_id . $status . $tooltip : "'";
+                $info =  $image . $icon . $unit_id . $status . $tooltip;
                 break;
             case 'unchange':
             default:
-                $text = "'";
-                $info = "'";
+                $text = "";
+                $info = "";
                 break;
         }
 

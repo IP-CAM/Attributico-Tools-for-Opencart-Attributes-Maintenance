@@ -169,18 +169,61 @@ function compareValue($value, $template, $value_compare_mode = 'substr', $splitt
     return false;
 }
 
-function replaceValue($old_value, $new_value, $template, $value_compare_mode, $splitter) {
-    $search = htmlspecialchars_decode($old_value);
-    $replace = htmlspecialchars_decode($new_value);
+function replaceValue($old_value, $new_value, $template, $value_compare_mode, $splitter)
+{
+    // Stupid PHP! Preg_replace has stripped slash in search.
+    $search = preg_quote(htmlspecialchars_decode($old_value, ENT_QUOTES),'/');
+    // Stupid PHP! Preg_replace has stripped backslash in replasement.
+    $replace = str_replace('\\', '\\\\', htmlspecialchars_decode($new_value, ENT_QUOTES));
+    $template = htmlspecialchars_decode($template, ENT_QUOTES);
 
     if ($value_compare_mode === 'match') {
         // Замена по точному совпадению значения
         $haystack = explode($splitter, $template);
-        $newtext =  implode($splitter, preg_replace('/^(' . $search . ')+$/', $replace, $haystack));
+        $replaced = preg_replace('/^(' . $search . ')+$/', $replace, $haystack);
+        $newtext =  implode($splitter, $replaced);
+        
     } else {
         // Замена по вхождению подстроки в строку
         $newtext = str_replace($search, $replace, $template);
-    }    
+    }
 
     return $newtext;
+}
+
+function array_delete_col(&$array, $key)
+{
+    return array_walk($array, function (&$v) use ($key) {
+        unset($v[$key]);
+    });
+}
+
+function array_columns($array, $columns_wanted)
+{
+    $filtered_array =[];
+    
+    foreach ($array as $sub_array) { 
+            $filtered_array[] = array_intersect_key($sub_array, array_fill_keys($columns_wanted,''));
+    }
+    return  $filtered_array;
+}
+
+/**
+ * Group data by languages     * 
+ * Needs row['language_id']
+ * 
+ * @param array $rows
+ * @return array
+ */
+function groupByLang($rows)
+{
+    $result = [];
+    foreach ($rows as $row) {
+        $lang_data = [];
+        foreach ($row as $key => $value) {
+            $lang_data[$key] = $value;
+        }
+        $result[$row['language_id']] = $lang_data;
+    }
+    return $result;
 }

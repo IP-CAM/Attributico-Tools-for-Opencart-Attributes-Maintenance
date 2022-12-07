@@ -2,7 +2,7 @@
 
 @include_once(DIR_SYSTEM . 'license/sllic.lic');
 require_once(DIR_SYSTEM . 'library/attributico/attributico.php');
-/* require_once(DIR_SYSTEM . 'library/attributico/interlink.php'); */
+//require_once(DIR_SYSTEM . 'library/attributico/interlink.php');
 
 class ControllerModuleAttributico extends Controller
 {
@@ -435,7 +435,7 @@ class ControllerModuleAttributico extends Controller
             array_multisort($sort_order, SORT_ASC, $json);
         }
 
-        $this->{$this->model}->deleteCategoryAttributesFromProducts([['product_id' => $product_id]], array_column($json, 'attribute_id'));
+        $this->{$this->model}->deleteAttributesFromProducts([['product_id' => $product_id]], array_column($json, 'attribute_id'));
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
@@ -449,14 +449,14 @@ class ControllerModuleAttributico extends Controller
         $categories = isset($this->request->get['categories']) ? $this->request->get['categories'] : array();
         $categories_attributes = [];
 
-        $this->load->model($this->modelfile);       
+        $this->load->model($this->modelfile);
 
         // Это те, которые удалять или добавлять если не передано $categories
         $filter_data = array(
             'category_id' => (int) $category_id,
             'sort' => $sortOrder ? 'sort_attribute_group, a.sort_order' : ''
         );
-        $category_attributes = $this->{$this->model}->getCategoryAttributes($filter_data);        
+        $category_attributes = $this->{$this->model}->getCategoryAttributes($filter_data);
 
         foreach ($category_attributes as $attribute) {
             $json[] = array(
@@ -473,7 +473,7 @@ class ControllerModuleAttributico extends Controller
             }
             array_multisort($sort_order, SORT_ASC, $json);
         }
-        
+
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
     }
@@ -895,6 +895,7 @@ class ControllerModuleAttributico extends Controller
             }
 
             $rootData = array(
+                "key" => 'RootCategoryTree',
                 "title" => $this->session->data['entry_categories'][$language_id],
                 "folder" => true,
                 "expanded" => true,
@@ -1501,6 +1502,10 @@ class ControllerModuleAttributico extends Controller
         }
     }
 
+    /**
+     * The Tree function is calling from addAttributeToCategory function in CRUD operations
+     * Is working at drag&drop attribute (multi attributes) to category (multi categories)
+     */
     public function addCategoryAttributes()
     {
         $category_attributes = array();
@@ -1557,7 +1562,7 @@ class ControllerModuleAttributico extends Controller
                 if ($this->config->get($this->module . '_autoadd')) {
                     // Insert duty to products 
                     $category_products = $this->{$this->model}->getProductsByCategoryId($CategoryId);
-                    $this->{$this->model}->addCategoryAttributesToProducts($category_products, $category_attributes, $languages);
+                    $this->{$this->model}->addAttributesToProducts($category_products, $category_attributes, $languages);
                 }
                 $this->{$this->model}->addCategoryAttributes($CategoryId, $category_attributes);
             }
@@ -1571,13 +1576,13 @@ class ControllerModuleAttributico extends Controller
         $categoryList = isset($this->request->post['categories']) ? $this->request->post['categories'] : array();
         $subCategory = $this->config->get($this->module . '_autodel_subcategory');
         $multistore = isset($this->request->post['multistore']) ? filter_var($this->request->post['multistore'], FILTER_VALIDATE_BOOLEAN) : $this->config->get($this->module . '_multistore');
-        
+
         $this->config->set($this->module . '_multistore', (string) $multistore);
-        
+
         if ($this->session->data['free']) {
             return 0;
         }
-        
+
         $category_attributes = array();
         foreach ($attributes as $attribute) {
             $category_attributes[] = explode("_", $attribute)[1];
@@ -1609,7 +1614,7 @@ class ControllerModuleAttributico extends Controller
             foreach ($categories as $CategoryId) {
                 if ($this->config->get($this->module . '_autodel')) {
                     $category_products = $this->{$this->model}->getProductsByCategoryId($CategoryId);
-                    $this->{$this->model}->deleteCategoryAttributesFromProducts($category_products, $category_attributes);
+                    $this->{$this->model}->deleteAttributesFromProducts($category_products, $category_attributes);
                 }
                 $this->{$this->model}->deleteAttributesFromCategory($CategoryId, $category_attributes);
             }
@@ -2140,7 +2145,7 @@ class ControllerExtensionModuleAttributico extends ControllerModuleAttributico
 }
 class ControllerModuleAttributipro extends ControllerModuleAttributico
 {
-    const MODULE_VERSION =  'v0.5.7';
+    const MODULE_VERSION =  'v0.6.3';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
     protected $dbstructure = array(
@@ -2874,8 +2879,11 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
     }
 
     /**
-     * Get product attributes for ProductAttributesForm
-     * 
+     * React Product Attributes  management
+     */
+
+    /**
+     * Get product attributes for ProductAttributesForm     * 
      *
      * @return json
      */
@@ -2887,10 +2895,10 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
         $info =  new \stdClass();
 
         $info->data = $this->{$this->model}->getProductAttributeInfo($product_id);
-        
+
         $splitter = !($this->config->get($this->module . '_splitter') == '') ? $this->config->get($this->module . '_splitter') : '/';
         $autoadd = $this->config->get($this->module . '_autoadd') ? $this->config->get($this->module . '_autoadd') : 0;
-        
+
         $info->settings = [
             'splitter' => quotemeta($splitter), 'attribute_autoinjection' => $autoadd === '1',
             'value_insert_mode' => $this->config->get($this->module . '_product_text'), 'language_id' => (int)$this->config->get('config_language_id')
@@ -2900,7 +2908,28 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
         $this->response->setOutput(json_encode($info, JSON_UNESCAPED_UNICODE));
     }
 
-    public function getProductCategoryInfo() 
+    /**
+     * Returns the differense between attributes of unbinded product category 
+     * and remaining binded categories
+     * 
+     * @return array 
+     */
+    public function deleteAttributesFromProduct()
+    {
+        $product_id = $this->issetRequest('post', 'product_id', 0);
+        $attributes = $this->issetRequest('post', 'attributes', []);
+
+
+        $this->load->model($this->modelfile);
+        $this->cache->delete($this->module);
+
+        $count_affected = $this->{$this->model}->deleteAttributesFromProducts([['product_id' => $product_id]], $attributes);
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($count_affected));
+    }
+
+    public function getProductCategoryInfo()
     {
         $product_id = $this->issetRequest('get', 'product_id', 0);
         $this->load->model($this->modelfile);
@@ -2913,16 +2942,108 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
         $this->response->setOutput(json_encode($info, JSON_UNESCAPED_UNICODE));
     }
 
-    public function deleteProductCategory() 
+    public function deleteProductCategory()
     {
         $product_id = $this->issetRequest('get', 'product_id', 0);
         $category_id = $this->issetRequest('get', 'category_id', 0);
-        $this->load->model($this->modelfile);       
 
-        $success = $this->{$this->model}->deleteProductCategory($product_id, $category_id);
+        $this->load->model($this->modelfile);
+        $this->cache->delete($this->module);
+        $count_affected = $this->{$this->model}->deleteProductCategory($product_id, $category_id);
 
         $this->response->addHeader('Content-Type: application/json');
-        $this->response->setOutput(json_encode($success, JSON_UNESCAPED_UNICODE));
+        $this->response->setOutput(json_encode($count_affected, JSON_UNESCAPED_UNICODE));
+    }
+
+    public function updateProductCategory()
+    {
+        $product_id = $this->issetRequest('get', 'product_id', 0);
+        $category_id = $this->issetRequest('get', 'category_id', 0);
+        $main = $this->issetRequest('get', 'main', 0);
+        $autoadd = $this->config->get($this->module . '_autoadd') ? $this->config->get($this->module . '_autoadd') : 0;
+        /* $sortOrder = $this->config->get($this->module . '_sortorder') == '1' ? true : false; */
+        $insert_mode = $this->issetRequest('get', 'value_insert_mode', '');
+        /*  $category_attributes = []; */
+
+        $this->load->model($this->modelfile);
+        $this->cache->delete($this->module);
+        $count_affected = $this->{$this->model}->updateProductCategory($product_id, $category_id, $main);
+
+        if ($autoadd) {
+            $languages = $this->getLanguages();
+
+            $category_attributes = $this->{$this->model}->getCategoriesAttributesId([$category_id]);
+
+            $this->cache->delete($this->module);
+            $this->{$this->model}->addAttributesToProducts([['product_id' => $product_id]], $category_attributes, $languages, $insert_mode);
+
+            $info = $this->{$this->model}->getProductAttributeInfo($product_id);
+        } else $info = [];
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($info, JSON_UNESCAPED_UNICODE));
+    }
+
+    public function addCategoryAttributesToProducts()
+    {
+        $product_id = $this->issetRequest('post', 'product_id', 0);
+        $categories = $this->issetRequest('post', 'categories', []);
+        $insert_mode = $this->issetRequest('post', 'value_insert_mode', '');
+
+        $this->load->model($this->modelfile);
+
+        $languages = $this->getLanguages();
+
+        if ($categories) {
+            $category_attributes = $this->{$this->model}->getCategoriesAttributesId($categories);
+
+            $this->cache->delete($this->module);
+            $this->{$this->model}->addAttributesToProducts([['product_id' => $product_id]], $category_attributes, $languages, $insert_mode);
+
+            $info = $this->{$this->model}->getProductAttributeInfo($product_id);
+        } else $info = [];
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($info, JSON_UNESCAPED_UNICODE));
+    }
+    /**
+     * Get all attributes for autocomplete
+     *
+     * @return void
+     */
+    public function getAttributes()
+    {
+        $json = array();
+
+        $this->load->model($this->modelfile);
+
+        $filter_data = array(
+            /* 'filter_name' => $this->request->get['filter_name'],
+                'start' => 0,
+                'limit' => 10000 */
+            'language_id' => $this->config->get('config_language_id')
+        );
+
+        $results = $this->{$this->model}->getAttributes($filter_data);
+
+        foreach ($results as $result) {
+            $json[] = array(
+                'attribute_id' => (int)$result['attribute_id'],
+                'name' => strip_tags(html_entity_decode($result['name'], ENT_QUOTES, 'UTF-8')),
+                'attribute_group' => strip_tags(html_entity_decode($result['group_name'], ENT_QUOTES, 'UTF-8')),
+            );
+        }
+
+        $sort_order = array();
+
+        foreach ($json as $key => $value) {
+            $sort_order[$key] = $value['name'];
+        }
+
+        array_multisort($sort_order, SORT_ASC, $json);
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
     }
 
     public function install()
