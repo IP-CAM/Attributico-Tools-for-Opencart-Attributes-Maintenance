@@ -108,7 +108,7 @@ class ModelCatalogAttributicoTools extends Model
                 WHERE a.attribute_group_id = '" . (int) $attribute_group_id . "'  GROUP BY ad.language_id, ad.name HAVING count(*) > 1  ORDER BY attribute_id");
         return $holdkeys->rows;
     }
-
+//TODO Если в других языках не совпадают, то дубликатами не являются
     private function getDuplicates($attribute_group_id)
     {
         $duplicates = $this->db->query("SELECT ad.* FROM " . DB_PREFIX . "attribute_description ad LEFT JOIN " . DB_PREFIX . "attribute a ON (a.attribute_id = ad.attribute_id) LEFT OUTER JOIN (SELECT MIN(ad1.attribute_id) AS id, ad1.language_id, ad1.name FROM " . DB_PREFIX . "attribute_description ad1 GROUP BY ad1.language_id, ad1.name) AS tmp ON ad.attribute_id = tmp.id WHERE tmp.id IS NULL AND a.attribute_group_id = '" . (int) $attribute_group_id . "'");
@@ -130,45 +130,14 @@ class ModelCatalogAttributicoTools extends Model
     public function deduplicate($attribute_group_id)
     {
         set_time_limit(600);
-        $this->cache->delete('attributipro');
-        $splitter = !($this->config->get('attributipro_splitter') == '') ? $this->config->get('attributipro_splitter') : '/';
+        $this->cache->delete('attributipro');       
         $holdkeys = $this->getHoldkeys($attribute_group_id);
         $duplicates = $this->getDuplicates($attribute_group_id);
-        $proddups = $this->getProddups(array_unique(array_column($duplicates, 'attribute_id')));
-        foreach ($holdkeys as $holdkey) {
-            foreach ($proddups as $lostproduct) {
-                // Проверим есть ли для этого товара уже образец. holdproduct - сохраняемый образец, lostproduct - удаляемый дубликат
-                $holddups = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_attribute WHERE product_id = '" . (int) $lostproduct['product_id'] . "' AND attribute_id = '" . (int) $holdkey['attribute_id'] . "' AND language_id = '" . (int) $holdkey['language_id'] . "'");
-                $holdproduct = $holddups->row;
-                // Если уже есть, то дополним значения в образце 
-                if ($holdproduct) {
-                    $text = $this->concateValues($holdproduct['text'], $lostproduct['text'], $splitter);
-                    //update remining
-                    $this->db->query("UPDATE " . DB_PREFIX . "product_attribute SET text = '" . $this->db->escape($text) . "' WHERE product_id = '" . (int) $holdproduct['product_id'] . "' AND attribute_id = '" . (int) $holdproduct['attribute_id'] . "' AND language_id = '" . (int) $holdproduct['language_id'] . "'");
-                    // И удалим дубликат товара 
-                    $this->db->query("DELETE FROM " . DB_PREFIX . "product_attribute  WHERE product_id = '" . (int) $lostproduct['product_id'] .
-                        "' AND attribute_id = '" . (int) $lostproduct['attribute_id'] . "' AND language_id = '" . (int) $lostproduct['language_id'] . "'");
-                    $this->db->query("UPDATE IGNORE " . DB_PREFIX . "category_attribute SET attribute_id = '" . (int) $holdproduct['attribute_id'] . "' WHERE attribute_id = '" . (int) $lostproduct['attribute_id'] . "'");
-                } else {
-                    // Если образца нет, просто меняем ссылку на id-шник образца
-                    $this->db->query("UPDATE IGNORE " . DB_PREFIX . "product_attribute SET attribute_id = '" . (int) $holdkey['attribute_id'] . "' WHERE product_id = '" . (int) $lostproduct['product_id'] . "' AND attribute_id = '" . (int) $lostproduct['attribute_id'] . "' AND language_id = '" . (int) $lostproduct['language_id'] . "'");
-
-                    $this->db->query("UPDATE IGNORE " . DB_PREFIX . "category_attribute SET attribute_id = '" . (int) $holdkey['attribute_id'] . "' WHERE attribute_id = '" . (int) $lostproduct['attribute_id'] . "'");
-                }
-            }
-        }
-        // Чтоб не потерять дежурные допишем их из удаляемых в образцы
+       
         foreach ($holdkeys as $holdkey) {
             foreach ($duplicates as $duplicate) {
-                if ($duplicate['name'] === $holdkey['name'] && $duplicate['language_id'] === $holdkey['language_id'] && trim($duplicate['duty']) !== '') {
-                    $duty = $this->concateValues($holdkey['duty'], $duplicate['duty'], $splitter);
-                    $this->db->query("UPDATE " . DB_PREFIX . "attribute_description ad SET duty = '" . $duty . "' WHERE attribute_id = '" . (int) $holdkey['attribute_id'] . "' AND language_id = '" . (int) $holdkey['language_id'] . "'");
-                }
+                $this->mergeAttribute($holdkey['attribute_id'], $duplicate['attribute_id']);
             }
-        }
-
-        if ($duplicates) {
-            $this->detached($attribute_group_id, array_unique(array_column($duplicates, 'attribute_id')));
         }
 
         return count($duplicates);

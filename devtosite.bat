@@ -1,0 +1,1 @@
+ROBOCOPY .\upload_no_encoded_v2.3.x-3.x C:\WebServer\Site\localhost\loc.radiocity.kz\ * /S
