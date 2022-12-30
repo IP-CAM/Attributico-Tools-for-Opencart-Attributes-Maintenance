@@ -6,7 +6,7 @@ require_once(DIR_SYSTEM . 'library/attributico/attributico.php');
 
 class ControllerModuleAttributico extends Controller
 {
-    const MODULE_VERSION =  'v3.2.4';
+    const MODULE_VERSION =  'v3.2.5';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
     const DEFAULT_THUMBNAIL_SIZE = 50;
@@ -1726,7 +1726,7 @@ class ControllerModuleAttributico extends Controller
     {
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "category_attribute
 		(`category_id` INTEGER(11) NOT NULL,`attribute_id` INTEGER(11) NOT NULL, PRIMARY KEY (`category_id`,`attribute_id`) USING BTREE)
-        ENGINE=MyISAM ROW_FORMAT=FIXED CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'");
+         CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'");
         // For version 4 attributico
         /* $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "attribute_description_pro (
             attribute_id int(11) NOT NULL,
@@ -3060,7 +3060,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             url text NOT NULL,            
             PRIMARY KEY (attribute_id)
           )
-          ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
+           CHARACTER SET utf8, COLLATE utf8_general_ci");
 
         $this->db->query("INSERT INTO " . DB_PREFIX . "attribute_pro (attribute_id, attribute_group_id, sort_order) 
         SELECT a.attribute_id, a.attribute_group_id, a.sort_order FROM " . DB_PREFIX . "attribute  a
@@ -3079,7 +3079,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             duty_status tinyint(1) NOT NULL DEFAULT 1,            
             PRIMARY KEY (attribute_id, language_id)
           )
-          ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
+           CHARACTER SET utf8, COLLATE utf8_general_ci");
 
         $query = $this->columnCheck('attribute_description', 'duty') ? "INSERT INTO " . DB_PREFIX . "attribute_description_pro (attribute_id, language_id, name, duty) 
           SELECT ad.attribute_id, ad.language_id, ad.name, ad.duty FROM " . DB_PREFIX . "attribute_description ad
@@ -3102,7 +3102,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             url text NOT NULL,
             PRIMARY KEY (product_id, attribute_id, language_id)
           )
-          ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
+          CHARACTER SET utf8, COLLATE utf8_general_ci");
 
         $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute_pro (product_id, attribute_id, language_id, text) 
             SELECT pa.product_id, pa.attribute_id, pa.language_id, pa.text FROM " . DB_PREFIX . "product_attribute pa
@@ -3110,16 +3110,16 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "category_attribute
 		(`category_id` INTEGER(11) NOT NULL,`attribute_id` INTEGER(11) NOT NULL, PRIMARY KEY (`category_id`,`attribute_id`) USING BTREE)
-        ENGINE=MyISAM ROW_FORMAT=FIXED CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'");
+         CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'");
 
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "unit
-		(unit_id int(11) NOT NULL auto_increment, unit_group_id int(11) NOT NULL, sort_order int(3) DEFAULT 0, PRIMARY KEY (unit_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
+		(unit_id int(11) NOT NULL auto_increment, unit_group_id int(11) NOT NULL, sort_order int(3) DEFAULT 0, PRIMARY KEY (unit_id)) CHARACTER SET utf8, COLLATE utf8_general_ci");
 
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "unit_description
 		(unit_id int(11) NOT NULL, language_id int(11) NOT NULL, title varchar(255) NOT NULL DEFAULT '', unit varchar(32) NOT NULL DEFAULT '',
-        PRIMARY KEY (unit_id, language_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci");
+        PRIMARY KEY (unit_id, language_id)) CHARACTER SET utf8, COLLATE utf8_general_ci");
 
-        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "attribute_interlink (rule_id int(11) NOT NULL auto_increment, name varchar(255) NOT NULL, route varchar(255) NOT NULL, filter_alias varchar(255) NOT NULL, args varchar(255) NOT NULL, block_separator char(20) NOT NULL, between_separator char(20) NOT NULL, value_separator char(20) NOT NULL, advance varchar(255) NOT NULL, PRIMARY KEY (rule_id)) ENGINE = MYISAM, CHARACTER SET utf8, COLLATE utf8_general_ci;");
+        $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "attribute_interlink (rule_id int(11) NOT NULL auto_increment, name varchar(255) NOT NULL, route varchar(255) NOT NULL, filter_alias varchar(255) NOT NULL, args varchar(255) NOT NULL, block_separator char(20) NOT NULL, between_separator char(20) NOT NULL, value_separator char(20) NOT NULL, advance varchar(255) NOT NULL, PRIMARY KEY (rule_id)) CHARACTER SET utf8, COLLATE utf8_general_ci;");
 
         foreach ($this->dbstructure as $checking_table => $checking_column) {
             foreach ($checking_column as $column_name => $column_type)

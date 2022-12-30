@@ -108,10 +108,10 @@ class ModelCatalogAttributicoTools extends Model
                 WHERE a.attribute_group_id = '" . (int) $attribute_group_id . "'  GROUP BY ad.language_id, ad.name HAVING count(*) > 1  ORDER BY attribute_id");
         return $holdkeys->rows;
     }
-//TODO Если в других языках не совпадают, то дубликатами не являются
+    //TODO Если в других языках не совпадают, то дубликатами не являются
     private function getDuplicates($attribute_group_id)
     {
-        $duplicates = $this->db->query("SELECT ad.* FROM " . DB_PREFIX . "attribute_description ad LEFT JOIN " . DB_PREFIX . "attribute a ON (a.attribute_id = ad.attribute_id) LEFT OUTER JOIN (SELECT MIN(ad1.attribute_id) AS id, ad1.language_id, ad1.name FROM " . DB_PREFIX . "attribute_description ad1 GROUP BY ad1.language_id, ad1.name) AS tmp ON ad.attribute_id = tmp.id WHERE tmp.id IS NULL AND a.attribute_group_id = '" . (int) $attribute_group_id . "'");
+        $duplicates = $this->db->query("SELECT ad.* FROM " . DB_PREFIX . "attribute_description ad LEFT JOIN " . DB_PREFIX . "attribute a ON (a.attribute_id = ad.attribute_id) LEFT OUTER JOIN (SELECT MIN(ad1.attribute_id) AS id, ad1.language_id, ad1.name FROM " . DB_PREFIX . "attribute_description ad1 LEFT JOIN " . DB_PREFIX . "attribute a2 ON (a2.attribute_id = ad1.attribute_id) WHERE a2.attribute_group_id = '" . (int) $attribute_group_id . "' GROUP BY ad1.language_id, ad1.name) AS tmp ON ad.attribute_id = tmp.id WHERE tmp.id IS NULL AND a.attribute_group_id = '" . (int) $attribute_group_id . "'");
 
         return $duplicates->rows;
     }
@@ -130,10 +130,10 @@ class ModelCatalogAttributicoTools extends Model
     public function deduplicate($attribute_group_id)
     {
         set_time_limit(600);
-        $this->cache->delete('attributipro');       
+        $this->cache->delete('attributipro');
         $holdkeys = $this->getHoldkeys($attribute_group_id);
         $duplicates = $this->getDuplicates($attribute_group_id);
-       
+
         foreach ($holdkeys as $holdkey) {
             foreach ($duplicates as $duplicate) {
                 $this->mergeAttribute($holdkey['attribute_id'], $duplicate['attribute_id']);
