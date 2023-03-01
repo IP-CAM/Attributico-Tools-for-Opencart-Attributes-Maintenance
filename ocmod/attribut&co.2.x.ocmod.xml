@@ -2,7 +2,7 @@
 <modification>
     <name>Attributico</name>
     <code>attributico</code>
-    <version>3.2.5(oc v2.x)</version>
+    <version>3.2.5(oc v2.1)</version>
     <author>comtronics@mail.ru</author>
     <link>http://attributico.su</link>
     
@@ -21,6 +21,15 @@
     <file path="admin/view/template/common/menu.tpl">
         <operation error="skip">
             <search><![CDATA[<li><a href="<?php echo $attribute_group; ?>"><?php echo $text_attribute_group; ?></a></li>]]></search>
+            <add position="after"><![CDATA[                
+                <li><a href="<?php echo $attributico; ?>"><i class="parent"></i><?php echo '<span> Attribut<b style="color: #2199C7;">&</b>co</span>'; ?></a></li>
+		    ]]></add>
+        </operation>
+    </file>
+    <file path="admin/view/template/common/menu.tpl">
+        <operation error="skip">
+            <ignoreif><![CDATA[<li><a href="<?php echo $attributico; ?>"><i class="parent"></i>]]></ignoreif>
+            <search><![CDATA[<li<?php echo $attribute_group_style; ?>><a href="<?php echo $attribute_group; ?>"><?php echo $text_attribute_group; ?></a></li>]]></search>
             <add position="after"><![CDATA[                
                 <li><a href="<?php echo $attributico; ?>"><i class="parent"></i><?php echo '<span> Attribut<b style="color: #2199C7;">&</b>co</span>'; ?></a></li>
 		    ]]></add>
