@@ -186,7 +186,18 @@ function replaceValue($old_value, $new_value, $template, $value_compare_mode, $s
         // Замена по вхождению подстроки в строку
         $newtext = str_replace($search, $replace, $template);
     }
-
+    file_put_contents('attributico.txt', print_r('--Start--',true),FILE_APPEND);
+    file_put_contents('attributico.txt', print_r(PHP_EOL,true),FILE_APPEND);
+    file_put_contents('attributico.txt', print_r($template,true),FILE_APPEND);
+    file_put_contents('attributico.txt', print_r(PHP_EOL,true),FILE_APPEND);
+    file_put_contents('attributico.txt', print_r($search,true),FILE_APPEND);
+    file_put_contents('attributico.txt', print_r(PHP_EOL,true),FILE_APPEND);
+    file_put_contents('attributico.txt', print_r($replace,true),FILE_APPEND);
+    file_put_contents('attributico.txt', print_r(PHP_EOL,true),FILE_APPEND);            
+file_put_contents('attributico.txt', print_r( $newtext,true),FILE_APPEND);
+file_put_contents('attributico.txt', print_r(PHP_EOL,true),FILE_APPEND);
+file_put_contents('attributico.txt', print_r('--End--',true),FILE_APPEND);
+    file_put_contents('attributico.txt', print_r(PHP_EOL,true),FILE_APPEND);
     return $newtext;
 }
 
