@@ -364,7 +364,7 @@ class ModelCatalogAttributico extends Model
                             // By exact coincidence
                         case 'match':
                             $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_attribute master 
-                                        WHERE INSTR(BINARY pa.text, '" . $instance['value'] . "') != '0'
+                                        WHERE INSTR(BINARY master.text, '" . $instance['value'] . "') != '0'
                                         AND master.attribute_id = '" . (int) $instance['attribute_id'] . "'
                                         AND master.language_id = '" . (int) $language_id . "'");
                             foreach ($query->rows as $row) {

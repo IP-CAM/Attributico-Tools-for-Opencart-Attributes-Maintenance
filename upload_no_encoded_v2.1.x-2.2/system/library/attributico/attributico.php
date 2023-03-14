@@ -160,30 +160,58 @@ function splitValue($value, $splitter)
 function compareValue($value, $template, $value_compare_mode = 'substr', $splitter)
 {
     $value_list = splitValue($template, $splitter);
+
     if ($value_compare_mode === 'substr') {
         return (strpos($template, $value) !== false);
     }
     if ($value_compare_mode === 'match') {
-        return in_array(strtolower($value), array_map('strtolower', $value_list));
+        //  file_put_contents('attributico.txt', print_r('--compareValue--', true), FILE_APPEND);
+        // file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
+        //  $trim_list = array_map('trim',$value_list);
+        // file_put_contents('attributico.txt', print_r( $trim_list, true), FILE_APPEND);
+        //  file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
+        // file_put_contents('attributico.txt', print_r( array_map('strtolower',$trim_list), true), FILE_APPEND);
+        // file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
+        //   file_put_contents('attributico.txt', print_r( strlen($trim_list[0]), true), FILE_APPEND);
+        //   file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
+        //   file_put_contents('attributico.txt', print_r( mb_strtolower($value, 'UTF-8'), true), FILE_APPEND);
+        //  file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
+        //  file_put_contents('attributico.txt', print_r( strlen(mb_strtolower($value, 'UTF-8')), true), FILE_APPEND);
+        //  file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
+        //  file_put_contents('attributico.txt', print_r( in_array(mb_strtolower($value, 'UTF-8'), array_map('strtolower', array_map('trim',$value_list))), true), FILE_APPEND);
+        //  file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
+        return in_array(mb_strtolower($value, 'UTF-8'), array_map('mb_strtolower', array_map('trim', $value_list)));
     }
     return false;
 }
 
+function rempty($var)
+{
+    return !($var == "");
+}
+
 function replaceValue($old_value, $new_value, $template, $value_compare_mode, $splitter)
 {
-    // Stupid PHP! Preg_replace has stripped slash in search.
-    $search = preg_quote(htmlspecialchars_decode($old_value, ENT_QUOTES), '/');
-    // Stupid PHP! Preg_replace has stripped backslash in replasement.
-    $replace = str_replace('\\', '\\\\', htmlspecialchars_decode($new_value, ENT_QUOTES));
-    $template = htmlspecialchars_decode($template, ENT_QUOTES);
-
     if ($value_compare_mode === 'match') {
         // Замена по точному совпадению значения
+        // Stupid PHP! Preg_replace has stripped slash in search.
+        $search = trim(preg_quote(htmlspecialchars_decode($old_value, ENT_QUOTES), '/'));
+        // Stupid PHP! Preg_replace has stripped backslash in replacement.
+        $replace = trim(str_replace('\\', '\\\\', htmlspecialchars_decode($new_value, ENT_QUOTES)));
+        $template = htmlspecialchars_decode($template, ENT_QUOTES);
         $haystack = explode($splitter, $template);
-        $replaced = preg_replace('/^(' . $search . ')+$/', $replace, $haystack);
-        $newtext =  implode($splitter, $replaced);
+
+        $replaced = preg_replace("/^(" . $search . ")+$/", $replace, array_map('trim', $haystack));
+
+        $newtext =  implode($splitter, array_filter($replaced, 'rempty'));
+        // file_put_contents('attributico.txt', print_r('--End--', true), FILE_APPEND);
+        // file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
     } else {
-        // Замена по вхождению подстроки в строку
+        // Замена по вхождению подстроки в строку        
+        $search = trim(htmlspecialchars_decode($old_value, ENT_QUOTES));
+        $replace = trim(htmlspecialchars_decode($new_value, ENT_QUOTES));
+        $template = trim(htmlspecialchars_decode($template, ENT_QUOTES));
+
         $newtext = str_replace($search, $replace, $template);
     }
 
@@ -236,7 +264,7 @@ function typeChecking($set)
         } else if (is_string($value)) {
             $set[$key] = htmlspecialchars_decode($value, ENT_QUOTES);
         }
-    } */    
+    } */
     foreach ($set as $key => $element) {
         if (is_array($element)) {
             foreach ($element as $subkey => $value) {
@@ -254,6 +282,6 @@ function typeChecking($set)
             }
         }
     }
-   
+
     return $set;
 }

@@ -160,13 +160,19 @@ function splitValue($value, $splitter)
 function compareValue($value, $template, $value_compare_mode = 'substr', $splitter)
 {
     $value_list = splitValue($template, $splitter);
+
     if ($value_compare_mode === 'substr') {
         return (strpos($template, $value) !== false);
     }
-    if ($value_compare_mode === 'match') {
-        return in_array(strtolower($value), array_map('strtolower', $value_list));
+    if ($value_compare_mode === 'match') {      
+        return in_array(mb_strtolower($value, 'UTF-8'), array_map('mb_strtolower', array_map('trim', $value_list)));
     }
     return false;
+}
+
+function rempty($var)
+{
+    return !($var == "");
 }
 
 function replaceValue($old_value, $new_value, $template, $value_compare_mode, $splitter)
@@ -174,22 +180,22 @@ function replaceValue($old_value, $new_value, $template, $value_compare_mode, $s
     if ($value_compare_mode === 'match') {
         // Замена по точному совпадению значения
         // Stupid PHP! Preg_replace has stripped slash in search.
-        $search = trim( preg_quote(htmlspecialchars_decode($old_value, ENT_QUOTES), '/') );
+        $search = trim(preg_quote(htmlspecialchars_decode($old_value, ENT_QUOTES), '/'));
         // Stupid PHP! Preg_replace has stripped backslash in replacement.
-        $replace = trim( str_replace('\\', '\\\\', htmlspecialchars_decode($new_value, ENT_QUOTES)) );
-        $template = trim( htmlspecialchars_decode($template, ENT_QUOTES) );      
-        $haystack = explode($splitter, $template); 
+        $replace = trim(str_replace('\\', '\\\\', htmlspecialchars_decode($new_value, ENT_QUOTES)));
+        $template = htmlspecialchars_decode($template, ENT_QUOTES);
+        $haystack = explode($splitter, $template);
 
-        $replaced = preg_replace("/^(" . $search . ")+$/", $replace, $haystack);
-       
-        $newtext =  implode($splitter, $replaced);       
-       // file_put_contents('attributico.txt', print_r('--End--', true), FILE_APPEND);
-       // file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
+        $replaced = preg_replace("/^(" . $search . ")+$/", $replace, array_map('trim', $haystack));
+
+        $newtext =  implode($splitter, array_filter($replaced, 'rempty'));
+        // file_put_contents('attributico.txt', print_r('--End--', true), FILE_APPEND);
+        // file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
     } else {
         // Замена по вхождению подстроки в строку        
-        $search = trim( htmlspecialchars_decode($old_value, ENT_QUOTES) );
-        $replace = trim( htmlspecialchars_decode($new_value, ENT_QUOTES) );
-        $template = trim( htmlspecialchars_decode($template, ENT_QUOTES) );
+        $search = trim(htmlspecialchars_decode($old_value, ENT_QUOTES));
+        $replace = trim(htmlspecialchars_decode($new_value, ENT_QUOTES));
+        $template = trim(htmlspecialchars_decode($template, ENT_QUOTES));
 
         $newtext = str_replace($search, $replace, $template);
     }
