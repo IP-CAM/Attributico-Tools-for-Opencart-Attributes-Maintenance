@@ -369,10 +369,17 @@ class ModelCatalogAttributico extends Model
                                         AND master.language_id = '" . (int) $language_id . "'");
                             foreach ($query->rows as $row) {
                                 if (compareValue($instance['value'], $row['text'], $value_compare_mode, $splitter)) {
-                                    $this->db->query($this->deleteQueryBuild('product_attribute') . " WHERE
-                                            master.product_id = '" . (int) $row['product_id'] . "'
-                                            AND master.attribute_id = '" . (int) $row['attribute_id'] . "'
-                                            AND master.language_id = '" . (int) $row['language_id'] . "'");
+                                    // Заменить старое значение на пустое в строке шаблона ($product['text']) по точному совпадению или по вхождению 
+                                    $newtext = replaceValue($instance['value'], '', $row['text'], $value_compare_mode, $splitter);
+                                    if ($newtext) {
+                                        $this->db->query("UPDATE " . DB_PREFIX . "product_attribute SET text = '" . $this->db->escape($newtext) . "' WHERE attribute_id = '" . (int)$row['attribute_id'] . "' AND language_id = '" . (int)$row['language_id'] . "' AND product_id = '" . (int)$row['product_id'] . "'");
+                                        //$this->productDateModified($product['product_id']);
+                                    } else {
+                                        $this->db->query($this->deleteQueryBuild('product_attribute') . " WHERE
+                                        master.product_id = '" . (int) $row['product_id'] . "'
+                                        AND master.attribute_id = '" . (int) $row['attribute_id'] . "'
+                                        AND master.language_id = '" . (int) $row['language_id'] . "'");
+                                    }
                                 }
                             }
                             break;

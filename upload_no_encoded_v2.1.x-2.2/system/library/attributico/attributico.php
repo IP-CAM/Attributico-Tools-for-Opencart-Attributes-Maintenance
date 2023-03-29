@@ -164,22 +164,7 @@ function compareValue($value, $template, $value_compare_mode = 'substr', $splitt
     if ($value_compare_mode === 'substr') {
         return (strpos($template, $value) !== false);
     }
-    if ($value_compare_mode === 'match') {
-        //  file_put_contents('attributico.txt', print_r('--compareValue--', true), FILE_APPEND);
-        // file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
-        //  $trim_list = array_map('trim',$value_list);
-        // file_put_contents('attributico.txt', print_r( $trim_list, true), FILE_APPEND);
-        //  file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
-        // file_put_contents('attributico.txt', print_r( array_map('strtolower',$trim_list), true), FILE_APPEND);
-        // file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
-        //   file_put_contents('attributico.txt', print_r( strlen($trim_list[0]), true), FILE_APPEND);
-        //   file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
-        //   file_put_contents('attributico.txt', print_r( mb_strtolower($value, 'UTF-8'), true), FILE_APPEND);
-        //  file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
-        //  file_put_contents('attributico.txt', print_r( strlen(mb_strtolower($value, 'UTF-8')), true), FILE_APPEND);
-        //  file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
-        //  file_put_contents('attributico.txt', print_r( in_array(mb_strtolower($value, 'UTF-8'), array_map('strtolower', array_map('trim',$value_list))), true), FILE_APPEND);
-        //  file_put_contents('attributico.txt', print_r(PHP_EOL, true), FILE_APPEND);
+    if ($value_compare_mode === 'match') {      
         return in_array(mb_strtolower($value, 'UTF-8'), array_map('mb_strtolower', array_map('trim', $value_list)));
     }
     return false;
