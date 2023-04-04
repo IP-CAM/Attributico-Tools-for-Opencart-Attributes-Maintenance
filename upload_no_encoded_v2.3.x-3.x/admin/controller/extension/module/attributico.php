@@ -613,7 +613,7 @@ class ControllerModuleAttributico extends Controller
 
             if ($method == 'overwrite' || $method == 'ifempty')
                 foreach ($languages as $language) {
-                    $json[$language['language_id']][] = $this->{$this->model}->getDutyInfo($attribute_id, $language)['duty'];
+                    $json[$language['language_id']][] = $this->{$this->model}->getDutyInfo($attribute_id, $language['language_id'])['duty'];
                 }
             if ($method == 'clean')
                 foreach ($languages as $language) {
