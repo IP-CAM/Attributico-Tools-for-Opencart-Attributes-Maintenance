@@ -2,14 +2,14 @@
 
 @include_once(DIR_SYSTEM . 'license/sllic.lic');
 require_once(DIR_SYSTEM . 'library/attributico/attributico.php');
-//require_once(DIR_SYSTEM . 'library/attributico/interlink.php');
+require_once(DIR_SYSTEM . 'library/attributico/interlink.php');
 
 class ControllerModuleAttributico extends Controller
 {
     const MODULE_VERSION =  'v3.2.6';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
-    const DEFAULT_THUMBNAIL_SIZE = 50;
+    const DEFAULT_THUMBNAIL_SIZE = 100;
     protected $data = array();
     protected $error = array();
     private $debug_mode = false;
@@ -133,7 +133,7 @@ class ControllerModuleAttributico extends Controller
         if (class_exists('Vendor')) {
             $vendor = new Vendor();
         }
-        $this->session->data['free'] = $vendor->franchise();
+        $this->session->data['free'] = $vendor->franchise() || !(filesize(DIR_SYSTEM . 'license/sllic.lic') > 20000);
         if ($this->session->data['free']) {
             $this->data['heading_title'] = $this->data['heading_title'] . ' View ' . $this::MODULE_VERSION . '(free)';
         }
@@ -2254,7 +2254,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
      * @param integer $size
      * @return string url for thumb
      */
-    private function getThumbnail($image, $size = 50)
+    private function getThumbnail($image, $size = 100)
     {
         /**
          * Resize image for form view
@@ -2453,11 +2453,26 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
         $text = isset($this->request->post['text']) ? $this->request->post['text'] : '';
         $categories = isset($this->request->post['categories']) ? $this->request->post['categories'] : array();
         $main_category = isset($this->request->post['main_category_id']) ? $this->request->post['main_category_id'] : 0;
-        $poduct_filters = isset($this->request->post['filters']) ? $this->request->post['filters'] : array();
+        /* $poduct_filters = isset($this->request->post['filters']) ? $this->request->post['filters'] : array(); */
         $name = isset($this->request->post['name']) ? $this->request->post['name'] : '';
         $link = '';
 
         $this->load->model($this->modelfile);
+
+        if (isset($this->request->post['filters'])) {
+            $poduct_filters = $this->request->post['filters'];
+        } else {
+            $poduct_filters = [];
+            $filters = $this->{$this->model}->getProductFilters($product_id, $this->config->get('config_language_id'));
+            if ($filters) {
+                foreach ($filters as $filter) {
+                    $poduct_filters[] = array(
+                        'filter_id' => $filter['filter_id'],
+                        'name'      => $filter['group'] . ' &gt; ' . $filter['name']
+                    );
+                }
+            }
+        }
 
         /**
          * Get rule profile from DB
@@ -2474,7 +2489,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
         $this->load->model('attributico/interlink');
 
         $profile = $this->model_attributico_interlink->getRule($this->config->get($this->module . '_interlink'));
-
+//TODO проверка на пустые значения иначе вылетает ошибка, например при пустых категориях
         if ($profile) {
             /**
              * Dependency injection container for Interlink class
@@ -2523,33 +2538,40 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
     {
         $form_values = $this->request->post;
         $language_id = $this->issetRequest('post', 'language_id', $this->config->get('config_language_id'));
-        $this->issetRequest('post', 'attribute_row', 0);
+        /* $this->issetRequest('post', 'attribute_row', 0); */
         $attribute_row = $this->issetRequest('post', 'attribute_row', 0);
         $attribute_id = $this->issetRequest('post', 'attribute_id', 0);
         $product_id = $this->issetRequest('post', 'product_id', 0);
+        // Transform text (value of attribute)
         $text = isset($this->request->post['text']) ? htmlspecialchars_decode($this->request->post['text']) : '';
+        $form_values['text'] = $text;
+        // Transform Image
+        $form_values['image'] = $this->issetRequest('post', 'image', '');		
 
-        $json = ['acceptedText' => $text, 'language_id' => $language_id, 'attribute_row' => $attribute_row];
+        $request =  new \stdClass();
+        $request->table = []; 
+        $request->accepted = ['acceptedText' => $text, 'language_id' => $language_id, 'attribute_row' => $attribute_row];
 
         $this->load->model($this->modelfile);
 
         if ($this->session->data['free']) {
             $this->response->addHeader('Content-Type: application/json');
-            $this->response->setOutput(json_encode($json));
+            $this->response->setOutput(json_encode($request));
             return;
         }
 
-        if ($attribute_id && $product_id) {
-            $form_values['text'] = $text;
+        if ($attribute_id && $product_id) {            
             $this->{$this->model}->editValueInfo($product_id, $attribute_id, $language_id, $form_values);
             // If checkbox apply_for_all is checked
             if (isset($form_values['apply_for_all']) && $form_values['apply_for_all'] === 'true') {
                 $this->{$this->model}->updateValueAllLanguages($product_id, $attribute_id, $form_values);
             }
-        }
+        }  
+
+        $request->table = $this->{$this->model}->getProductAttributeInfo($product_id, $attribute_id); 
 
         $this->response->addHeader('Content-Type: application/json');
-        $this->response->setOutput(json_encode($json));
+        $this->response->setOutput(json_encode($request));
     }
 
     public function getAttributeForm()
@@ -2961,27 +2983,38 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
         $category_id = $this->issetRequest('get', 'category_id', 0);
         $main = $this->issetRequest('get', 'main', 0);
         $autoadd = $this->config->get($this->module . '_autoadd') ? $this->config->get($this->module . '_autoadd') : 0;
-        /* $sortOrder = $this->config->get($this->module . '_sortorder') == '1' ? true : false; */
         $insert_mode = $this->issetRequest('get', 'value_insert_mode', '');
-        /*  $category_attributes = []; */
 
         $this->load->model($this->modelfile);
+        $languages = $this->getLanguages();
+
         $this->cache->delete($this->module);
         $count_affected = $this->{$this->model}->updateProductCategory($product_id, $category_id, $main);
 
         if ($autoadd) {
-            $languages = $this->getLanguages();
-
             $category_attributes = $this->{$this->model}->getCategoriesAttributesId([$category_id]);
-
-            $this->cache->delete($this->module);
             $this->{$this->model}->addAttributesToProducts([['product_id' => $product_id]], $category_attributes, $languages, $insert_mode);
-
             $info = $this->{$this->model}->getProductAttributeInfo($product_id);
         } else $info = [];
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($info, JSON_UNESCAPED_UNICODE));
+    }
+
+    public function changeMainCategory()
+    {
+        $product_id = $this->issetRequest('get', 'product_id', 0);
+        $category_id = $this->issetRequest('get', 'category_id', 0);
+        $main_category_id =  $this->issetRequest('get', 'main_category_id', 0);
+
+        $this->load->model($this->modelfile);
+
+        $this->cache->delete($this->module);
+        $count_affected = $this->{$this->model}->updateProductCategory($product_id, $category_id, 0);
+        $count_affected = $this->{$this->model}->updateProductCategory($product_id,  $main_category_id, 1);
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($count_affected, JSON_UNESCAPED_UNICODE));
     }
 
     public function addCategoryAttributesToProducts()
@@ -2996,11 +3029,51 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
         if ($categories) {
             $category_attributes = $this->{$this->model}->getCategoriesAttributesId($categories);
-
             $this->cache->delete($this->module);
             $this->{$this->model}->addAttributesToProducts([['product_id' => $product_id]], $category_attributes, $languages, $insert_mode);
-
             $info = $this->{$this->model}->getProductAttributeInfo($product_id);
+        } else $info = [];
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($info, JSON_UNESCAPED_UNICODE));
+    }
+
+    public function addAttributeToProduct()
+    {
+        $product_id = $this->issetRequest('post', 'product_id', 0);
+        $attribute_id = $this->issetRequest('post', 'attribute_id', 0);
+        $insert_mode = $this->issetRequest('post', 'value_insert_mode', '');
+
+        $this->load->model($this->modelfile);
+
+        $languages = $this->getLanguages();
+
+        if ($attribute_id) {
+            $this->cache->delete($this->module);
+            $this->{$this->model}->addAttributesToProducts([['product_id' => $product_id]], [$attribute_id], $languages, $insert_mode);
+            $info = $this->{$this->model}->getProductAttributeInfo($product_id, $attribute_id);
+        } else $info = [];
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($info, JSON_UNESCAPED_UNICODE));
+    }
+
+    public function updateProductAttribute()
+    {
+        $product_id = $this->issetRequest('post', 'product_id', 0);
+        $attribute_id = $this->issetRequest('post', 'attribute_id', 0);
+        $insert_mode = $this->issetRequest('post', 'value_insert_mode', '');
+        $current_id = $this->issetRequest('post', 'current_id', 0);
+
+        $this->load->model($this->modelfile);
+
+        $languages = $this->getLanguages();
+
+        if ($attribute_id) {
+            $this->cache->delete($this->module);
+            $this->{$this->model}->deleteAttributesFromProducts([['product_id' => $product_id]], [$current_id]);
+            $this->{$this->model}->addAttributesToProducts([['product_id' => $product_id]], [$attribute_id], $languages, $insert_mode);
+            $info = $this->{$this->model}->getProductAttributeInfo($product_id, $attribute_id);
         } else $info = [];
 
         $this->response->addHeader('Content-Type: application/json');
@@ -3013,19 +3086,14 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
      */
     public function getAttributes()
     {
-        $json = array();
-
         $this->load->model($this->modelfile);
 
         $filter_data = array(
-            /* 'filter_name' => $this->request->get['filter_name'],
-                'start' => 0,
-                'limit' => 10000 */
             'language_id' => $this->config->get('config_language_id')
         );
-
         $results = $this->{$this->model}->getAttributes($filter_data);
 
+        $json = array();
         foreach ($results as $result) {
             $json[] = array(
                 'attribute_id' => (int)$result['attribute_id'],
@@ -3035,15 +3103,82 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
         }
 
         $sort_order = array();
-
         foreach ($json as $key => $value) {
             $sort_order[$key] = $value['name'];
         }
-
         array_multisort($sort_order, SORT_ASC, $json);
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
+    }
+    /**
+     * Get all data for ValueForm (Edit value of selected language)
+     *
+     * @return void
+     */
+    public function getValueInfo()
+    {
+        $language_id = $this->issetRequest('post', 'language_id', $this->config->get('config_language_id'));
+        $attribute_id = $this->issetRequest('post', 'attribute_id', 0);
+        $product_id = $this->issetRequest('post', 'product_id', 0);
+        /* $attribute_row = $this->issetRequest('post', 'attribute_row', 0); */
+        $size =  $this->issetRequest('post', 'size', $this::DEFAULT_THUMBNAIL_SIZE);
+        /* $text = $this->issetRequest('post', 'text', ''); */
+        $view_mode = $this->issetRequest('post', 'view_mode', 'template');
+        $filter_values = $this->issetRequest('post', 'filter', 'all');
+        $categories = $this->issetRequest('post', 'categories', array());
+        $splitter = $this->configGet($this->module . '_splitter', '/', true);
+
+        $this->load->model($this->modelfile);
+
+        if ($attribute_id && $product_id) {
+
+            $info = $this->{$this->model}->getAttributeValueInfo($product_id, $attribute_id, $language_id);
+
+            $info['thumb'] = $this->getThumbnail($info['image'], $size);
+            $info['placeholder'] = $this->getThumbnail('no_image.png', $size);            
+
+            /**
+             * Values for all languages
+             */
+            $values = $this->fetchValueList($attribute_id, $filter_values, $categories);
+            if (!isset($values[$language_id])) {
+                $values[$language_id][] = array('text' => '');
+            }
+
+            /**
+             * Making list of existing values
+             */
+            if ($view_mode == 'template') {
+                $info['list'] = $values[$language_id];
+            } else {
+                $splited = splitTemplate($values[$language_id], $splitter);
+                foreach ($splited as $split) {
+                    $info['list'][] = ["text" => $split];
+                }
+            }
+        }
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($info, JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
+     * Get all data for ValueForm (Edit value of selected language)
+     *
+     * @return void
+     */
+    public function getUnits()
+    {
+        $language_id = $this->issetRequest('post', 'language_id', $this->config->get('config_language_id'));
+
+        $this->load->model($this->modelfile);
+
+        $language = $this->getLanguage($language_id);
+
+        $unit_options = $this->getUnitOptions($language_id, $language->get('not_selected'));
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode(typeChecking($unit_options), JSON_UNESCAPED_UNICODE));
     }
 
     public function install()
@@ -3060,7 +3195,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             url text NOT NULL,            
             PRIMARY KEY (attribute_id)
           )
-           CHARACTER SET utf8, COLLATE utf8_general_ci");
+          CHARACTER SET utf8, COLLATE utf8_general_ci");
 
         $this->db->query("INSERT INTO " . DB_PREFIX . "attribute_pro (attribute_id, attribute_group_id, sort_order) 
         SELECT a.attribute_id, a.attribute_group_id, a.sort_order FROM " . DB_PREFIX . "attribute  a
@@ -3079,7 +3214,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             duty_status tinyint(1) NOT NULL DEFAULT 1,            
             PRIMARY KEY (attribute_id, language_id)
           )
-           CHARACTER SET utf8, COLLATE utf8_general_ci");
+          CHARACTER SET utf8, COLLATE utf8_general_ci");
 
         $query = $this->columnCheck('attribute_description', 'duty') ? "INSERT INTO " . DB_PREFIX . "attribute_description_pro (attribute_id, language_id, name, duty) 
           SELECT ad.attribute_id, ad.language_id, ad.name, ad.duty FROM " . DB_PREFIX . "attribute_description ad
@@ -3102,7 +3237,7 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
             url text NOT NULL,
             PRIMARY KEY (product_id, attribute_id, language_id)
           )
-          CHARACTER SET utf8, COLLATE utf8_general_ci");
+           CHARACTER SET utf8, COLLATE utf8_general_ci");
 
         $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute_pro (product_id, attribute_id, language_id, text) 
             SELECT pa.product_id, pa.attribute_id, pa.language_id, pa.text FROM " . DB_PREFIX . "product_attribute pa
@@ -3110,14 +3245,14 @@ class ControllerModuleAttributipro extends ControllerModuleAttributico
 
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "category_attribute
 		(`category_id` INTEGER(11) NOT NULL,`attribute_id` INTEGER(11) NOT NULL, PRIMARY KEY (`category_id`,`attribute_id`) USING BTREE)
-         CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'");
+        CHARACTER SET 'utf8' COLLATE 'utf8_general_ci'");
 
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "unit
 		(unit_id int(11) NOT NULL auto_increment, unit_group_id int(11) NOT NULL, sort_order int(3) DEFAULT 0, PRIMARY KEY (unit_id)) CHARACTER SET utf8, COLLATE utf8_general_ci");
 
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "unit_description
 		(unit_id int(11) NOT NULL, language_id int(11) NOT NULL, title varchar(255) NOT NULL DEFAULT '', unit varchar(32) NOT NULL DEFAULT '',
-        PRIMARY KEY (unit_id, language_id)) CHARACTER SET utf8, COLLATE utf8_general_ci");
+        PRIMARY KEY (unit_id, language_id))  CHARACTER SET utf8, COLLATE utf8_general_ci");
 
         $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "attribute_interlink (rule_id int(11) NOT NULL auto_increment, name varchar(255) NOT NULL, route varchar(255) NOT NULL, filter_alias varchar(255) NOT NULL, args varchar(255) NOT NULL, block_separator char(20) NOT NULL, between_separator char(20) NOT NULL, value_separator char(20) NOT NULL, advance varchar(255) NOT NULL, PRIMARY KEY (rule_id)) CHARACTER SET utf8, COLLATE utf8_general_ci;");
 
