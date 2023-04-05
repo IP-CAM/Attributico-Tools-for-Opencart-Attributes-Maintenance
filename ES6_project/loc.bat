@@ -1,2 +1,2 @@
-ROBOCOPY .\dist C:\WebServer\Site\localhost\loc.radiocity.kz\admin\view\javascript\ * /S
+ROBOCOPY .\dist C:\WebServer\Site\localhost\loc.radiocity.kz\admin\view\javascript\attributico\ * /S
 
