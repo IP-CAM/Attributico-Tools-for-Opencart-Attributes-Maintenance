@@ -2,11 +2,11 @@
 
 @include_once(DIR_SYSTEM . 'license/sllic.lic');
 require_once(DIR_SYSTEM . 'library/attributico/attributico.php');
-require_once(DIR_SYSTEM . 'library/attributico/interlink.php');
+//require_once(DIR_SYSTEM . 'library/attributico/interlink.php');
 
 class ControllerModuleAttributico extends Controller
 {
-    const MODULE_VERSION =  'v3.2.6';
+    const MODULE_VERSION =  'v3.2.7';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
     const DEFAULT_THUMBNAIL_SIZE = 100;

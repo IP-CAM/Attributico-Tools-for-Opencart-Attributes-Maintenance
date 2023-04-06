@@ -43,7 +43,7 @@ function getServPanel(jQuery) {
             }
 
             // Set filter values display mode when start and loadValues
-            if (localStorage.getItem('filter-values')) {
+            if (localStorage.getItem('filter-values') !== "all") {                
                 $("input[name=filter-values][value=" + localStorage.getItem('filter-values') + "]").trigger('click');
             } else {
                 loadValues()
