@@ -14,8 +14,9 @@ let add_category_attribute = false;
 let remove_category_attribute = 'Remove attributes for this category?';
 let splitter = '/';
 let method;
+let multi = true;
 
-function getServPanel(jQuery) {    
+function getServPanel(jQuery) {
     jQuery.ajax({
         data: {
             'token': token,
@@ -43,7 +44,7 @@ function getServPanel(jQuery) {
             }
 
             // Set filter values display mode when start and loadValues
-            if (localStorage.getItem('filter-values') !== "all") {                
+            if (localStorage.getItem('filter-values') !== "all") {
                 $("input[name=filter-values][value=" + localStorage.getItem('filter-values') + "]").trigger('click');
             } else {
                 loadValues()
@@ -130,6 +131,14 @@ function getSelectedCategories() {
     return selKeys;
 }
 
+function loadValues() {
+    $('#attribute tbody tr').each(function (index, element) {
+        var attribute_id = $('[name="product_attribute\[' + index + '\]\[attribute_id\]"]').val();
+        makeValuesList(attribute_id, index);
+        product_attribute_id.push(attribute_id);
+    });
+}
+
 function makeValuesList(attribute_id, attribute_row) {
     $.ajax({
         data: {
@@ -154,7 +163,7 @@ function makeValuesList(attribute_id, attribute_row) {
     });
 }
 
-function addAttributeDuty(attribute_id, attribute_row) {
+function addAttributeDuty(attribute_id, current_row) {
     $.ajax({
         data: {
             'token': token,
@@ -165,36 +174,64 @@ function addAttributeDuty(attribute_id, attribute_row) {
         url: base_url + '/getAttributeDuty',
         dataType: 'json',
         success: function (json) {
-            $.each(json, function (language_id, duty) {
-                var textarea = $('textarea[name="product_attribute\[' + attribute_row + '\]\[product_attribute_description\]\[' + language_id + '\]\[text\]"]');
-                switch (method) {
-                    case "clean":
-                        textarea.val('');
-                        break;
-                    case "unchange":
-                        break;
-                    case "overwrite":
-                        if (duty != '')
-                            textarea.val(duty);
-                        break;
-                    case "ifempty":
-                        if (textarea.val() == '')
-                            textarea.val(duty);
-                        break;
-                    default:
-                        break;
-                }
-            });
+            setTextareaValue(json, current_row)
         }
     });
 }
 
-function loadValues() {
-    $('#attribute tbody tr').each(function (index, element) {
-        var attribute_id = $('[name="product_attribute\[' + index + '\]\[attribute_id\]"]').val();
-        makeValuesList(attribute_id, index);
-        product_attribute_id.push(attribute_id);
+function setTextareaValue(json, current_row) {
+    $.each(json, function (language_id, duty) {
+        let textarea = $('textarea[name="product_attribute\[' + current_row + '\]\[product_attribute_description\]\[' + language_id + '\]\[text\]"]');
+        switch (method) {
+            case "clean":
+                textarea.val('');
+                break;
+            case "unchange":
+                break;
+            case "overwrite":
+                if (duty != '')
+                    textarea.val(duty);
+                break;
+            case "ifempty":
+                if (textarea.val() == '')
+                    textarea.val(duty);
+                break;
+            default:
+                break;
+        }
     });
+}
+
+function setSelectedValue() {
+    const select = $(this);
+    const row = select.attr("attribute_row") || select.next('textarea').attr("name").match(/[0-9]+/)[0];
+    if (localStorage.getItem('display_attribute') == 'template') {
+        if (this.selectedIndex != 0) {
+            select.next('textarea').val(select.val());
+            if (localStorage.getItem('filter-values') == 'duty') {
+                let attribute_id = select.attr("attribute_id")
+                addAttributeDuty(attribute_id, row)
+            }
+            this.selectedIndex = 0
+        }
+    } else {
+        let textarea_val = select.next('textarea').val();
+        textarea_val = (textarea_val == '') ? textarea_val : textarea_val + splitter;
+        if (this.selectedIndex != 0) {
+            select.next('textarea').val(textarea_val + select.val());
+            allTextareaValue(row, select.val())
+            this.selectedIndex = 0
+        }
+    }
+}
+
+function allTextareaValue(current_row, selectedVal) {
+    $('textarea[name^="product_attribute\[' + current_row + '\]\[product_attribute_description\]"]').each(function () {
+        console.log($(this).attr("name").match(/[0-9]+/g)[1]);        
+        let textareaVal = ($(this).val() == '') ? $(this).val() : $(this).val() + splitter;
+        $(this).val(textareaVal + selectedVal);
+    })
+
 }
 
 // Event Category onchange
@@ -211,27 +248,7 @@ $('#product-category').on('click', '.fa-minus-circle', function () {
 });
 
 // Event apply value or template and set selected in textarea
-function setSelectedValue() {
-    var select = $(this);
-    var textarea_val = select.next('textarea').val();
-    textarea_val = (textarea_val == '') ? textarea_val : textarea_val + splitter;
-    if (localStorage.getItem('display_attribute') == 'template') {
-        if (this.selectedIndex != 0) {
-            select.next('textarea').val(select.val());
-            if (localStorage.getItem('filter-values') == 'duty') {
-                let row = select.attr("attribute_row") || select.next('textarea').attr("name").match(/[0-9]+/)[0];
-                let attribute_id = select.attr("attribute_id")
-                addAttributeDuty(attribute_id, row)
-            }
-            this.selectedIndex = 0
-        }
-    } else {
-        if (this.selectedIndex != 0) {
-            select.next('textarea').val(textarea_val + select.val());
-            this.selectedIndex = 0
-        }
-    }
-}
+
 
 $('#attribute tbody').on('change', 'select', setSelectedValue);
 
