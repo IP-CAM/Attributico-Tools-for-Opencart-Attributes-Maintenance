@@ -14,7 +14,7 @@ let add_category_attribute = false;
 let remove_category_attribute = 'Remove attributes for this category?';
 let splitter = '/';
 let method;
-let multi = true;
+let multi = false;
 
 function getServPanel(jQuery) {
     jQuery.ajax({
@@ -48,6 +48,13 @@ function getServPanel(jQuery) {
                 $("input[name=filter-values][value=" + localStorage.getItem('filter-values') + "]").trigger('click');
             } else {
                 loadValues()
+            }
+
+            // Set each textarea edit mode with multi
+            if (localStorage.getItem('multi')) {
+                multi = (/true/i).test(localStorage.getItem('multi'))
+                $('#multi').prop('checked', multi);
+                $('#multi').parent().addClass(multi ? 'active': '');
             }
         },
         error: (err) => console.log(err)
@@ -174,14 +181,14 @@ function addAttributeDuty(attribute_id, current_row) {
         url: base_url + '/getAttributeDuty',
         dataType: 'json',
         success: function (json) {
-            setTextareaValue(json, current_row)
+            setTextareaDuty(json, current_row)
         }
     });
 }
 
-function setTextareaValue(json, current_row) {
+function setTextareaDuty(json, currentRow) {
     $.each(json, function (language_id, duty) {
-        let textarea = $('textarea[name="product_attribute\[' + current_row + '\]\[product_attribute_description\]\[' + language_id + '\]\[text\]"]');
+        let textarea = $('textarea[name="product_attribute\[' + currentRow + '\]\[product_attribute_description\]\[' + language_id + '\]\[text\]"]');
         switch (method) {
             case "clean":
                 textarea.val('');
@@ -207,31 +214,43 @@ function setSelectedValue() {
     const row = select.attr("attribute_row") || select.next('textarea').attr("name").match(/[0-9]+/)[0];
     if (localStorage.getItem('display_attribute') == 'template') {
         if (this.selectedIndex != 0) {
-            select.next('textarea').val(select.val());
-            if (localStorage.getItem('filter-values') == 'duty') {
+            if (localStorage.getItem('filter-values') == 'duty') {                
                 let attribute_id = select.attr("attribute_id")
+                select.next('textarea').val(select.val());
                 addAttributeDuty(attribute_id, row)
+            } else {
+                if (!multi) {                
+                    select.next('textarea').val(select.val());
+                } else {
+                    eachTextareaValue(row, select.val())
+                }
             }
             this.selectedIndex = 0
         }
     } else {
-        let textarea_val = select.next('textarea').val();
-        textarea_val = (textarea_val == '') ? textarea_val : textarea_val + splitter;
         if (this.selectedIndex != 0) {
-            select.next('textarea').val(textarea_val + select.val());
-            allTextareaValue(row, select.val())
+            if (!multi) {
+                let textarea_val = select.next('textarea').val();
+                textarea_val = (textarea_val == '') ? textarea_val : textarea_val + splitter;
+                select.next('textarea').val(textarea_val + select.val());
+            } else {
+                eachTextareaValue(row, select.val())
+            }
             this.selectedIndex = 0
         }
     }
 }
 
-function allTextareaValue(current_row, selectedVal) {
-    $('textarea[name^="product_attribute\[' + current_row + '\]\[product_attribute_description\]"]').each(function () {
-        console.log($(this).attr("name").match(/[0-9]+/g)[1]);        
-        let textareaVal = ($(this).val() == '') ? $(this).val() : $(this).val() + splitter;
-        $(this).val(textareaVal + selectedVal);
+function eachTextareaValue(currentRow, selectedVal) {
+    $('textarea[name^="product_attribute\[' + currentRow + '\]\[product_attribute_description\]"]').each(function () {
+        //console.log($(this).attr("name").match(/[0-9]+/g)[1]);    
+        if (localStorage.getItem('display_attribute') == 'template') {
+            $(this).val(selectedVal);
+        } else {
+            let textareaVal = ($(this).val() == '') ? $(this).val() : $(this).val() + splitter;
+            $(this).val(textareaVal + selectedVal);
+        }
     })
-
 }
 
 // Event Category onchange
@@ -280,6 +299,12 @@ $('#serv-panel').on('click', '#values-view', function () {
 // Event override method 
 $('#serv-panel').on('change', '#method-view', () => {
     method = $('#method-view option:selected').val()
+});
+
+// Event each textarea value edit 
+$('#serv-panel').on('change', '#multi', () => {
+    multi = $('#multi').is(':checked')
+    localStorage.setItem('multi', multi.toString());
 });
 
 // Event attach categories attributes 

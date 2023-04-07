@@ -634,7 +634,8 @@ class ControllerModuleAttributico extends Controller
         } else {
             $this->language->load($this->modulefile);
         }
-
+        $checkbox = "<div class = 'btn-group' data-toggle = 'buttons' ><label class = 'btn btn-default' style='margin-left:3px;'>
+           <input type = 'checkbox' name='multi' id='multi'><i class='fa fa-copy'></i></label></div>";
         $labels = "<label class='radio-inline'><input type='radio' name='filter-values' id='filter-nofilter' value='all' checked>" . $this->language->get('entry_flter_all') . "</label>";
         $labels .= "<label class='radio-inline'><input type='radio' name='filter-values' id='filter-category' value='categories'>" . $this->language->get('entry_flter_category') . "</label>";
         $labels .= "<label class='radio-inline'><input type='radio' name='filter-values' id='filter-duty' value='duty'>" . $this->language->get('entry_flter_duty') . "</label>";
@@ -663,7 +664,7 @@ class ControllerModuleAttributico extends Controller
         /* $remove_category_attribute = $this->language->get('alert_remove_ca_confirm');
         $attach_category_attributes = $this->language->get('tab_category_attributes'); */
 
-        $json = ['serv_panel' => $labels . $buttons . $select, 'splitter' => quotemeta($splitter), $this->module . '_autoadd' => $autoadd, 'extension' => $extension, 'remove_category_attribute' => $this->language->get('alert_remove_ca_confirm'), 'attach_category_attributes' => $this->language->get('tab_category_attributes')];
+        $json = ['serv_panel' => $labels . $buttons . $select . $checkbox, 'splitter' => quotemeta($splitter), $this->module . '_autoadd' => $autoadd, 'extension' => $extension, 'remove_category_attribute' => $this->language->get('alert_remove_ca_confirm'), 'attach_category_attributes' => $this->language->get('tab_category_attributes')];
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
