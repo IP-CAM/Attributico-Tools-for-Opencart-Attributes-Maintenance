@@ -54,7 +54,7 @@ function getServPanel(jQuery) {
             if (localStorage.getItem('multi')) {
                 multi = (/true/i).test(localStorage.getItem('multi'))
                 $('#multi').prop('checked', multi);
-                $('#multi').parent().addClass(multi ? 'active': '');
+                $('#multi').parent().addClass(multi ? 'active' : '');
             }
         },
         error: (err) => console.log(err)
@@ -214,12 +214,12 @@ function setSelectedValue() {
     const row = select.attr("attribute_row") || select.next('textarea').attr("name").match(/[0-9]+/)[0];
     if (localStorage.getItem('display_attribute') == 'template') {
         if (this.selectedIndex != 0) {
-            if (localStorage.getItem('filter-values') == 'duty') {                
+            if (localStorage.getItem('filter-values') == 'duty') {
                 let attribute_id = select.attr("attribute_id")
                 select.next('textarea').val(select.val());
                 addAttributeDuty(attribute_id, row)
             } else {
-                if (!multi) {                
+                if (!multi) {
                     select.next('textarea').val(select.val());
                 } else {
                     eachTextareaValue(row, select.val())
@@ -251,6 +251,23 @@ function eachTextareaValue(currentRow, selectedVal) {
             $(this).val(textareaVal + selectedVal);
         }
     })
+}
+
+// Replace or add attribute after autocomplete select
+function selectAttributeAutocomplete(row, oldId, newAttribute) {
+    let index = product_attribute_id.indexOf(oldId)
+    let newId = newAttribute.value;
+    let groupName = newAttribute.category;
+
+    if (~index) {
+        product_attribute_id[index] = newId;
+    } else {
+        product_attribute_id.push(newId);
+    }
+    makeValuesList(newId, row);
+    addAttributeDuty(newId, row);
+    $('#group-name' + row).remove()
+    $('input[name=\'product_attribute[' + row + '][name]\']').parent().prepend('<label id=group-name' + row + '>' + groupName + '</label>')
 }
 
 // Event Category onchange
