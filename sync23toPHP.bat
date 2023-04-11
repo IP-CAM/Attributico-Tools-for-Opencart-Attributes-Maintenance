@@ -42,3 +42,11 @@ ROBOCOPY .\upload_no_encoded_v2.3.x-3.x\admin\view\template\extension\module .\P
 ROBOCOPY .\upload_no_encoded_v2.3.x-3.x\admin\view\template\extension\module .\PHP7.0\upload_v2.1.x-2.2\admin\view\template\module\ attributico.tpl /S
 ROBOCOPY .\upload_no_encoded_v2.3.x-3.x\admin\view\template\extension\module .\PHP7.1\upload_v2.1.x-2.2\admin\view\template\module\ attributico.tpl /S
 ROBOCOPY .\upload_no_encoded_v2.3.x-3.x\admin\view\template\extension\module .\PHP7.2\upload_v2.1.x-2.2\admin\view\template\module\ attributico.tpl /S
+ROBOCOPY .\upload_no_encoded_v2.3.x-3.x\admin\view\javascript .\PHP5.4-5.6\upload_v2.3.x-3.x\admin\view\javascript\ * /S
+ROBOCOPY .\upload_no_encoded_v2.3.x-3.x\admin\view\javascript .\PHP5.4-5.6\upload_v2.1.x-2.2\admin\view\javascript\ * /S
+ROBOCOPY .\upload_no_encoded_v2.3.x-3.x\admin\view\javascript .\PHP7.0\upload_v2.3.x-3.x\admin\view\javascript\ * /S
+ROBOCOPY .\upload_no_encoded_v2.3.x-3.x\admin\view\javascript .\PHP7.0\upload_v2.1.x-2.2\admin\view\javascript\ * /S
+ROBOCOPY .\upload_no_encoded_v2.3.x-3.x\admin\view\javascript .\PHP7.1\upload_v2.3.x-3.x\admin\view\javascript\ * /S
+ROBOCOPY .\upload_no_encoded_v2.3.x-3.x\admin\view\javascript .\PHP7.1\upload_v2.1.x-2.2\admin\view\javascript\ * /S
+ROBOCOPY .\upload_no_encoded_v2.3.x-3.x\admin\view\javascript .\PHP7.2\upload_v2.3.x-3.x\admin\view\javascript\ * /S
+ROBOCOPY .\upload_no_encoded_v2.3.x-3.x\admin\view\javascript .\PHP7.2\upload_v2.1.x-2.2\admin\view\javascript\ * /S

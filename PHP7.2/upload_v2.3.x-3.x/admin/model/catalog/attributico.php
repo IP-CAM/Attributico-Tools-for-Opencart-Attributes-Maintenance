@@ -682,8 +682,9 @@ class ModelCatalogAttributico extends Model
      * @param integer $language_id
      * @return object
      */
-    public function getProductAttributeInfo($product_id)
+    public function getProductAttributeInfo($product_id, $attribute_id = 0)
     {
+        $sql_attribute = $attribute_id ? " AND opa.attribute_id='" . (int)$attribute_id . "'" : "";
 
         $query = $this->db->query("SELECT opa.product_id, pd.name AS product_name, opa.attribute_id, oag.sort_order AS group_order, a.sort_order, opa.language_id, lg.code, opa.text, ad.name, oagd.name AS group_name, CONCAT('language/', lg.code, '/', lg.code, '.png') AS flag
         FROM " . DB_PREFIX . "product_attribute opa 
@@ -693,7 +694,7 @@ class ModelCatalogAttributico extends Model
         LEFT JOIN " . DB_PREFIX . "attribute_group oag ON (oag.attribute_group_id = a.attribute_group_id) 
         LEFT JOIN " . DB_PREFIX . "attribute_group_description oagd ON (oagd.attribute_group_id = a.attribute_group_id AND oagd.language_id = ad.language_id)
         LEFT JOIN " . DB_PREFIX . "language lg ON (opa.language_id = lg.language_id)
-        WHERE opa.product_id='" . (int)$product_id . "' ORDER BY group_order, a.sort_order, opa.attribute_id");
+        WHERE opa.product_id='" . (int)$product_id . "'" . $sql_attribute . " ORDER BY group_order, a.sort_order, opa.attribute_id");
 
         $info = [];
 
@@ -911,7 +912,7 @@ class ModelCatalogAttributico extends Model
             foreach ($row as $key => $value) {
                 $lang_data[$key] = $value;
             }
-            $result[$row['language_id']] = $lang_data;
+            $result[$row['language_id']] = typeChecking($lang_data);
         }
         return $result;
     }
@@ -1048,17 +1049,18 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
             /**
              * If sql query returns empty so it is new value and we must prepare new structure
              */
-            return $query->row ? $query->row : array(
-                'product_id' => $product_id,
-                'attribute_id' => $attribute_id,
+            return $query->row ? typeChecking($query->row) : array(
+                'product_id' => (int)$product_id,
+                'attribute_id' => (int)$attribute_id,
+                'language_id' => (int)$language_id,
                 'name' => '',
                 'text' => "",
                 'image' => null,
                 'tooltip' => "",
                 'icon' => "",
                 'url' => "",
-                'unit_id' => 0,
-                'status' => 0
+                'unit_id' => (int)0,
+                'status' => (int)0
             );
         } else {
             return $this->groupByLang($query->rows);
@@ -1319,6 +1321,25 @@ class ModelCatalogAttributipro extends ModelCatalogAttributico
         $query = $this->db->query("SELECT DISTINCT `category_id` AS `category_id_1`,
                 (SELECT CONVERT(GROUP_CONCAT(`path_id` SEPARATOR '_') USING utf8mb4) FROM oc_category_path WHERE `category_id` = `category_id_1` ) AS `path`
                 FROM oc_category_path WHERE category_id IN (" . implode(",", $categories) . ")");
+        return $query->rows;
+    }
+
+    /**
+     * Search all product filters for create Link in SEO URL 
+     * 
+     * @param int $product_id
+     * @param int $language_id
+     * @return array of [{'filter_id, 'name', 'group'}]
+     */
+    public function getProductFilters($product_id, $language_id)
+    {
+        $query = $this->db->query("SELECT f.filter_id, fd.name, 
+        (SELECT name FROM " . DB_PREFIX . "filter_group_description fgd WHERE f.filter_group_id = fgd.filter_group_id AND fgd.language_id = '" . (int)$language_id . "') AS `group` 
+        FROM " . DB_PREFIX . "filter f 
+        LEFT JOIN " . DB_PREFIX . "filter_description fd ON (f.filter_id = fd.filter_id) 
+        WHERE f.filter_id IN (SELECT opf.filter_id FROM " . DB_PREFIX . "product_filter opf WHERE opf.product_id = '" . (int)$product_id . "') 
+        AND fd.language_id = '" . (int)$language_id . "'");
+
         return $query->rows;
     }
 }

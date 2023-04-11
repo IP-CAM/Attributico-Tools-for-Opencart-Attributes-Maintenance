@@ -58,7 +58,7 @@ class ControllerModuleAttributico extends Controller
         $this->document->addStyle('view/javascript/fancytree/skin-custom/custom.css');
         $this->document->addStyle('view/stylesheet/' . $this->module . '.css');
 
-        $this->document->addScript('view/javascript/' . $this->module . '.js');
+        $this->document->addScript('view/javascript/attributico/' . $this->module . '.js');
 
         $this->extension = version_compare(VERSION, '2.3.0', '>=') ? "extension/" : "";
         $edit = version_compare(VERSION, '2.0.0', '>=') ? "edit" : "update";
