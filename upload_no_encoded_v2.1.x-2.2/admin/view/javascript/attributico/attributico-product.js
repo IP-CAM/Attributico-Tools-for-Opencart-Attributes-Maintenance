@@ -3,7 +3,7 @@ const params = new window.URLSearchParams(window.location.search);
 const product_id = (params.get('product_id'));
 const token = (params.get('token'));
 const user_token = (params.get('user_token'));
-const base_url = "index.php?route=extension/module/attributico";
+const base_url = "index.php?route=module/attributico";
 //const common_url = "index.php?route=common/filemanager";
 
 let product_attribute_id = new Array();
