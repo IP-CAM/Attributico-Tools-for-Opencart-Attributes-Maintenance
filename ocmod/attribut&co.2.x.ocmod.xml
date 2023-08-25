@@ -163,22 +163,25 @@
         </operation>
         <operation error="skip">
             <search><![CDATA[<td class="text-left"><?php echo $entry_attribute; ?></td>]]></search>
-            <add position="replace"><![CDATA[
-                <td class="text-left"><?php echo $entry_attribute; ?>
-                    <button type='button' id='attach-attribute' class='btn btn-success pull-right'><i class='fa fa-plus'></i> <?php echo $tab_attribute; ?></button>
-                </td>
+            <add position="after"><![CDATA[               
                 <td class="text-left"><?php echo $entry_sort_order; ?></td>
-            ]]>            </add>
+                ]]>           
+            </add>
         </operation>
         <operation error="skip">
             <search><![CDATA[<td class="text-left"><?php echo $entry_text; ?></td>]]></search>
-            <add position="replace"><![CDATA[
-                <td class="text-left">
-                    <?php echo $entry_text; ?>
-                    <div id="serv-panel" class="pull-right form-inline">                        
-                    </div>
-                </td>
-            ]]>            </add>
+            <add position="after" offset="2"><![CDATA[
+                <tr>                          
+                  <td>
+                    <button type='button' id='attach-attribute' class='btn btn-success pull-right'><i class='fa fa-plus'></i> <?php echo $tab_attribute; ?></button>
+                  </td>
+                  <td></td>            
+                  <td>                        
+                    <div id="serv-panel" class="pull-right form-inline"></div>
+                  </td>
+                  <td></td>
+                </tr>]]> 
+            </add>
         </operation>
         <operation error="skip">
             <search><![CDATA[<td class="text-left"><button type="button" onclick="$('#attribute-row<?php echo $attribute_row; ?>').remove();" data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>]]></search>

@@ -136,22 +136,25 @@
         </operation>
         <operation error="skip">
             <search><![CDATA[<td class="text-left">{{ entry_attribute }}</td>]]></search>
-            <add position="replace"><![CDATA[
-                <td class="text-left">{{ entry_attribute }}
-                    <button type='button' id='attach-attribute' class='btn btn-success pull-right'><i class='fa fa-plus'></i> {{ tab_attribute }}</button>
-                </td>
+            <add position="after"><![CDATA[               
                 <td class="text-left">{{ entry_sort_order }}</td>
-            ]]>            </add>
+                ]]>            
+            </add>
         </operation>
         <operation error="skip">
             <search><![CDATA[<td class="text-left">{{ entry_text }}</td>]]></search>
-            <add position="replace"><![CDATA[
-                <td class="text-left">
-                    {{ entry_text }}
-                    <div id="serv-panel" class="pull-right form-inline">                        
-                    </div>
-                </td>
-            ]]>            </add>
+            <add position="after" offset="2"><![CDATA[
+                <tr>                          
+                  <td>
+                    <button type='button' id='attach-attribute' class='btn btn-success pull-right'><i class='fa fa-plus'></i> {{ tab_attribute }}</button>
+                  </td>
+                  <td></td>            
+                  <td class="text-left">                        
+                    <div id="serv-panel" class="pull-right form-inline"></div>
+                  </td>
+                  <td></td>
+                </tr>]]> 
+            </add>            
         </operation>
          <operation error="skip">
             <search><![CDATA[<td class="text-right"><button type="button" onclick="$('#attribute-row{{ attribute_row }}').remove();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>]]></search>
