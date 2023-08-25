@@ -6,7 +6,7 @@ require_once(DIR_SYSTEM . 'library/attributico/attributico.php');
 
 class ControllerModuleAttributico extends Controller
 {
-    const MODULE_VERSION =  'v3.2.7';
+    const MODULE_VERSION =  'v3.2.8';
     const TOOLS_GROUP_TREE = 'ft_6';
     const TOOLS_CATEGORY_TREE = 'ft_7';
     const DEFAULT_THUMBNAIL_SIZE = 100;
